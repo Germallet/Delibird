@@ -52,8 +52,7 @@ Mkfile.old
 dkms.conf
 
 # Eclipse
-.xml
-.settings.xml
+.settings
 .cproject
 .project
 
