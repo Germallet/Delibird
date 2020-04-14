@@ -1,6 +1,5 @@
 #include "gameBoy.h"
 
-
 int main(void)
 {
 	int conexionBroker;
@@ -19,8 +18,25 @@ int main(void)
 	char* puertoGameCard = config_get_string_value(config,"PUERTO_GAMECARD");
 
 	conexionBroker = Socket_Crear(ipBroker,puertoBroker);
+	if (conexionBroker == -1) {
+		log_error(logger, "No se pudo crear la conexion");
+		return 1;
+	}
+	log_info(logger,"Se conecto al proceso Broker");
+
 	conexionTeam = Socket_Crear(ipTeam,puertoTeam);
+	if (conexionTeam == -1) {
+		log_error(logger, "No se pudo crear la conexion");
+		return 1;
+	}
+	log_info(logger,"Se conecto al proceso Team");
+
 	conexionGameCard = Socket_Crear(ipGameCard,puertoGameCard);
+	if (conexionGameCard == -1) {
+		log_error(logger, "No se pudo crear la conexion");
+		return 1;
+	}
+	log_info(logger,"Se conecto al proceso GameCard");
 
 	Socket_LiberarConexion(conexionBroker);
 	Socket_LiberarConexion(conexionTeam);
