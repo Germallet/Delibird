@@ -1,6 +1,6 @@
 #include "gameCard.h"
-#include<commons/log.h>
-#include<commons/collections/list.h>
+#include <commons/log.h>
+#include <commons/collections/list.h>
 
 int main()
 {

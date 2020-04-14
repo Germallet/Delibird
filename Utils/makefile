@@ -1,12 +1,12 @@
-TARGET = Team
-LIBS = -L./../Utils -lutils -lcommons
+TARGET_LIB = libutils.a
+LIBS = -lcommons
 CC = gcc
-CFLAGS = -g -Wall
+CFLAGS = -Wall -g
 
 .PHONY: default all clean
 
-default: $(TARGET)
-all: default
+default: $(TARGET_LIB)
+all: clean default
 
 OBJECTS = $(patsubst %.c, %.o, $(wildcard *.c))
 HEADERS = $(wildcard *.h)
@@ -16,9 +16,9 @@ HEADERS = $(wildcard *.h)
 
 .PRECIOUS: $(TARGET) $(OBJECTS)
 
-$(TARGET): $(OBJECTS)
-	$(CC) $(OBJECTS) $(CFLAGS) $(LIBS) -o $@
+$(TARGET_LIB): $(OBJECTS)
+	ar rcs $(TARGET_LIB) $(OBJECTS)
 
 clean:
 	-rm -f *.o
-	-rm -f $(TARGET)
+	-rm -f $(TARGET_LIB)

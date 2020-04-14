@@ -1,4 +1,4 @@
-#include "tp0.h"
+/*#include "tp0.h"
 #include "socket.h"
 
 int main()
@@ -64,4 +64,4 @@ void terminar_programa(int conexion, t_log* logger, t_config* config)
 	log_destroy(logger);
 	config_destroy(config);
 	Socket_LiberarConexion(conexion);
-}
+}*/

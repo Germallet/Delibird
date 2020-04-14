@@ -1,5 +1,5 @@
 TARGET = GameBoy
-LIBS = -lcommons
+LIBS = -L./../Utils -lutils -lcommons
 CC = gcc
 CFLAGS = -g -Wall
 
