@@ -5,7 +5,7 @@
  *      Author: utnso
  */
 
-*/#ifndef TP0_H_
+/*	#ifndef TP0_H_
 #define TP0_H_
 
 #include<stdio.h>
@@ -19,4 +19,4 @@ t_log* iniciar_logger(void);
 t_config* leer_config(void);
 void terminar_programa(int, t_log*, t_config*);
 */
-#endif /* TP0_H_ */
+/* #endif  TP0_H_ */
