@@ -17,6 +17,7 @@ HEADERS = $(wildcard *.h)
 .PRECIOUS: $(TARGET) $(OBJECTS)
 
 $(TARGET): $(OBJECTS)
+	$(MAKE) compilarSiNoExiste -C ../Utils/.
 	$(CC) $(OBJECTS) $(CFLAGS) $(LIBS) -o $@
 
 clean:

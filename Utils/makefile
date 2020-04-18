@@ -1,5 +1,5 @@
 TARGET_LIB = libutils.a
-LIBS = -lcommons
+LIBS = -lcommons -lpthread 
 CC = gcc
 CFLAGS = -Wall -g
 
@@ -22,3 +22,6 @@ $(TARGET_LIB): $(OBJECTS)
 clean:
 	-rm -f *.o
 	-rm -f $(TARGET_LIB)
+
+compilarSiNoExiste:
+	if [ -f ./libutils.a ]; then echo libUtils ya compilado!; else echo Compilando libUtils...; make default; fi

@@ -1,5 +1,5 @@
 TARGET = GameBoy
-LIBS = -L./../Utils -lutils -lcommons
+LIBS = -L./../Utils -lutils -lcommons -lpthread
 CC = gcc
 CFLAGS = -g -Wall
 
@@ -17,6 +17,7 @@ HEADERS = $(wildcard *.h)
 .PRECIOUS: $(TARGET) $(OBJECTS)
 
 $(TARGET): $(OBJECTS)
+	$(MAKE) compilarSiNoExiste -C ../Utils/.
 	$(CC) $(OBJECTS) $(CFLAGS) $(LIBS) -o $@
 
 clean:
