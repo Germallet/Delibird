@@ -68,36 +68,19 @@ static size_t TamanioDePaquete(Paquete* paquete)
 }
 static void* SerializarPaquete(Paquete* paquete, size_t* tamanioFinal)
 {
-//	*tamanioFinal = TamanioDePaquete(paquete);
-//	void* paqueteSerializado = malloc(*tamanioFinal);
-//
-//	int desplazamiento = 0;
-//	memcpy(paqueteSerializado, &(paquete->codigoOperacion), sizeof(paquete->codigoOperacion));
-//	desplazamiento += sizeof(paquete->codigoOperacion);
-//	memcpy(paqueteSerializado + desplazamiento, &(paquete->tamanio), sizeof(paquete->tamanio));
-//	desplazamiento += sizeof(paquete->tamanio);
-//	memcpy(paqueteSerializado + desplazamiento, paquete->stream, paquete->tamanio);
-//	desplazamiento += paquete->tamanio;
-//
-//	return paqueteSerializado;
-
 	*tamanioFinal = TamanioDePaquete(paquete);
 	void* paqueteSerializado = malloc(*tamanioFinal);
 
-	if (paquete->codigoOperacion == 2) {
-		SerializarNew(paqueteSerializado, &tamanioFinal);
-	} else if (paquete->codigoOperacion == 3) {
-		SerializarAppeared(paqueteSerializado, &tamanioFinal);
-	} else if (paquete->codigoOperacion == 4) {
-		SerializarCatch(paqueteSerializado, &tamanioFinal);
-	} else if (paquete->codigoOperacion == 5) {
-		SerializarCaught(paqueteSerializado, &tamanioFinal);
-	} else if (paquete->codigoOperacion == 6) {
-		SerializarGet(paqueteSerializado, &tamanioFinal);
-	} else if (paquete->codigoOperacion == 7) {
-		SerializarLocalized(paqueteSerializado, &tamanioFinal);
-	}
+	int desplazamiento = 0;
+	memcpy(paqueteSerializado, &(paquete->codigoOperacion), sizeof(paquete->codigoOperacion));
+	desplazamiento += sizeof(paquete->codigoOperacion);
+	memcpy(paqueteSerializado + desplazamiento, &(paquete->tamanio), sizeof(paquete->tamanio));
+	desplazamiento += sizeof(paquete->tamanio);
+	memcpy(paqueteSerializado + desplazamiento, paquete->stream, paquete->tamanio);
+	desplazamiento += paquete->tamanio;
+
 	return paqueteSerializado;
+
 }
 int Socket_Enviar(uint32_t codigoOperacion, void* stream, int tamanio, int numSocket)
 {
@@ -162,7 +145,7 @@ static void Escucha(DatosDeEscucha* datosDeEscucha)
 	socklen_t tamDireccion = sizeof(struct sockaddr_in);
 	int socketCliente;
 
-	while(1)
+	while(1) //No era que no hay que usar while(1)?
 	{
 		socketCliente = accept(datosDeEscucha->socketDeEscucha, (struct sockaddr*)&direccionCliente, &tamDireccion);
 		if (socketCliente == -1)
@@ -227,41 +210,6 @@ int Socket_IniciarEscucha(uint16_t puerto, void(*EventoNuevoCliente)())
 	free(direccionEscucha);
 	return socketDeEscucha;
 }
-
-static void* SerializarAppeared(Paquete* paquete, size_t* tamanioFinal)
-{
-	int desplazamiento = 0;
-	memcpy(paqueteSerializado, &(paquete->codigoOperacion), sizeof(paquete->codigoOperacion));
-	desplazamiento += sizeof(paquete->codigoOperacion);
-	memcpy(paqueteSerializado + desplazamiento, &(paquete->tamanio), sizeof(paquete->tamanio));
-	desplazamiento += sizeof(paquete->tamanio);
-	memcpy(paqueteSerializado + desplazamiento, paquete->stream, paquete->tamanio);
-	desplazamiento += paquete->tamanio;
-
-	return paqueteSerializado;
-}
-
-static void* SerializarNew(Paquete* paquete, size_t* tamanioFinal) {
-
-}
-
-static void* SerializarCatch(Paquete* paquete, size_t* tamanioFinal) {
-
-}
-
-static void* SerializarGet(Paquete* paquete, size_t* tamanioFinal) {
-
-}
-
-static void* SerializarCaught(Paquete* paquete, size_t* tamanioFinal) {
-
-}
-
-static void* SerializarLocalized(Paquete* paquete, size_t* tamanioFinal) {
-
-}
-
-
 
 
 

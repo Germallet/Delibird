@@ -10,10 +10,10 @@
 void terminarPrograma(int conexiones[], t_log* logger, t_config* config);
 void verificarConexion(int conexion, t_log* logger);
 int sonIguales(char* a, char* b);
-void gestionarProcesoTeam(char* argv[]);
-void gestionarProcesoBroker(char* argv[]);
-void gestionarProcesoGameCard(char* argv[]);
-void gestionarProcesoSuscriptor(char* argv[]);
+void gestionarProcesoTeam(char* argv[], int conexion);
+void gestionarProcesoBroker(char* argv[], int conexion);
+void gestionarProcesoGameCard(char* argv[], int conexion);
+void gestionarProcesoSuscriptor(char* argv[], int conexion);
 
 
 // LOG INICIALIZADO

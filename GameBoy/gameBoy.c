@@ -6,7 +6,6 @@ int main(int argc, char *argv[])
 {
 	int conexiones[CANTCONEXIONES];
 
-
 	// CREAR CONFIG Y OBTENER VALORES (IP=PUERTO)
 	t_config* config = config_create("gameBoy.config");
 	char* ipBroker = config_get_string_value(config, "IP_BROKER");
@@ -67,49 +66,64 @@ int sonIguales(char* a, char* b) {
 	return strcmp(a,b) != 0;
 }
 
-void gestionarProcesoTeam(char* argv[], int numSocket) {
+void gestionarProcesoTeam(char* parametros[], int numSocket) {
 
-	int r = Socket_Enviar(argv[2],argv,sizeof(argv),numSocket);
+	char* p[3];
+
+	uint32_t codigo = parametros[2];
+
+	p[0] = parametros[3];
+	p[1] = parametros[4];
+	p[2] = parametros[5];
+
+
+	int r = Socket_Enviar(codigo,p,tamanioParametrosAppeared(parametros),numSocket); //Debe haber mejor forma para hacer esto
 
 	if (r == 0) {
 		log_info(logger, "Se envio APPEARED_POKEMON correctamente");
-	} else {
-		log_error(logger, "No se pudo enviar APPEARED_POKEMON");
 	}
 }
 
-void gestionarProcesoBroker(char* argv[]) {
+void gestionarProcesoBroker(char* parametros[], int conexion) {
 
-	if (sonIguales(argv[2], "NEW_POKEMON")) {
+	if (sonIguales(parametros[2], "NEW_POKEMON")) {
 
-	} else if (sonIguales(argv[2], "APPEARED_POKEMON")) {
+	} else if (sonIguales(parametros[2], "APPEARED_POKEMON")) {
 
-	} else if (sonIguales(argv[2], "CATCH_POKEMON")) {
+	} else if (sonIguales(parametros[2], "CATCH_POKEMON")) {
 
-	} else if (sonIguales(argv[2], "CAUGHT_POKEMON")) {
+	} else if (sonIguales(parametros[2], "CAUGHT_POKEMON")) {
 
-	} else if (sonIguales(argv[2], "GET_POKEMON")) {
-
-	}
-}
-
-void gestionarProcesoGameCard(char* argv[]) {
-
-	if (sonIguales(argv[2], "NEW_POKEMON")) {
-
-	} else if (sonIguales(argv[2], "CATCH_POKEMON")) {
-
-	} else if (sonIguales(argv[2], "GET_POKEMON")) {
+	} else if (sonIguales(parametros[2], "GET_POKEMON")) {
 
 	}
 }
 
-void gestionarProcesoSuscriptor(char* argv[]) {
+void gestionarProcesoGameCard(char* parametros[], int conexion) {
+
+	if (sonIguales(parametros[2], "NEW_POKEMON")) {
+
+	} else if (sonIguales(parametros[2], "CATCH_POKEMON")) {
+
+	} else if (sonIguales(parametros[2], "GET_POKEMON")) {
+
+	}
+}
+
+void gestionarProcesoSuscriptor(char* parametros[], int conexion) {
 
 }
 
 
+int tamanioParametrosAppeared(char* parametros[]) {
+	int tamanio = 0;
 
+	for (int i = 0; i < 3; i++) {
+		tamanio += strlen(parametros[i]);
+	}
+
+	return tamanio;
+}
 
 
 
