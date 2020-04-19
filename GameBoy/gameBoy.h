@@ -16,11 +16,5 @@ void gestionarProcesoGameCard(char* argv[], int conexion);
 void gestionarProcesoSuscriptor(char* argv[], int conexion);
 
 
-// LOG INICIALIZADO
-t_log* logger = log_create("gameBoy.log", "GameBoy", true, LOG_LEVEL_INFO);
-log_info(logger, "Se inicio el proceso GameBoy!");
-
-
-
 
 
