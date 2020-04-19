@@ -11,6 +11,13 @@ typedef struct
 typedef enum
 {
 	MENSAJE = 1,
+	NEW_POKEMON = 2,
+	APPEARED_POKEMON = 3,
+	CATCH_POKEMON = 4,
+	CAUGHT_POKEMON = 5,
+	GET_POKEMON = 6,
+	LOCALLIZED_POKEMON = 7,
+	SUSCRIPTOR = 8,
 } CodigoDeOperacion;
 
 extern int Socket_Crear(char *ip, char* puerto);
