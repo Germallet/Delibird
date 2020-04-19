@@ -1,6 +1,7 @@
 #include <commons/log.h>
 #include <commons/config.h>
 #include <commons/collections/list.h>
+#include "../Utils/socket.h"
 #define CANTCONEXIONES 3
 
 void terminarPrograma(int conexiones[], t_log* logger, t_config* config);
