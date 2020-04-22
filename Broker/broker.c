@@ -34,13 +34,13 @@ int main()
 {
 	logger = log_create("broker.log", "Broker", true, LOG_LEVEL_INFO);
 
-	// Diccionario de operaciones
-	t_dictionary* operaciones = Operaciones_CrearDiccionario();
-	Operaciones_AgregarOperacion(operaciones, MENSAJE, &ClienteOperacion_MENSAJE);
-	Operaciones_AgregarOperacion(operaciones, NEW_POKEMON, &ClienteOperacion_NEW_POKEMON);
+	// Crear Eventos
+	Eventos* eventos = Eventos_Crear(&ClienteConectado, &ClienteDesconectado, &ClienteError);
+	Eventos_AgregarOperacion(eventos, MENSAJE, &ClienteOperacion_MENSAJE);
+	Eventos_AgregarOperacion(eventos, NEW_POKEMON, &ClienteOperacion_NEW_POKEMON);
 
 	// Iniciar escucha
-	Socket_IniciarEscucha(5003, &ClienteConectado, &ClienteDesconectado, &ClienteError, operaciones);
+	Socket_IniciarEscucha(5003, eventos);
 	log_info(logger, "Escucha iniciada");
 
 	pthread_mutex_t mx_main;

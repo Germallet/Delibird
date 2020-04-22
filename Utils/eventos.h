@@ -20,14 +20,14 @@ typedef enum
 	ERROR_PROCESAR_PAQUETE = 3
 } ErrorDeEscucha;
 
-typedef void (*evento)(void);
-typedef void (*eventoError)(ErrorDeEscucha, Paquete*);
+typedef void (*Evento)(void);
+typedef void (*EventoError)(ErrorDeEscucha, Paquete*);
 
 typedef struct
 {
-	evento conectado;
-	evento desconectado;
-	eventoError error;
+	Evento conectado;
+	Evento desconectado;
+	EventoError error;
 	t_dictionary* operaciones;
 } Eventos;
 
@@ -39,9 +39,10 @@ typedef struct
 	pthread_t thread;
 } DatosConexion;
 
-typedef void (*eventoOperacion)(DatosConexion*, Paquete*);
+typedef void (*EventoOperacion)(DatosConexion*, Paquete*);
 
-extern t_dictionary* Operaciones_CrearDiccionario();
-extern void Operaciones_AgregarOperacion(t_dictionary* diccionario, CodigoDeOperacion codigoDeOperacion, eventoOperacion evento);
-extern bool Operaciones_TieneEvento(t_dictionary* diccionario, CodigoDeOperacion codigoDeOperacion);
-extern eventoOperacion Operaciones_ObtenerEvento(t_dictionary* diccionario, CodigoDeOperacion codigoDeOperacion);
+extern Eventos* Eventos_Crear(Evento conectado, Evento desconectado, EventoError error);
+extern void Eventos_AgregarOperacion(Eventos* eventos, CodigoDeOperacion codigoDeOperacion, EventoOperacion evento);
+extern bool Eventos_TieneOperacion(Eventos* eventos, CodigoDeOperacion codigoDeOperacion);
+extern EventoOperacion Eventos_ObtenerOperacion(Eventos* eventos, CodigoDeOperacion codigoDeOperacion);
+extern void Eventos_Destruir(Eventos* eventos);
