@@ -62,26 +62,6 @@ int Socket_Crear(char *ip, char* puerto)
 	return numSocket;
 }
 
-static size_t TamanioDePaquete(Paquete* paquete)
-{
-	return sizeof(paquete->codigoOperacion) + paquete->tamanio + sizeof(paquete->tamanio);
-}
-static void* SerializarPaquete(Paquete* paquete, size_t* tamanioFinal)
-{
-	*tamanioFinal = TamanioDePaquete(paquete);
-	void* paqueteSerializado = malloc(*tamanioFinal);
-
-	int desplazamiento = 0;
-	memcpy(paqueteSerializado, &(paquete->codigoOperacion), sizeof(paquete->codigoOperacion));
-	desplazamiento += sizeof(paquete->codigoOperacion);
-	memcpy(paqueteSerializado + desplazamiento, &(paquete->tamanio), sizeof(paquete->tamanio));
-	desplazamiento += sizeof(paquete->tamanio);
-	memcpy(paqueteSerializado + desplazamiento, paquete->stream, paquete->tamanio);
-	desplazamiento += paquete->tamanio;
-
-	return paqueteSerializado;
-
-}
 int Socket_Enviar(uint32_t codigoOperacion, void* stream, int tamanio, int numSocket)
 {
 	Paquete* paquete = malloc(sizeof(Paquete));
@@ -90,7 +70,7 @@ int Socket_Enviar(uint32_t codigoOperacion, void* stream, int tamanio, int numSo
 	paquete->stream = stream;
 
 	size_t tamanioFinal;
-	void* paqueteSerializado = SerializarPaquete(paquete, &tamanioFinal);
+	void* paqueteSerializado = Paquete_Serializar(paquete, &tamanioFinal);
 
 	int resultado = send(numSocket, paqueteSerializado, tamanioFinal, 0);
 
@@ -106,22 +86,6 @@ int Socket_Recibir(int numSocket, Paquete** paquete)
 	return recv(numSocket, &((*paquete)->codigoOperacion), sizeof((*paquete)->codigoOperacion), MSG_WAITALL);
 }
 
-int Socket_ProcesarPaquete(int numSocket, Paquete* paquete)
-{
-	if (recv(numSocket, &(paquete->tamanio), sizeof(paquete->tamanio), MSG_WAITALL) == -1)
-		return -1;
-	paquete->stream = malloc(paquete->tamanio);
-	if (recv(numSocket, paquete->stream, paquete->tamanio, MSG_WAITALL) == -1)
-		return -1;
-	return 0;
-}
-
-void Socket_LiberarPaquete(Paquete* paquete)
-{
-	free(paquete->stream);
-	free(paquete);
-}
-
 void Socket_LiberarConexion(int numSocket)
 {
 	close(numSocket);
@@ -134,19 +98,6 @@ typedef struct
 	Eventos eventos;
 } DatosDeEscucha;
 
-typedef void (*eventoOperacion)(DatosConexion*, Paquete*);
-
-static bool TieneEvento(t_dictionary* operaciones, uint32_t codigoOperacion)
-{
-	char codigoChar[] = {codigoOperacion, '\0'};
-	return dictionary_has_key(operaciones, codigoChar);
-}
-static eventoOperacion ObtenerEvento(t_dictionary* operaciones, uint32_t codigoOperacion)
-{
-	char codigoChar = (char)codigoOperacion;
-	return (eventoOperacion)dictionary_get(operaciones, &codigoChar);
-}
-
 static void EscucharMensajes(DatosConexion* conexion)
 {
 	while(1)
@@ -156,24 +107,24 @@ static void EscucharMensajes(DatosConexion* conexion)
 		{
 			if(conexion->eventos.error != NULL)
 				(conexion->eventos.error)(ERROR_RECIBIR, paqueteRecibido);
-			Socket_LiberarPaquete(paqueteRecibido);
+			Paquete_Liberar(paqueteRecibido);
 			break;
 		}
-		if (!TieneEvento(conexion->eventos.operaciones, paqueteRecibido->codigoOperacion))
+		if (!Operaciones_TieneEvento(conexion->eventos.operaciones, paqueteRecibido->codigoOperacion))
 		{
 			if(conexion->eventos.error != NULL)
 				(conexion->eventos.error)(ERROR_OPERACION_INVALIDA, paqueteRecibido);
 			break;
 		}
-		if (Socket_ProcesarPaquete(conexion->socket, paqueteRecibido) == -1)
+		if (Paquete_Procesar(conexion->socket, paqueteRecibido) == -1)
 		{
 			if(conexion->eventos.error != NULL)
 				(conexion->eventos.error)(ERROR_PROCESAR_PAQUETE, paqueteRecibido);
 			break;
 		}
-		ObtenerEvento(conexion->eventos.operaciones, paqueteRecibido->codigoOperacion)(conexion, paqueteRecibido);
+		Operaciones_ObtenerEvento(conexion->eventos.operaciones, paqueteRecibido->codigoOperacion)(conexion, paqueteRecibido);
 
-		Socket_LiberarPaquete(paqueteRecibido);
+		Paquete_Liberar(paqueteRecibido);
 	}
 
 	if(conexion->eventos.error != NULL)
@@ -210,7 +161,7 @@ static void EscuchaConexiones(DatosDeEscucha* datosDeEscucha)
 	}
 }
 
-int Socket_IniciarEscucha(uint16_t puerto, void(*eventoConectado)(), void(*eventoDesconectado)(), eventoError eventoError, t_dictionary* operaciones)
+int Socket_IniciarEscucha(uint16_t puerto, evento eventoConectado, evento eventoDesconectado, eventoError eventoError, t_dictionary* operaciones)
 {
 	// Iniciar socket de escucha
 	int socketDeEscucha;
@@ -248,7 +199,3 @@ int Socket_IniciarEscucha(uint16_t puerto, void(*eventoConectado)(), void(*event
 	free(direccionEscucha);
 	return socketDeEscucha;
 }
-
-
-
-
