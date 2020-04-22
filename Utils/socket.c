@@ -1,9 +1,9 @@
 #include "socket.h"
 #include <sys/socket.h>
-#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <pthread.h>
+#include <stdlib.h>
 
 static int GenerarDirecciones(char* ip, char* puerto, struct addrinfo** infoDireccion)
 {
@@ -127,86 +127,124 @@ void Socket_LiberarConexion(int numSocket)
 	close(numSocket);
 }
 
-
 typedef struct
 {
-	uint16_t puerto;
 	int socketDeEscucha;
-	void(*EventoNuevoCliente)();
-	/*t_dictionary * fns_receipts;
-	void(*fn_connectionClosed)();
-	void * data;*/
+	uint16_t puerto;
+	Eventos eventos;
 } DatosDeEscucha;
 
+typedef void (*eventoOperacion)(DatosConexion*, Paquete*);
 
-static void Escucha(DatosDeEscucha* datosDeEscucha)
+static bool TieneEvento(t_dictionary* operaciones, uint32_t codigoOperacion)
 {
-	struct sockaddr_in direccionCliente;
+	char codigoChar[] = {codigoOperacion, '\0'};
+	return dictionary_has_key(operaciones, codigoChar);
+}
+static eventoOperacion ObtenerEvento(t_dictionary* operaciones, uint32_t codigoOperacion)
+{
+	char codigoChar = (char)codigoOperacion;
+	return (eventoOperacion)dictionary_get(operaciones, &codigoChar);
+}
+
+static void EscucharMensajes(DatosConexion* conexion)
+{
+	while(1)
+	{
+		Paquete* paqueteRecibido = NULL;
+		if (Socket_Recibir(conexion->socket, &paqueteRecibido) == -1)
+		{
+			if(conexion->eventos.error != NULL)
+				(conexion->eventos.error)(ERROR_RECIBIR, paqueteRecibido);
+			Socket_LiberarPaquete(paqueteRecibido);
+			break;
+		}
+		if (!TieneEvento(conexion->eventos.operaciones, paqueteRecibido->codigoOperacion))
+		{
+			if(conexion->eventos.error != NULL)
+				(conexion->eventos.error)(ERROR_OPERACION_INVALIDA, paqueteRecibido);
+			break;
+		}
+		if (Socket_ProcesarPaquete(conexion->socket, paqueteRecibido) == -1)
+		{
+			if(conexion->eventos.error != NULL)
+				(conexion->eventos.error)(ERROR_PROCESAR_PAQUETE, paqueteRecibido);
+			break;
+		}
+		ObtenerEvento(conexion->eventos.operaciones, paqueteRecibido->codigoOperacion)(conexion, paqueteRecibido);
+
+		Socket_LiberarPaquete(paqueteRecibido);
+	}
+
+	if(conexion->eventos.error != NULL)
+		(conexion->eventos.desconectado)();
+
+	Socket_LiberarConexion(conexion->socket);
+	free(conexion->direccion);
+	free(conexion);
+}
+static void EscuchaConexiones(DatosDeEscucha* datosDeEscucha)
+{
 	socklen_t tamDireccion = sizeof(struct sockaddr_in);
 	int socketCliente;
 
-	while(1) //No era que no hay que usar while(1)?
+	while(1)
 	{
-		socketCliente = accept(datosDeEscucha->socketDeEscucha, (struct sockaddr*)&direccionCliente, &tamDireccion);
+		struct sockaddr_in* direccionCliente = NULL;
+		socketCliente = accept(datosDeEscucha->socketDeEscucha, (struct sockaddr*)direccionCliente, &tamDireccion);
 		if (socketCliente == -1)
 			break;
 
-		//Creo estructura connection
-		/*socket_connection * connection = malloc(sizeof(socket_connection));
-		connection->socket = newConnection;
-		connection->ip = string_duplicate(inet_ntoa(addr_client.sin_addr));
-		connection->port = args->port;
-		connection->data = args->data;*/
+		// Genero datos de conexión
+		DatosConexion* conexion = malloc(sizeof(DatosConexion));
+		conexion->socket = socketCliente;
+		conexion->direccion = direccionCliente;
+		conexion->eventos = datosDeEscucha->eventos;
 
-		//aviso que se conecto un socket
-		if(datosDeEscucha->EventoNuevoCliente != NULL)
-			datosDeEscucha->EventoNuevoCliente(/*connection*/);
+		// Ejecuto evento correspondiente
+		if(datosDeEscucha->eventos.conectado != NULL)
+			datosDeEscucha->eventos.conectado(/*connection*/);
 
-		//creo receptor de mensajes
-		/*args_receiptMessage *args_rm = malloc(sizeof(args_receiptMessage));
-		args_rm->connection = connection;
-		args_rm->fns_receipts = args->fns_receipts;
-		args_rm->fn_connectionClosed = args->fn_connectionClosed;
-		pthread_create(&th_receiptMessage, NULL, (void*) receiptMessage, args_rm);*/
+		// Escucho nuevos mensajes
+		pthread_create(&(conexion->thread), NULL, (void*)EscucharMensajes, conexion);
 	}
 }
 
-int Socket_IniciarEscucha(uint16_t puerto, void(*EventoNuevoCliente)())
+int Socket_IniciarEscucha(uint16_t puerto, void(*eventoConectado)(), void(*eventoDesconectado)(), eventoError eventoError, t_dictionary* operaciones)
 {
+	// Iniciar socket de escucha
 	int socketDeEscucha;
 	if ((socketDeEscucha = socket(AF_INET, SOCK_STREAM, 0)) == -1)
-	{
 		return -1;
-	}
-
 	if (NoBloquearPuerto(socketDeEscucha) == -1)
-			return -1;
+		return -1;
 
 	struct sockaddr_in* direccionEscucha = GenerarDireccionEscucha(puerto);
-
 	if (bind(socketDeEscucha, (struct sockaddr *)direccionEscucha, sizeof(struct sockaddr)) == -1)
 	{
 		Socket_LiberarConexion(socketDeEscucha);
 		return -1;
 	}
-
 	if (listen(socketDeEscucha, SOMAXCONN) == -1)
 	{
 		Socket_LiberarConexion(socketDeEscucha);
 		return -1;
 	}
 
+	// Crear DatosDeEscucha
 	DatosDeEscucha* datosDeEscucha = malloc(sizeof(DatosDeEscucha));
-	datosDeEscucha->puerto = puerto;
 	datosDeEscucha->socketDeEscucha = socketDeEscucha;
-	datosDeEscucha->EventoNuevoCliente = EventoNuevoCliente;
-	/*args->fns_receipts = fns;
-	args->fn_connectionClosed = fn_connectionClosed;
-	args->data = data;*/
+	datosDeEscucha->puerto = puerto;
+	datosDeEscucha->eventos.conectado = eventoConectado;
+	datosDeEscucha->eventos.desconectado = eventoDesconectado;
+	datosDeEscucha->eventos.error = eventoError;
+	datosDeEscucha->eventos.operaciones = operaciones;
 
+	// Iniciar thread
 	pthread_t threadEscucha;
-	pthread_create(&threadEscucha, NULL, (void*)Escucha, datosDeEscucha);
+	pthread_create(&threadEscucha, NULL, (void*)EscuchaConexiones, datosDeEscucha);
 
+	// Liberar recursos
 	free(direccionEscucha);
 	return socketDeEscucha;
 }

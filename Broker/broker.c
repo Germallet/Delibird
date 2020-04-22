@@ -1,21 +1,48 @@
 #include "broker.h"
 #include <commons/log.h>
-#include <commons/collections/list.h>
 #include "../Utils/socket.h"
 
 t_log* logger;
 
-void NuevoCliente()
+void ClienteConectado()
 {
-	log_info(logger, "Se conecto un cliente!");
+	log_info(logger, "ClienteConectado");
+}
+void ClienteDesconectado()
+{
+	log_info(logger, "ClienteDesconectado");
+}
+void ClienteError(ErrorDeEscucha error, Paquete* paqueteRecibido)
+{
+	if (error == ERROR_RECIBIR)
+		log_info(logger, "Error al recibir paquete. (Cod. op.: %d)", paqueteRecibido->codigoOperacion);
+	else if (error == ERROR_OPERACION_INVALIDA)
+		log_info(logger, "Recibido código de operación inválido. (Cod. op.: %d)", paqueteRecibido->codigoOperacion);
+	else if (error == ERROR_PROCESAR_PAQUETE)
+		log_info(logger, "Error al procesar paquete. (Cod. op.: %d)", paqueteRecibido->codigoOperacion);
+}
+void ClienteOperacion_MENSAJE(DatosConexion* conexion, Paquete* paqueteRecibido)
+{
+	log_info(logger, "ClienteOperacion_MENSAJE: %s", paqueteRecibido->stream);
+}
+void ClienteOperacion_NEW_POKEMON(DatosConexion* conexion, Paquete* paqueteRecibido)
+{
+	log_info(logger, "ClienteOperacion_NEW_POKEMON");
 }
 
 int main()
 {
 	logger = log_create("broker.log", "Broker", true, LOG_LEVEL_INFO);
-	log_info(logger, "Broker!");
 
-	int socketServidor = Socket_IniciarEscucha(4444, &NuevoCliente);
+	// Diccionario de operaciones
+	char a[] = {MENSAJE, '\0'};
+	char b[] = {NEW_POKEMON, '\0'};
+	t_dictionary* eventos = dictionary_create();
+	dictionary_put(eventos, a, &ClienteOperacion_MENSAJE);
+	dictionary_put(eventos, b, &ClienteOperacion_NEW_POKEMON);
+
+	// Iniciar escucha
+	Socket_IniciarEscucha(5003, &ClienteConectado, &ClienteDesconectado, &ClienteError, eventos);
 	log_info(logger, "Escucha iniciada");
 
 	pthread_mutex_t mx_main;
