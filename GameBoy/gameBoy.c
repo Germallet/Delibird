@@ -1,13 +1,38 @@
 #include "gameBoy.h"
+#include "../Utils/protocolo.h"
 
-// DECLARACIONES, VARIABLES GLOBALES Y DEMASES EN EL .h
-// LOG INICIALIZADO
-t_log* logger = log_create("gameBoy.log", "GameBoy", true, LOG_LEVEL_INFO);
-log_info(logger, "Se inicio el proceso GameBoy!");
+t_log* logger;
 
+void ClienteConectado()
+{
+	log_info(logger, "ClienteConectado");
+}
+void ClienteDesconectado()
+{
+	log_info(logger, "ClienteDesconectado");
+}
+void ClienteError(ErrorDeEscucha error, Paquete* paqueteRecibido)
+{
+	if (error == ERROR_RECIBIR)
+		log_info(logger, "Error al recibir paquete. (Cod. op.: %d)", paqueteRecibido->codigoOperacion);
+	else if (error == ERROR_OPERACION_INVALIDA)
+		log_info(logger, "Recibido código de operación inválido. (Cod. op.: %d)", paqueteRecibido->codigoOperacion);
+	else if (error == ERROR_PROCESAR_PAQUETE)
+		log_info(logger, "Error al procesar paquete. (Cod. op.: %d)", paqueteRecibido->codigoOperacion);
+}
+void ClienteOperacion_MENSAJE(DatosConexion* conexion, Paquete* paqueteRecibido)
+{
+	log_info(logger, "ClienteOperacion_MENSAJE: %s", paqueteRecibido->stream);
+}
+void ClienteOperacion_NEW_POKEMON(DatosConexion* conexion, Paquete* paqueteRecibido)
+{
+	log_info(logger, "ClienteOperacion_NEW_POKEMON");
+}
 
 int main(int argc, char *argv[])
 {
+	logger = log_create("gameBoy.log", "GameBoy", true, LOG_LEVEL_INFO);
+
 	int conexiones[CANTCONEXIONES];
 
 	// CREAR CONFIG Y OBTENER VALORES (IP=PUERTO)
@@ -19,10 +44,13 @@ int main(int argc, char *argv[])
 	char* ipGameCard = config_get_string_value(config, "IP_GAMECARD");
 	char* puertoGameCard = config_get_string_value(config, "PUERTO_GAMECARD");
 
+	Eventos* eventos = Eventos_Crear(&ClienteConectado, &ClienteDesconectado, &ClienteError);
+	Eventos_AgregarOperacion(eventos, MENSAJE, &ClienteOperacion_MENSAJE);
+
 	// CREAR CONEXIONES
-	conexiones[0] = Socket_Crear(ipBroker, puertoBroker);
-	conexiones[1] = Socket_Crear(ipTeam, puertoTeam);
-	conexiones[2] = Socket_Crear(ipGameCard, puertoGameCard);
+	conexiones[0] = Socket_CrearCliente(ipBroker, puertoBroker, eventos);
+	conexiones[1] = Socket_CrearCliente(ipTeam, puertoTeam, eventos);
+	conexiones[2] = Socket_CrearCliente(ipGameCard, puertoGameCard, eventos);
 
 	// VERIFICAR CONEXIONES
 	for (int i = 0; i<CANTCONEXIONES; i++) {
@@ -31,7 +59,7 @@ int main(int argc, char *argv[])
 
 	// GESTION DE MENSAJES
 
-	if (sonIguales(argv[1],"TEAM")) {
+	/*if (sonIguales(argv[1],"TEAM")) {
 		gestionarProcesoTeam(argv,conexiones[1]);
 	} else if (sonIguales(argv[1],"BROKER")) {
 		gestionarProcesoBroker(argv);
@@ -39,7 +67,7 @@ int main(int argc, char *argv[])
 		gestionarProcesoGameCard(argv);
 	} else if (sonIguales(argv[1],"SUSCRIPTOR")) {
 		gestionarProcesoSuscriptor(argv);
-	}
+	}*/
 
 	// TERMINAR PROGRAMA
 	terminarPrograma(conexiones, logger, config);
@@ -65,7 +93,7 @@ void verificarConexion(int conexion, t_log* logger) {
 		}
 }
 
-int sonIguales(char* a, char* b) {
+/*int sonIguales(char* a, char* b) {
 
 	return strcmp(a,b) != 0;
 }
@@ -80,8 +108,11 @@ void gestionarProcesoTeam(char* parametros[], int numSocket) {
 	p[1] = parametros[4];
 	p[2] = parametros[5];
 
+	DATOS_APPEARED_POKEMON datos;
+	int* tamanioBuffer;
 
-	int r = Socket_Enviar(codigo,p,tamanioParametrosAppeared(parametros),numSocket); //Debe haber mejor forma para hacer esto
+	void* buffer = Serializar_APPEARED_POKEMON(&datos, tamanioBuffer);
+	int r = Socket_Enviar(APPEARED_POKEMON, buffer, tamanioBuffer, numSocket); //Debe haber mejor forma para hacer esto
 
 	if (r == 0) {
 		log_info(logger, "Se envio APPEARED_POKEMON correctamente");
@@ -128,6 +159,6 @@ int tamanioParametrosAppeared(char* parametros[]) {
 
 	return tamanio;
 }
-
+*/
 
 
