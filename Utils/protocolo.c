@@ -1,11 +1,72 @@
 #include "protocolo.h"
 #include <stdlib.h>
 
-DATOS_APPEARED_POKEMON* Deserializar_APPEARED_POKEMON()
+//FALTA BABYPROOFEAR ESTO
+
+DATOS_APPEARED_POKEMON* Deserializar_APPEARED_POKEMON(int socket)
 {
+	CodigoDeOperacion codigoDeOperacion;//Hay algo raro aca
 	DATOS_APPEARED_POKEMON* datos = malloc(sizeof(DATOS_APPEARED_POKEMON));
+
+	recv(socket,codigoDeOperacion,sizeof(codigoDeOperacion),0);
+	recv(socket,datos->nombre,sizeof(datos->nombre),0);
+	recv(socket,datos->posicion->posX,sizeof(datos->posicion->posX),0);
+	recv(socket,datos->posicion->posY,sizeof(datos->posicion->posY),0);
+	recv(socket,datos->ID_MENSAJE,sizeof(datos->ID_MENSAJE),0);
+
 	return datos;
 }
+
+DATOS_GET_POKEMON* Deserializar_GET_POKEMON(int socket)
+{
+	CodigoDeOperacion codigoDeOperacion;
+	DATOS_GET_POKEMON* datos = malloc(sizeof(DATOS_GET_POKEMON));
+
+	recv(socket,codigoDeOperacion,sizeof(codigoDeOperacion),0);
+	recv(socket,datos->nombre,sizeof(datos->nombre),0);
+
+	return datos;
+}
+
+DATOS_CATCH_POKEMON* Deserializar_CATCH_POKEMON(int socket)
+{
+	CodigoDeOperacion codigoDeOperacion;//Hay algo raro aca
+	DATOS_CATCH_POKEMON* datos = malloc(sizeof(DATOS_CATCH_POKEMON));
+
+	recv(socket,codigoDeOperacion,sizeof(codigoDeOperacion),0);
+	recv(socket,datos->nombre,sizeof(datos->nombre),0);
+	recv(socket,datos->posicion->posX,sizeof(datos->posicion->posX),0);
+	recv(socket,datos->posicion->posY,sizeof(datos->posicion->posY),0);
+
+	return datos;
+}
+
+DATOS_NEW_POKEMON* Deserializar_NEW_POKEMON(int socket)
+{
+	CodigoDeOperacion codigoDeOperacion; //Hay algo raro aca
+	DATOS_NEW_POKEMON* datos = malloc(sizeof(DATOS_NEW_POKEMON));
+
+	recv(socket,codigoDeOperacion,sizeof(codigoDeOperacion),0);
+	recv(socket,datos->nombre,sizeof(datos->nombre),0);
+	recv(socket,datos->posicion->posX,sizeof(datos->posicion->posX),0);
+	recv(socket,datos->posicion->posY,sizeof(datos->posicion->posY),0);
+	recv(socket,datos->cantidad,sizeof(datos->cantidad),0);
+
+	return datos;
+}
+
+DATOS_CAUGHT_POKEMON* Deserializar_CAUGHT_POKEMON(int socket)
+{
+	CodigoDeOperacion codigoDeOperacion;//Hay algo raro aca
+	DATOS_CAUGHT_POKEMON* datos = malloc(sizeof(DATOS_CAUGHT_POKEMON));
+
+	recv(socket,codigoDeOperacion,sizeof(codigoDeOperacion),0);
+	recv(socket,datos->ID_MENSAJE,sizeof(datos->ID_MENSAJE),0);
+	recv(socket,datos->capturado,sizeof(datos->capturado),0);
+
+	return datos;
+}
+
 void* Serializar_APPEARED_POKEMON(DATOS_APPEARED_POKEMON* datos, int* tamanioBuffer)
 {
 	*tamanioBuffer = Paquete_Tamanio(datos);
