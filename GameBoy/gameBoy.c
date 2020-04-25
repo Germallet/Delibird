@@ -1,5 +1,5 @@
 #include "gameBoy.h"
-#include "../Utils/protocolo.h"
+#include <string.h>
 
 t_log* logger;
 
@@ -33,8 +33,6 @@ int main(int argc, char *argv[])
 {
 	logger = log_create("gameBoy.log", "GameBoy", true, LOG_LEVEL_INFO);
 
-	int conexiones[CANTCONEXIONES];
-
 	// CREAR CONFIG Y OBTENER VALORES (IP=PUERTO)
 	t_config* config = config_create("gameBoy.config");
 	char* ipBroker = config_get_string_value(config, "IP_BROKER");
@@ -44,44 +42,60 @@ int main(int argc, char *argv[])
 	char* ipGameCard = config_get_string_value(config, "IP_GAMECARD");
 	char* puertoGameCard = config_get_string_value(config, "PUERTO_GAMECARD");
 
+	//CREACION EVENTOS
 	Eventos* eventos = Eventos_Crear(&ClienteConectado, &ClienteDesconectado, &ClienteError);
-	Eventos_AgregarOperacion(eventos, MENSAJE, &ClienteOperacion_MENSAJE);
+	Eventos_AgregarOperacion(eventos, APPEARED_POKEMON, &ClienteOperacion_MENSAJE);
+	Eventos_AgregarOperacion(eventos, NEW_POKEMON, &ClienteOperacion_MENSAJE);
+	Eventos_AgregarOperacion(eventos, GET_POKEMON, &ClienteOperacion_MENSAJE);
+	Eventos_AgregarOperacion(eventos, CATCH_POKEMON, &ClienteOperacion_MENSAJE);
+	Eventos_AgregarOperacion(eventos, CAUGHT_POKEMON, &ClienteOperacion_MENSAJE);
 
-	// CREAR CONEXIONES
-	conexiones[0] = Socket_CrearCliente(ipBroker, puertoBroker, eventos);
-	conexiones[1] = Socket_CrearCliente(ipTeam, puertoTeam, eventos);
-	conexiones[2] = Socket_CrearCliente(ipGameCard, puertoGameCard, eventos);
-
-	// VERIFICAR CONEXIONES
-	for (int i = 0; i<CANTCONEXIONES; i++) {
-		verificarConexion(conexiones[i], logger);
-	}
 
 	// GESTION DE MENSAJES
 
-	/*if (sonIguales(argv[1],"TEAM")) {
-		gestionarProcesoTeam(argv,conexiones[1]);
-	} else if (sonIguales(argv[1],"BROKER")) {
-		gestionarProcesoBroker(argv);
+	if (sonIguales(argv[1],"TEAM") && sonIguales(argv[2],"APPEARED_POKEMON")) {
+		int conexionTeam = Socket_CrearCliente(ipTeam, puertoTeam, eventos);
+		gestionarAppeared(argv,conexionTeam);
+		Socket_LiberarConexion(conexionTeam);
+	}
+	 else if (sonIguales(argv[1],"BROKER")) {
+		int conexionBroker = Socket_CrearCliente(ipBroker, puertoBroker, eventos);
+
+		if (sonIguales(argv[2], "NEW_POKEMON"))
+			gestionarNew(argv,conexionBroker);
+		  else if (sonIguales(argv[2], "APPEARED_POKEMON"))
+			gestionarAppeared(argv,conexionBroker);
+		  else if (sonIguales(argv[2], "CATCH_POKEMON"))
+	    	gestionarAppeared(argv,conexionBroker);
+		  else if (sonIguales(argv[2], "CAUGHT_POKEMON"))
+	    	gestionarCaught(argv,conexionBroker);
+		  else if (sonIguales(argv[2], "GET_POKEMON"))
+			gestionarAppeared(argv,conexionBroker);
+
+		Socket_LiberarConexion(conexionBroker);
 	} else if (sonIguales(argv[1],"GAMECARD")) {
-		gestionarProcesoGameCard(argv);
-	} else if (sonIguales(argv[1],"SUSCRIPTOR")) {
-		gestionarProcesoSuscriptor(argv);
-	}*/
+		int conexionGameCard = Socket_CrearCliente(ipGameCard, puertoGameCard, eventos);
+
+		if (sonIguales(argv[2], "NEW_POKEMON"))
+			gestionarNew(argv,conexionGameCard);
+		  else if (sonIguales(argv[2], "CATCH_POKEMON"))
+			gestionarCatch(argv,conexionGameCard);
+		  else if (sonIguales(argv[2], "GET_POKEMON"))
+			gestionarGet(argv,conexionGameCard);
+
+		Socket_LiberarConexion(conexionGameCard);
+	}
 
 	// TERMINAR PROGRAMA
-	terminarPrograma(conexiones, logger, config);
+	terminarPrograma(logger, config);
 
 	return 0;
 }
 
-void terminarPrograma(int conexiones[], t_log* logger, t_config* config) {
+void terminarPrograma(t_log* logger, t_config* config) {
 
 	log_destroy(logger);
 	config_destroy(config);
-	for (int i = 0; i<CANTCONEXIONES; i++) {
-		Socket_LiberarConexion(conexiones[i]);
-	}
 }
 
 void verificarConexion(int conexion, t_log* logger) {
@@ -93,72 +107,97 @@ void verificarConexion(int conexion, t_log* logger) {
 		}
 }
 
-/*int sonIguales(char* a, char* b) {
-
+int sonIguales(char* a, char* b) {
 	return strcmp(a,b) != 0;
 }
 
-void gestionarProcesoTeam(char* parametros[], int numSocket) {
+void gestionarAppeared(char* parametros[], int numSocket) {
+/*
+	DATOS_APPEARED_POKEMON* datos;
+	datos.nombre = parametros[2];
+	datos.posicion.posX = atoi(parametros[3]);
+	datos.posicion.posY = atoi(parametros[4]);
+	datos.ID_MENSAJE = atoi(parametros[5]);
 
-	char* p[3];
-
-	uint32_t codigo = parametros[2];
-
-	p[0] = parametros[3];
-	p[1] = parametros[4];
-	p[2] = parametros[5];
-
-	DATOS_APPEARED_POKEMON datos;
-	int* tamanioBuffer;
+	int* tamanioBuffer = NULL;
 
 	void* buffer = Serializar_APPEARED_POKEMON(&datos, tamanioBuffer);
-	int r = Socket_Enviar(APPEARED_POKEMON, buffer, tamanioBuffer, numSocket); //Debe haber mejor forma para hacer esto
+	int r = Socket_Enviar(APPEARED_POKEMON, buffer, tamanioBuffer, numSocket);
 
 	if (r == 0) {
 		log_info(logger, "Se envio APPEARED_POKEMON correctamente");
 	}
+	*/
 }
 
-void gestionarProcesoBroker(char* parametros[], int conexion) {
+void gestionarNew(char* parametros[], int numSocket) {
+/*
+	DATOS_NEW_POKEMON* datos;
+	datos.nombre = parametros[2];
+	datos.posicion.posX = atoi(parametros[3]);
+	datos.posicion.posY = atoi(parametros[4]);
+	datos.cantidad = atoi(parametros[5]);
 
-	if (sonIguales(parametros[2], "NEW_POKEMON")) {
+	int* tamanioBuffer = NULL;
 
-	} else if (sonIguales(parametros[2], "APPEARED_POKEMON")) {
+	void* buffer = Serializar_NEW_POKEMON(&datos, tamanioBuffer);
+	int r = Socket_Enviar(NEW_POKEMON, buffer, tamanioBuffer, numSocket);
 
-	} else if (sonIguales(parametros[2], "CATCH_POKEMON")) {
-
-	} else if (sonIguales(parametros[2], "CAUGHT_POKEMON")) {
-
-	} else if (sonIguales(parametros[2], "GET_POKEMON")) {
-
+	if (r == 0) {
+		log_info(logger, "Se envio APPEARED_POKEMON correctamente");
 	}
+	*/
 }
 
-void gestionarProcesoGameCard(char* parametros[], int conexion) {
+void gestionarGet(char* parametros[], int numSocket) {
+/*
+	DATOS_GET_POKEMON* datos;
+	datos.nombre = atoi(parametros[2]);
 
-	if (sonIguales(parametros[2], "NEW_POKEMON")) {
+	int* tamanioBuffer = NULL;
 
-	} else if (sonIguales(parametros[2], "CATCH_POKEMON")) {
+	void* buffer = Serializar_GET_POKEMON(&datos, tamanioBuffer);
+	int r = Socket_Enviar(GET_POKEMON, buffer, tamanioBuffer, numSocket);
 
-	} else if (sonIguales(parametros[2], "GET_POKEMON")) {
-
+	if (r == 0) {
+		log_info(logger, "Se envio APPEARED_POKEMON correctamente");
 	}
-}
-
-void gestionarProcesoSuscriptor(char* parametros[], int conexion) {
-
-}
-
-
-int tamanioParametrosAppeared(char* parametros[]) {
-	int tamanio = 0;
-
-	for (int i = 0; i < 3; i++) {
-		tamanio += strlen(parametros[i]);
-	}
-
-	return tamanio;
-}
 */
+}
+
+void gestionarCatch(char* parametros[], int numSocket) {
+/*
+	DATOS_CATCH_POKEMON* datos;
+	datos.nombre = parametros[2];
+	datos.posicion.posX = atoi(parametros[3]);
+	datos.posicion.posY = atoi(parametros[4]);
+
+	int* tamanioBuffer = NULL;
+
+	void* buffer = Serializar_APPEARED_POKEMON(&datos, tamanioBuffer);
+	int r = Socket_Enviar(APPEARED_POKEMON, buffer, tamanioBuffer, numSocket);
+
+	if (r == 0) {
+		log_info(logger, "Se envio APPEARED_POKEMON correctamente");
+	}
+*/
+}
+
+void gestionarCaught(char* parametros[], int numSocket) {
+/*
+	DATOS_CAUGHT_POKEMON* datos;
+	datos.ID_MENSAJE = atoi(parametros[2]);
+	datos.capturado = atoi(parametros[3]);
+
+	int* tamanioBuffer = NULL;
+
+	void* buffer = Serializar_CAUGHT_POKEMON(&datos, tamanioBuffer);
+	int r = Socket_Enviar(CAUGHT_POKEMON, buffer, tamanioBuffer, numSocket);
+
+	if (r == 0) {
+		log_info(logger, "Se envio APPEARED_POKEMON correctamente");
+	}
+	*/
+}
 
 

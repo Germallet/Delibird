@@ -2,18 +2,18 @@
 #include <commons/log.h>
 #include <commons/config.h>
 #include <commons/collections/list.h>
+#include "../Utils/protocolo.h"
 #include "../Utils/socket.h"
-#define CANTCONEXIONES 3
-
 
 // DECLARACIONES
-void terminarPrograma(int conexiones[], t_log* logger, t_config* config);
+void terminarPrograma(t_log* logger, t_config* config);
 void verificarConexion(int conexion, t_log* logger);
 int sonIguales(char* a, char* b);
-void gestionarProcesoTeam(char* argv[], int conexion);
-void gestionarProcesoBroker(char* argv[], int conexion);
-void gestionarProcesoGameCard(char* argv[], int conexion);
-void gestionarProcesoSuscriptor(char* argv[], int conexion);
+void gestionarAppeared(char* parametros[], int numSocket);
+void gestionarNew(char* parametros[], int numSocket);
+void gestionarGet(char* parametros[], int numSocket);
+void gestionarCatch(char* parametros[], int numSocket);
+void gestionarCaught(char* parametros[], int numSocket);
 
 
 

@@ -1,13 +1,11 @@
 #include <stdbool.h>
 
-typedef struct
-{
+typedef struct {
 	int posX;
 	int posY;
 } Posicion;
 
-typedef struct
-{
+typedef struct {
 	char* nombre;
 	Posicion posicion;
 	int ID_MENSAJE;
@@ -47,11 +45,11 @@ typedef struct
 } DATOS_LOCALIZED_POKEMON;
 
 extern DATOS_APPEARED_POKEMON* Deserializar_APPEARED_POKEMON();
-extern DATOS_APPEARED_POKEMON* Deserializar_NEW_POKEMON();
-extern DATOS_APPEARED_POKEMON* Deserializar_GET_POKEMON();
-extern DATOS_APPEARED_POKEMON* Deserializar_CATCH_POKEMON();
-extern DATOS_APPEARED_POKEMON* Deserializar_CAUGHT_POKEMON();
-extern DATOS_APPEARED_POKEMON* Deserializar_LOCALIZED_POKEMON();
+extern DATOS_NEW_POKEMON* Deserializar_NEW_POKEMON();
+extern DATOS_GET_POKEMON* Deserializar_GET_POKEMON();
+extern DATOS_CATCH_POKEMON* Deserializar_CATCH_POKEMON();
+extern DATOS_CAUGHT_POKEMON* Deserializar_CAUGHT_POKEMON();
+extern DATOS_LOCALIZED_POKEMON* Deserializar_LOCALIZED_POKEMON();
 
 extern void* Serializar_APPEARED_POKEMON(DATOS_APPEARED_POKEMON* datos, int* tamanioBuffer);
 extern void* Serializar_NEW_POKEMON(DATOS_NEW_POKEMON* datos, int* tamanioBuffer);
