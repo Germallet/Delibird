@@ -2,7 +2,7 @@
 #include <stdlib.h>
 
 //FALTA BABYPROOFEAR ESTO
-
+/*
 DATOS_APPEARED_POKEMON* Deserializar_APPEARED_POKEMON(int socket)
 {
 	CodigoDeOperacion codigoDeOperacion;//Hay algo raro aca
@@ -112,7 +112,7 @@ void* Serializar_GET_POKEMON(DATOS_GET_POKEMON* datos, int* tamanioBuffer)
 	void* paqueteSerializado = malloc(*tamanioBuffer);
 
 	int desplazamiento = 0;
-	memcpy(paqueteSerializado, GET_POKEMON, sizeof(GET_POKEMON));
+	memcpy(paqueteSerializado, &(GET_POKEMON), sizeof(GET_POKEMON));
 	desplazamiento += sizeof(GET_POKEMON);
 	memcpy(paqueteSerializado + desplazamiento, &(datos->nombre), sizeof(datos->nombre));
 
@@ -152,3 +152,4 @@ void* Serializar_CAUGHT_POKEMON(DATOS_CAUGHT_POKEMON* datos, int* tamanioBuffer)
 	return paqueteSerializado;
 }
 
+*/
