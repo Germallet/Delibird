@@ -1,5 +1,5 @@
 #include <stdbool.h>
-#include "../Utils/socket.h"
+#include "../Utils/net.h"
 typedef struct {
 	int posX;
 	int posY;

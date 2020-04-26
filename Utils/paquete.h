@@ -1,3 +1,4 @@
+#pragma once
 #include <netdb.h>
 
 typedef struct

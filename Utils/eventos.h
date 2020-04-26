@@ -1,3 +1,4 @@
+#pragma once
 #include <commons/collections/dictionary.h>
 #include "paquete.h"
 
@@ -37,9 +38,9 @@ typedef struct
 	struct sockaddr_in* direccion;
 	Eventos eventos;
 	pthread_t thread;
-} DatosConexion;
+} Cliente;
 
-typedef void (*EventoOperacion)(DatosConexion*, Paquete*);
+typedef void (*EventoOperacion)(Cliente*, Paquete*);
 
 extern Eventos* Eventos_Crear(Evento conectado, Evento desconectado, EventoError error);
 extern void Eventos_AgregarOperacion(Eventos* eventos, CodigoDeOperacion codigoDeOperacion, EventoOperacion evento);

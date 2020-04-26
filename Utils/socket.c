@@ -1,102 +1,23 @@
 #include "socket.h"
-#include <sys/socket.h>
-#include <string.h>
-#include <unistd.h>
-#include <pthread.h>
 #include <stdlib.h>
+#include <unistd.h>
+#include <string.h>
 
-// ===== Escuchar nuevos mensajes =====
-
-static int Recibir(int numSocket, Paquete** paquete)
+// ========== Crear ==========
+static int NoBloquearPuerto(int numSocket)
 {
-	*paquete = malloc(sizeof(Paquete));
-	return recv(numSocket, &((*paquete)->codigoOperacion), sizeof((*paquete)->codigoOperacion), MSG_WAITALL);
+	int activado = 1;
+	return setsockopt(numSocket, SOL_SOCKET, SO_REUSEADDR, &activado, sizeof(activado));
 }
-static void EscucharMensajes(DatosConexion* conexion)
+int Socket_Crear(int domain, int type, int protocol)
 {
-	while(1)
-	{
-		Paquete* paqueteRecibido = NULL;
-		if (Recibir(conexion->socket, &paqueteRecibido) == -1)
-		{
-			if(conexion->eventos.error != NULL)
-				(conexion->eventos.error)(ERROR_RECIBIR, paqueteRecibido);
-			Paquete_Liberar(paqueteRecibido);
-			break;
-		}
-		if (!Eventos_TieneOperacion(&(conexion->eventos), paqueteRecibido->codigoOperacion))
-		{
-			if(conexion->eventos.error != NULL)
-				(conexion->eventos.error)(ERROR_OPERACION_INVALIDA, paqueteRecibido);
-			break;
-		}
-		if (Paquete_Procesar(conexion->socket, paqueteRecibido) == -1)
-		{
-			if(conexion->eventos.error != NULL)
-				(conexion->eventos.error)(ERROR_PROCESAR_PAQUETE, paqueteRecibido);
-			break;
-		}
-		Eventos_ObtenerOperacion(&(conexion->eventos), paqueteRecibido->codigoOperacion)(conexion, paqueteRecibido);
-
-		Paquete_Liberar(paqueteRecibido);
-	}
-
-	if(conexion->eventos.error != NULL) (conexion->eventos.desconectado)();
-
-	Socket_LiberarConexion(conexion->socket);
-	free(conexion->direccion);
-	free(conexion);
-}
-static void IniciarThreadEscuchaMensajes(int socket, struct sockaddr_in* direccion, Eventos eventos)
-{
-	DatosConexion* conexion = malloc(sizeof(DatosConexion));
-	conexion->socket = socket;
-	conexion->direccion = direccion;
-	conexion->eventos = eventos;
-
-	pthread_create(&(conexion->thread), NULL, (void*)EscucharMensajes, conexion);
+	int nuevoSocket = socket(domain, type, protocol);
+	if (nuevoSocket == -1 || NoBloquearPuerto(nuevoSocket) == -1)
+		return -1;
+	return nuevoSocket;
 }
 
-// ===== Escuchar nuevas conexiones =====
-
-typedef struct
-{
-	int socketDeEscucha;
-	uint16_t puerto;
-	Eventos* eventos;
-} DatosDeEscucha;
-
-static void EscucharConexiones(DatosDeEscucha* datosDeEscucha)
-{
-	socklen_t tamDireccion = sizeof(struct sockaddr_in);
-	int socketCliente;
-
-	while(1)
-	{
-		struct sockaddr_in* direccionCliente = NULL;
-		socketCliente = accept(datosDeEscucha->socketDeEscucha, (struct sockaddr*)direccionCliente, &tamDireccion);
-		if (socketCliente == -1)
-			break;
-
-		if(datosDeEscucha->eventos->conectado != NULL) datosDeEscucha->eventos->conectado();
-
-		IniciarThreadEscuchaMensajes(socketCliente, direccionCliente, *(datosDeEscucha->eventos));
-	}
-	Eventos_Destruir(datosDeEscucha->eventos);
-}
-static void IniciarThreadEscuchaConexiones(int socket, uint16_t puerto, Eventos* eventos)
-{
-	DatosDeEscucha* datosDeEscucha = malloc(sizeof(DatosDeEscucha));
-	datosDeEscucha->socketDeEscucha = socket;
-	datosDeEscucha->puerto = puerto;
-	datosDeEscucha->eventos = eventos;
-
-	pthread_t threadEscucha;
-	pthread_create(&threadEscucha, NULL, (void*)EscucharConexiones, datosDeEscucha);
-}
-
-// ===== Creación de sockets =====
-
+// ========== Conectar ==========
 static int GenerarDirecciones(char* ip, char* puerto, struct addrinfo** infoDireccion)
 {
 	struct addrinfo hints;
@@ -106,6 +27,23 @@ static int GenerarDirecciones(char* ip, char* puerto, struct addrinfo** infoDire
 	hints.ai_flags = AI_PASSIVE;
 	return getaddrinfo(ip, puerto, &hints, infoDireccion);
 }
+struct sockaddr_in* Socket_Conectar(int socket, char* ip, char* puerto)
+{
+	struct addrinfo* infoServidor = NULL;
+	if (GenerarDirecciones(ip, puerto, &infoServidor) != 0)
+	{
+		freeaddrinfo(infoServidor);
+		return NULL;
+	}
+	if (connect(socket, infoServidor->ai_addr, infoServidor->ai_addrlen) == -1)
+	{
+		freeaddrinfo(infoServidor);
+		return NULL;
+	}
+	return (struct sockaddr_in*)infoServidor;
+}
+
+// ========== Escuchar ==========
 static struct sockaddr_in* GenerarDireccionEscucha(uint16_t puerto)
 {
 	struct sockaddr_in* direccionEscucha = calloc(1, sizeof(struct sockaddr_in));
@@ -115,45 +53,34 @@ static struct sockaddr_in* GenerarDireccionEscucha(uint16_t puerto)
 	direccionEscucha->sin_addr.s_addr = INADDR_ANY;
 	return direccionEscucha;
 }
-static int NoBloquearPuerto(int numSocket)
+Servidor* Socket_Escuchar(int socket, uint16_t puerto, Eventos* eventos)
 {
-	int activado = 1;
-	return setsockopt(numSocket, SOL_SOCKET, SO_REUSEADDR, &activado, sizeof(activado));
+	struct sockaddr_in* direccionEscucha = GenerarDireccionEscucha(puerto);
+	if (bind(socket, (struct sockaddr *)direccionEscucha, sizeof(struct sockaddr)) == -1)
+	{
+		Socket_Destruir(socket);
+		socket = -1;
+	}
+	else if (listen(socket, SOMAXCONN) == -1)
+	{
+		Socket_Destruir(socket);
+		socket = -1;
+	}
+
+	Servidor* servidor = malloc(sizeof(Servidor));
+	servidor->socket = socket;
+	servidor->puerto = puerto;
+	servidor->eventos = eventos;
+
+	free(direccionEscucha);
+	return servidor;
 }
 
-static int ConectarSocket(struct addrinfo* infoServidor, int numSocket)
+// ========== Comunicación ==========
+int Socket_RecibirPaquete(int numSocket, Paquete** paquete)
 {
-	return connect(numSocket, infoServidor->ai_addr, infoServidor->ai_addrlen);
-}
-int Socket_CrearCliente(char *ip, char* puerto, Eventos* eventos)
-{
-	struct addrinfo* infoServidor = NULL;
-	if (GenerarDirecciones(ip, puerto, &infoServidor) != 0)
-	{
-		freeaddrinfo(infoServidor);
-		return -1;
-	}
-
-	int numSocket = socket(infoServidor->ai_family, infoServidor->ai_socktype, infoServidor->ai_protocol);
-	if (numSocket == -1)
-	{
-		freeaddrinfo(infoServidor);
-		return -1;
-	}
-	if (NoBloquearPuerto(numSocket) == -1)
-	{
-		freeaddrinfo(infoServidor);
-		return -1;
-	}
-
-	if (ConectarSocket(infoServidor, numSocket) != 0)
-		numSocket = -1;
-
-	IniciarThreadEscuchaMensajes(numSocket, (struct sockaddr_in*)infoServidor, *eventos);
-	Eventos_Destruir(eventos);
-
-	freeaddrinfo(infoServidor);
-	return numSocket;
+	*paquete = malloc(sizeof(Paquete));
+	return recv(numSocket, &((*paquete)->codigoOperacion), sizeof((*paquete)->codigoOperacion), MSG_WAITALL);
 }
 int Socket_Enviar(uint32_t codigoOperacion, void* stream, int tamanio, int numSocket)
 {
@@ -172,34 +99,27 @@ int Socket_Enviar(uint32_t codigoOperacion, void* stream, int tamanio, int numSo
 
 	return resultado;
 }
-
-int Socket_IniciarEscucha(uint16_t puerto, Eventos* eventos)
+Cliente* Socket_AceptarConexion(Servidor* servidor)
 {
-	int socketDeEscucha;
-	if ((socketDeEscucha = socket(AF_INET, SOCK_STREAM, 0)) == -1)
-		return -1;
-	if (NoBloquearPuerto(socketDeEscucha) == -1)
-		return -1;
+	socklen_t tamDireccion = sizeof(struct sockaddr_in);
+	struct sockaddr_in* direccionCliente = NULL;
 
-	struct sockaddr_in* direccionEscucha = GenerarDireccionEscucha(puerto);
-	if (bind(socketDeEscucha, (struct sockaddr *)direccionEscucha, sizeof(struct sockaddr)) == -1)
+	int socketCliente = accept(servidor->socket, (struct sockaddr*)direccionCliente, &tamDireccion);
+	if (socketCliente == -1)
 	{
-		Socket_LiberarConexion(socketDeEscucha);
-		return -1;
-	}
-	if (listen(socketDeEscucha, SOMAXCONN) == -1)
-	{
-		Socket_LiberarConexion(socketDeEscucha);
-		return -1;
+		freeaddrinfo((struct addrinfo*)direccionCliente);
+		return NULL;
 	}
 
-	IniciarThreadEscuchaConexiones(socketDeEscucha, puerto, eventos);
-
-	free(direccionEscucha);
-	return socketDeEscucha;
+	Cliente* cliente = malloc(sizeof(Cliente));
+	cliente->socket = socketCliente;
+	cliente->direccion = direccionCliente;
+	cliente->eventos = *(servidor->eventos);
+	return cliente;
 }
 
-void Socket_LiberarConexion(int numSocket)
+// ========== Destruir ==========
+void Socket_Destruir(int socket)
 {
-	close(numSocket);
+	close(socket);
 }

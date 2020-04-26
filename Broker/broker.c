@@ -1,6 +1,6 @@
 #include "broker.h"
 #include <commons/log.h>
-#include "../Utils/socket.h"
+#include "../Utils/net.h"
 
 t_log* logger;
 
@@ -21,11 +21,11 @@ void ClienteError(ErrorDeEscucha error, Paquete* paqueteRecibido)
 	else if (error == ERROR_PROCESAR_PAQUETE)
 		log_info(logger, "Error al procesar paquete. (Cod. op.: %d)", paqueteRecibido->codigoOperacion);
 }
-void ClienteOperacion_MENSAJE(DatosConexion* conexion, Paquete* paqueteRecibido)
+void ClienteOperacion_MENSAJE(Cliente* cliente, Paquete* paqueteRecibido)
 {
 	log_info(logger, "ClienteOperacion_MENSAJE: %s", paqueteRecibido->stream);
 }
-void ClienteOperacion_NEW_POKEMON(DatosConexion* conexion, Paquete* paqueteRecibido)
+void ClienteOperacion_NEW_POKEMON(Cliente* cliente, Paquete* paqueteRecibido)
 {
 	log_info(logger, "ClienteOperacion_NEW_POKEMON");
 }
@@ -40,8 +40,11 @@ int main()
 	Eventos_AgregarOperacion(eventos, NEW_POKEMON, &ClienteOperacion_NEW_POKEMON);
 
 	// Iniciar escucha
-	Socket_IniciarEscucha(5003, eventos);
-	log_info(logger, "Escucha iniciada");
+	Servidor* servidor = CrearServidor(5003, eventos);
+	if (servidor != NULL)
+		log_info(logger, "Escucha iniciada");
+	else
+		log_info(logger, "Error al iniciar escucha");
 
 	pthread_mutex_t mx_main;
 	pthread_mutex_init(&mx_main, NULL);
