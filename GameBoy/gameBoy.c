@@ -1,5 +1,4 @@
 #include "gameBoy.h"
-#include <string.h>
 
 t_log* logger;
 
@@ -20,14 +19,14 @@ void ClienteError(ErrorDeEscucha error, Paquete* paqueteRecibido)
 	else if (error == ERROR_PROCESAR_PAQUETE)
 		log_info(logger, "Error al procesar paquete. (Cod. op.: %d)", paqueteRecibido->codigoOperacion);
 }
-void ClienteOperacion_MENSAJE(DatosConexion* conexion, Paquete* paqueteRecibido)
-{
-	log_info(logger, "ClienteOperacion_MENSAJE: %s", paqueteRecibido->stream);
-}
-void ClienteOperacion_NEW_POKEMON(DatosConexion* conexion, Paquete* paqueteRecibido)
-{
-	log_info(logger, "ClienteOperacion_NEW_POKEMON");
-}
+//void ClienteOperacion_MENSAJE(DatosConexion* conexion, Paquete* paqueteRecibido)
+//{
+//	log_info(logger, "ClienteOperacion_MENSAJE: %s", paqueteRecibido->stream);
+//}
+//void ClienteOperacion_NEW_POKEMON(DatosConexion* conexion, Paquete* paqueteRecibido)
+//{
+//	log_info(logger, "ClienteOperacion_NEW_POKEMON");
+//}
 
 int main(int argc, char *argv[])
 {
@@ -44,22 +43,22 @@ int main(int argc, char *argv[])
 
 	//CREACION EVENTOS
 	Eventos* eventos = Eventos_Crear(&ClienteConectado, &ClienteDesconectado, &ClienteError);
-	Eventos_AgregarOperacion(eventos, APPEARED_POKEMON, &ClienteOperacion_MENSAJE);
-	Eventos_AgregarOperacion(eventos, NEW_POKEMON, &ClienteOperacion_MENSAJE);
-	Eventos_AgregarOperacion(eventos, GET_POKEMON, &ClienteOperacion_MENSAJE);
-	Eventos_AgregarOperacion(eventos, CATCH_POKEMON, &ClienteOperacion_MENSAJE);
-	Eventos_AgregarOperacion(eventos, CAUGHT_POKEMON, &ClienteOperacion_MENSAJE);
+//	Eventos_AgregarOperacion(eventos, APPEARED_POKEMON, &ClienteOperacion_MENSAJE);
+//	Eventos_AgregarOperacion(eventos, NEW_POKEMON, &ClienteOperacion_MENSAJE);
+//	Eventos_AgregarOperacion(eventos, GET_POKEMON, &ClienteOperacion_MENSAJE);
+//	Eventos_AgregarOperacion(eventos, CATCH_POKEMON, &ClienteOperacion_MENSAJE);
+//	Eventos_AgregarOperacion(eventos, CAUGHT_POKEMON, &ClienteOperacion_MENSAJE);
 
 
 	// GESTION DE MENSAJES
 
 	if (sonIguales(argv[1],"TEAM") && sonIguales(argv[2],"APPEARED_POKEMON")) {
-		int conexionTeam = Socket_CrearCliente(ipTeam, puertoTeam, eventos);
+		int conexionTeam = Socket_Crear(ipTeam, puertoTeam, eventos);
 		gestionarAppeared(argv,conexionTeam);
 		Socket_LiberarConexion(conexionTeam);
-	}
-	 else if (sonIguales(argv[1],"BROKER")) {
-		int conexionBroker = Socket_CrearCliente(ipBroker, puertoBroker, eventos);
+
+	} else if (sonIguales(argv[1],"BROKER")) {
+		int conexionBroker = Socket_Crear(ipBroker, puertoBroker, eventos);
 
 		if (sonIguales(argv[2], "NEW_POKEMON"))
 			gestionarNew(argv,conexionBroker);
@@ -73,6 +72,7 @@ int main(int argc, char *argv[])
 			gestionarAppeared(argv,conexionBroker);
 
 		Socket_LiberarConexion(conexionBroker);
+
 	} else if (sonIguales(argv[1],"GAMECARD")) {
 		int conexionGameCard = Socket_CrearCliente(ipGameCard, puertoGameCard, eventos);
 
@@ -112,22 +112,21 @@ int sonIguales(char* a, char* b) {
 }
 
 void gestionarAppeared(char* parametros[], int numSocket) {
-/*
+
 	DATOS_APPEARED_POKEMON* datos;
-	datos.nombre = parametros[2];
-	datos.posicion.posX = atoi(parametros[3]);
-	datos.posicion.posY = atoi(parametros[4]);
-	datos.ID_MENSAJE = atoi(parametros[5]);
+	datos->nombre = parametros[2];
+	(datos->posicion).posX = atoi(parametros[3]);
+	(datos->posicion).posY = atoi(parametros[4]);
+	datos->ID_MENSAJE = atoi(parametros[5]);
 
 	int* tamanioBuffer = NULL;
 
-	void* buffer = Serializar_APPEARED_POKEMON(&datos, tamanioBuffer);
-	int r = Socket_Enviar(APPEARED_POKEMON, buffer, tamanioBuffer, numSocket);
+	void* buffer = Serializar_APPEARED_POKEMON(datos, tamanioBuffer);
+	int r = Socket_Enviar(APPEARED_POKEMON, buffer, &tamanioBuffer, numSocket);
 
 	if (r == 0) {
 		log_info(logger, "Se envio APPEARED_POKEMON correctamente");
 	}
-	*/
 }
 
 void gestionarNew(char* parametros[], int numSocket) {

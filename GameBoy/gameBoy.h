@@ -2,6 +2,9 @@
 #include <commons/log.h>
 #include <commons/config.h>
 #include <commons/collections/list.h>
+#include <stdlib.h>
+#include <string.h>
+#include "../Utils/net.h"
 #include "../Utils/protocolo.h"
 #include "../Utils/socket.h"
 

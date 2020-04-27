@@ -10,7 +10,7 @@ typedef enum
 	CATCH_POKEMON = 4,
 	CAUGHT_POKEMON = 5,
 	GET_POKEMON = 6,
-	LOCALLIZED_POKEMON = 7,
+	LOCALIZED_POKEMON = 7,
 	SUSCRIPTOR = 8,
 } CodigoDeOperacion;
 
