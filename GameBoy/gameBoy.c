@@ -55,7 +55,7 @@ int main(int argc, char *argv[])
 	if (sonIguales(argv[1],"TEAM") && sonIguales(argv[2],"APPEARED_POKEMON")) {
 		int conexionTeam = Socket_Crear(ipTeam, puertoTeam, eventos);
 		gestionarAppeared(argv,conexionTeam);
-		Socket_LiberarConexion(conexionTeam);
+		Socket_Destruir(conexionTeam);
 
 	} else if (sonIguales(argv[1],"BROKER")) {
 		int conexionBroker = Socket_Crear(ipBroker, puertoBroker, eventos);
@@ -71,10 +71,10 @@ int main(int argc, char *argv[])
 		  else if (sonIguales(argv[2], "GET_POKEMON"))
 			gestionarAppeared(argv,conexionBroker);
 
-		Socket_LiberarConexion(conexionBroker);
+		Socket_Destruir(conexionBroker);
 
 	} else if (sonIguales(argv[1],"GAMECARD")) {
-		int conexionGameCard = Socket_CrearCliente(ipGameCard, puertoGameCard, eventos);
+		int conexionGameCard = Socket_Crear(ipGameCard, puertoGameCard, eventos);
 
 		if (sonIguales(argv[2], "NEW_POKEMON"))
 			gestionarNew(argv,conexionGameCard);
@@ -83,7 +83,7 @@ int main(int argc, char *argv[])
 		  else if (sonIguales(argv[2], "GET_POKEMON"))
 			gestionarGet(argv,conexionGameCard);
 
-		Socket_LiberarConexion(conexionGameCard);
+		Socket_Destruir(conexionGameCard);
 	}
 
 	// TERMINAR PROGRAMA
@@ -129,9 +129,9 @@ void gestionarAppeared(char* parametros[], int numSocket) {
 		log_info(logger, "Se envio APPEARED_POKEMON correctamente");
 	}
 }
-/*
-void gestionarNew(char* parametros[], int numSocket) {
 
+void gestionarNew(char* parametros[], int numSocket) {
+	/*
 	DATOS_NEW_POKEMON* datos;
 	datos-> = parametros[2];
 	datos.posicion.posX = atoi(parametros[3]);
