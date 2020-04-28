@@ -26,6 +26,8 @@ void ClienteOperacion_SUSCRIPTOR(Cliente* conexion, Paquete* paqueteRecibido)
 	log_info(logger, "Se suscribio a la cola tal y recibimos el mensaje tal", paqueteRecibido->stream);
 }
 
+//TODO poner los sockets destruir cuando ger los haga
+//TODO verificar que se recibieron la cantidad exacta de parametros y se recibieron bien
 
 int main(int argc, char *argv[])
 {
@@ -49,23 +51,25 @@ int main(int argc, char *argv[])
 	// GESTION DE MENSAJES
 
 	if (sonIguales(argv[1],"TEAM") && sonIguales(argv[2],"APPEARED_POKEMON")) {
+
 		Cliente* clienteTeam = CrearCliente(ipTeam,puertoTeam,eventos);
-		gestionarAppeared(argv,clienteTeam->socket);
+		send_APPEARED_POKEMON(argv,clienteTeam->socket);
 		//Socket_Destruir(conexionTeam);
 
 	} else if (sonIguales(argv[1],"BROKER")) {
+
 		Cliente* clienteBroker = CrearCliente(ipBroker, puertoBroker, eventos);
 
 		if (sonIguales(argv[2], "NEW_POKEMON"))
-			gestionarNew(argv,clienteBroker->socket);
+			send_NEW_POKEMON(argv,clienteBroker->socket);
 		  else if (sonIguales(argv[2], "APPEARED_POKEMON"))
-			gestionarAppeared(argv,clienteBroker->socket);
+			  send_APPEARED_POKEMON(argv,clienteBroker->socket);
 		  else if (sonIguales(argv[2], "CATCH_POKEMON"))
-	    	gestionarAppeared(argv,clienteBroker->socket);
+			  send_CATCH_POKEMON(argv,clienteBroker->socket);
 		  else if (sonIguales(argv[2], "CAUGHT_POKEMON"))
-	    	gestionarCaught(argv,clienteBroker->socket);
+			  send_CAUGHT_POKEMON(argv,clienteBroker->socket);
 		  else if (sonIguales(argv[2], "GET_POKEMON"))
-			gestionarAppeared(argv,clienteBroker->socket);
+			  send_GET_POKEMON(argv,clienteBroker->socket);
 
 		//Socket_Destruir(conexionBroker);
 
@@ -73,11 +77,11 @@ int main(int argc, char *argv[])
 		Cliente* clienteGameCard = CrearCliente(ipGameCard, puertoGameCard, eventos);
 
 		if (sonIguales(argv[2], "NEW_POKEMON"))
-			gestionarNew(argv,clienteGameCard->socket);
+			send_NEW_POKEMON(argv,clienteGameCard->socket);
 		  else if (sonIguales(argv[2], "CATCH_POKEMON"))
-			gestionarCatch(argv,clienteGameCard->socket);
+			  send_CATCH_POKEMON(argv,clienteGameCard->socket);
 		  else if (sonIguales(argv[2], "GET_POKEMON"))
-			gestionarGet(argv,clienteGameCard->socket);
+			  send_GET_POKEMON(argv,clienteGameCard->socket);
 
 		//Socket_Destruir(conexionGameCard);
 	}
@@ -107,12 +111,32 @@ int sonIguales(char* a, char* b) {
 	return strcmp(a,b) != 0;
 }
 
-void gestionarAppeared(char* parametros[], int numSocket) {
+void send_NEW_POKEMON(char* parametros[], int numSocket) {
+
+	DATOS_NEW_POKEMON* datos = malloc(sizeof(DATOS_NEW_POKEMON));
+
+//	datos->largoPokemon = (uint32_t) strlen(parametros[2]);
+//	datos->pokemon = parametros[2];
+	(datos->posicion).posX = strtol(parametros[3],NULL,10);
+	(datos->posicion).posY = strtol(parametros[4],NULL,10);
+	datos->cantidad = strtol(parametros[5],NULL,10);
+
+	int* tamanioBuffer = NULL;
+
+	void* buffer = Serializar_NEW_POKEMON(datos, tamanioBuffer);
+	int r = Socket_Enviar(NEW_POKEMON, buffer, *tamanioBuffer, numSocket);
+
+	if (r == 0) {
+		log_info(logger, "Se envio NEW_POKEMON correctamente");
+	}
+}
+
+void send_APPEARED_POKEMON(char* parametros[], int numSocket) {
 
 	DATOS_APPEARED_POKEMON* datos = malloc(sizeof(DATOS_APPEARED_POKEMON));
 
-	datos->largoPokemon = (uint32_t) strlen(parametros[2]);
-	datos->pokemon = parametros[2];
+//	datos->largoPokemon = (uint32_t) strlen(parametros[2]);
+//	datos->pokemon = parametros[2];
 	(datos->posicion).posX = strtol(parametros[3],NULL,10);
 	(datos->posicion).posY = strtol(parametros[4],NULL,10);
 	datos->ID_MENSAJE = strtol(parametros[5],NULL,10);
@@ -120,79 +144,73 @@ void gestionarAppeared(char* parametros[], int numSocket) {
 	int* tamanioBuffer = NULL;
 
 	void* buffer = Serializar_APPEARED_POKEMON(datos, tamanioBuffer);
-	int r = Socket_Enviar(APPEARED_POKEMON, buffer, &tamanioBuffer, numSocket);
+	int r = Socket_Enviar(APPEARED_POKEMON, buffer, *tamanioBuffer, numSocket);
 
 	if (r == 0) {
 		log_info(logger, "Se envio APPEARED_POKEMON correctamente");
 	}
 }
 
-void gestionarNew(char* parametros[], int numSocket) {
-	/*
-	DATOS_NEW_POKEMON* datos;
-	datos-> = parametros[2];
-	datos.posicion.posX = atoi(parametros[3]);
-	datos.posicion.posY = atoi(parametros[4]);
-	datos.cantidad = atoi(parametros[5]);
+void send_CATCH_POKEMON(char* parametros[], int numSocket) {
+
+	DATOS_CATCH_POKEMON* datos = malloc(sizeof(DATOS_CATCH_POKEMON));
+
+//	datos->largoPokemon = (uint32_t) strlen(parametros[2]);
+//	datos->pokemon = parametros[2];
+	(datos->posicion).posX = strtol(parametros[3],NULL,10);
+	(datos->posicion).posY = strtol(parametros[4],NULL,10);
 
 	int* tamanioBuffer = NULL;
 
-	void* buffer = Serializar_NEW_POKEMON(&datos, tamanioBuffer);
-	int r = Socket_Enviar(NEW_POKEMON, buffer, tamanioBuffer, numSocket);
+	void* buffer = Serializar_CATCH_POKEMON(datos, tamanioBuffer);
+	int r = Socket_Enviar(CATCH_POKEMON, buffer, *tamanioBuffer, numSocket);
 
 	if (r == 0) {
-		log_info(logger, "Se envio APPEARED_POKEMON correctamente");
-*/
+		log_info(logger, "Se envio CATCH_POKEMON correctamente");
+	}
 }
 
-void gestionarGet(char* parametros[], int numSocket) {
-/*
-	DATOS_GET_POKEMON* datos;
-	datos.nombre = atoi(parametros[2]);
+void send_CAUGHT_POKEMON(char* parametros[], int numSocket) {
+
+	DATOS_CAUGHT_POKEMON* datos = malloc(sizeof(DATOS_CAUGHT_POKEMON));
+
+	datos->ID_MENSAJE = strtol(parametros[2],NULL,10);
+	datos->capturado = strtol(parametros[3],NULL,10);
 
 	int* tamanioBuffer = NULL;
 
-	void* buffer = Serializar_GET_POKEMON(&datos, tamanioBuffer);
-	int r = Socket_Enviar(GET_POKEMON, buffer, tamanioBuffer, numSocket);
+	void* buffer = Serializar_CAUGHT_POKEMON(datos, tamanioBuffer);
+	int r = Socket_Enviar(CAUGHT_POKEMON, buffer, *tamanioBuffer, numSocket);
 
 	if (r == 0) {
-		log_info(logger, "Se envio APPEARED_POKEMON correctamente");
+		log_info(logger, "Se envio CAUGHT_POKEMON correctamente");
 	}
-*/
 }
 
-void gestionarCatch(char* parametros[], int numSocket) {
-/*
-	DATOS_CATCH_POKEMON* datos;
-	datos.nombre = parametros[2];
-	datos.posicion.posX = atoi(parametros[3]);
-	datos.posicion.posY = atoi(parametros[4]);
+void send_GET_POKEMON(char* parametros[], int numSocket) {
+
+	DATOS_GET_POKEMON* datos = malloc(sizeof(DATOS_GET_POKEMON));
+
+//	datos->largoPokemon = (uint32_t) strlen(parametros[2]);
+//	datos->pokemon = parametros[2];
 
 	int* tamanioBuffer = NULL;
 
-	void* buffer = Serializar_APPEARED_POKEMON(&datos, tamanioBuffer);
-	int r = Socket_Enviar(APPEARED_POKEMON, buffer, tamanioBuffer, numSocket);
+	void* buffer = Serializar_GET_POKEMON(datos, tamanioBuffer);
+	int r = Socket_Enviar(GET_POKEMON, buffer, *tamanioBuffer, numSocket);
 
 	if (r == 0) {
-		log_info(logger, "Se envio APPEARED_POKEMON correctamente");
+		log_info(logger, "Se envio GET_POKEMON correctamente");
 	}
-*/
 }
 
-void gestionarCaught(char* parametros[], int numSocket) {
-/*
-	DATOS_CAUGHT_POKEMON* datos;
-	datos.ID_MENSAJE = atoi(parametros[2]);
-	datos.capturado = atoi(parametros[3]);
+void send_LOCALIZED_POKEMON(char* parametros[], int numSocket) {
+	// ALGO QUE COMO NO ES NUESTRO NO LO HICIMOS
+	// TODO
+}
 
-	int* tamanioBuffer = NULL;
-
-	void* buffer = Serializar_CAUGHT_POKEMON(&datos, tamanioBuffer);
-	int r = Socket_Enviar(CAUGHT_POKEMON, buffer, tamanioBuffer, numSocket);
-
-	if (r == 0) {
-		log_info(logger, "Se envio APPEARED_POKEMON correctamente");
-	}
-	*/
+void algoquenosenosocurre_SUSCRIPTOR(char* parametros[], int numSocket) {
+	// ALGO QUE COMO NO ESTAN HECHAS LAS COLAS NO PODEMOS HACER
+	// TODO
 }
 

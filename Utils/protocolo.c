@@ -3,10 +3,11 @@
 
 /* PREGUNTAS
  * 1) EN LOS strlen TENEMOS QUE PONER -1 POR EL /0 ???
- * 2) SIZEOF(STRUCT)??
- * 3) COMO VERIFICAR ??
+ * 3) COMO VERIFICAR ?? TODO
  */
 //TODO agregar free()
+//TODO pulir funciones y fijarse que anden bien
+//TODO cuando ger termine las colas hay que hacer la de suscriptor
 
 //FUNCIONES QUE TE DEVUELVEN EL TAMANIO DE LOS STRUCTS
 /*
@@ -31,9 +32,8 @@ uint32_t size_CAUGHT_POKEMON(DATOS_CAUGHT_POKEMON* datos) {
 }
 */
 
-
 // FUNCIONES INDIVIDUALES PARA CADA SERIALIZAR
-//HABRIA QUE VER COMO VERIFICAR SI TODO SE COPIO BIEN
+//HABRIA QUE VER COMO VERIFICAR SI TOODO SE COPIO BIEN
 
 //2
 void* Serializar_NEW_POKEMON(DATOS_NEW_POKEMON* datos, int* tamanioBuffer)

@@ -37,7 +37,6 @@ typedef struct {
 	char* pokemon;
 } DATOS_GET_POKEMON;
 
-
 typedef struct {
 	uint32_t ID_MENSAJE;
 	uint32_t largoPokemon;
