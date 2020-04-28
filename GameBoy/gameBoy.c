@@ -114,10 +114,11 @@ int sonIguales(char* a, char* b) {
 void gestionarAppeared(char* parametros[], int numSocket) {
 
 	DATOS_APPEARED_POKEMON* datos;
-	datos->nombre = parametros[2];
-	(datos->posicion).posX = atoi(parametros[3]);
-	(datos->posicion).posY = atoi(parametros[4]);
-	datos->ID_MENSAJE = atoi(parametros[5]);
+	datos->largoPokemon = (uint32_t) strlen(parametros[2]);
+	datos->pokemon = parametros[2];
+	(datos->posicion).posX = strtol(parametros[3],NULL,10);
+	(datos->posicion).posY = strtol(parametros[4],NULL,10);
+	datos->ID_MENSAJE = strtol(parametros[5],NULL,10);
 
 	int* tamanioBuffer = NULL;
 
