@@ -3,10 +3,8 @@
 #include <commons/config.h>
 #include <commons/collections/list.h>
 #include <stdlib.h>
-#include <string.h>
 #include "../Utils/protocolo.h"
 #include "../Utils/net.h"
-#include "../Utils/socket.h"
 #include "../Utils/eventos.h"
 
 // DECLARACIONES
