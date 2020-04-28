@@ -114,8 +114,9 @@ int sonIguales(char* a, char* b) {
 }
 
 void gestionarAppeared(char* parametros[], int numSocket) {
-/*
+
 	DATOS_APPEARED_POKEMON* datos;
+
 	datos->largoPokemon = (uint32_t) strlen(parametros[2]);
 	datos->pokemon = parametros[2];
 	(datos->posicion).posX = strtol(parametros[3],NULL,10);
@@ -130,7 +131,6 @@ void gestionarAppeared(char* parametros[], int numSocket) {
 	if (r == 0) {
 		log_info(logger, "Se envio APPEARED_POKEMON correctamente");
 	}
-	*/
 }
 
 void gestionarNew(char* parametros[], int numSocket) {

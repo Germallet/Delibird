@@ -123,9 +123,9 @@ void* Serializar_GET_POKEMON(DATOS_GET_POKEMON* datos, int* tamanioBuffer)
 }
 
 //7 TODO
+/*
 void* Serializar_LOCALIZED_POKEMON(DATOS_LOCALIZED_POKEMON* datos, int* tamanioBuffer)
 {
-	/*
 	*tamanioBuffer = datos->largoPokemon + sizeof(uint32_t) + (datos->cantidad)*(sizeof(uint32_t)*2);
 	void* paqueteSerializado = malloc(*tamanioBuffer);
 
@@ -145,10 +145,9 @@ void* Serializar_LOCALIZED_POKEMON(DATOS_LOCALIZED_POKEMON* datos, int* tamanioB
 		memcpy(paqueteSerializado + desplazamiento, &(datos->posiciones->posY), sizeof(uint32_t));
 		desplazamiento += sizeof(uint32_t);
 	}
-
 	return paqueteSerializado;
-	*/
 }
+*/
 
 
 // FUNCION DESERIALIZAR GENERAL, DEVUELVE -1 SI NO ES UN MENSAJE CORRECTO
@@ -184,8 +183,6 @@ void* Deserializar(int socket) {
 DATOS_NEW_POKEMON* Deserializar_NEW_POKEMON(int socket) {
 
 	DATOS_NEW_POKEMON* datos = malloc(sizeof(DATOS_NEW_POKEMON));
-
-	uint32_t verificador = 0;
 
 	recv(socket,&(datos->largoPokemon),sizeof(uint32_t),0);
 	recv(socket,datos->pokemon,datos->largoPokemon,0);
