@@ -115,8 +115,8 @@ void send_NEW_POKEMON(char* parametros[], int numSocket) {
 
 	DATOS_NEW_POKEMON* datos = malloc(sizeof(DATOS_NEW_POKEMON));
 
-//	datos->largoPokemon = (uint32_t) strlen(parametros[2]);
-//	datos->pokemon = parametros[2];
+	datos->largoPokemon = (uint32_t) strlen(parametros[2]);
+	datos->pokemon = parametros[2];
 	(datos->posicion).posX = strtol(parametros[3],NULL,10);
 	(datos->posicion).posY = strtol(parametros[4],NULL,10);
 	datos->cantidad = strtol(parametros[5],NULL,10);
@@ -135,8 +135,8 @@ void send_APPEARED_POKEMON(char* parametros[], int numSocket) {
 
 	DATOS_APPEARED_POKEMON* datos = malloc(sizeof(DATOS_APPEARED_POKEMON));
 
-//	datos->largoPokemon = (uint32_t) strlen(parametros[2]);
-//	datos->pokemon = parametros[2];
+	datos->largoPokemon = (uint32_t) strlen(parametros[2]);
+	datos->pokemon = parametros[2];
 	(datos->posicion).posX = strtol(parametros[3],NULL,10);
 	(datos->posicion).posY = strtol(parametros[4],NULL,10);
 	datos->ID_MENSAJE = strtol(parametros[5],NULL,10);
@@ -155,8 +155,8 @@ void send_CATCH_POKEMON(char* parametros[], int numSocket) {
 
 	DATOS_CATCH_POKEMON* datos = malloc(sizeof(DATOS_CATCH_POKEMON));
 
-//	datos->largoPokemon = (uint32_t) strlen(parametros[2]);
-//	datos->pokemon = parametros[2];
+	datos->largoPokemon = (uint32_t) strlen(parametros[2]);
+	datos->pokemon = parametros[2];
 	(datos->posicion).posX = strtol(parametros[3],NULL,10);
 	(datos->posicion).posY = strtol(parametros[4],NULL,10);
 
@@ -191,8 +191,8 @@ void send_GET_POKEMON(char* parametros[], int numSocket) {
 
 	DATOS_GET_POKEMON* datos = malloc(sizeof(DATOS_GET_POKEMON));
 
-//	datos->largoPokemon = (uint32_t) strlen(parametros[2]);
-//	datos->pokemon = parametros[2];
+	datos->largoPokemon = (uint32_t) strlen(parametros[2]);
+	datos->pokemon = parametros[2];
 
 	int* tamanioBuffer = NULL;
 
