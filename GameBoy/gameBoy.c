@@ -21,18 +21,16 @@ void ClienteError(ErrorDeEscucha error, Paquete* paqueteRecibido)
 		log_info(logger, "Error al procesar paquete. (Cod. op.: %d)", paqueteRecibido->codigoOperacion);
 }
 
-//void ClienteOperacion_MENSAJE(DatosConexion* conexion, Paquete* paqueteRecibido)
-//{
-//	log_info(logger, "ClienteOperacion_MENSAJE: %s", paqueteRecibido->stream);
-//}
-//void ClienteOperacion_NEW_POKEMON(DatosConexion* conexion, Paquete* paqueteRecibido)
-//{
-//	log_info(logger, "ClienteOperacion_NEW_POKEMON");
-//}
+void ClienteOperacion_SUSCRIPTOR(Cliente* conexion, Paquete* paqueteRecibido)
+{
+	log_info(logger, "Se suscribio a la cola tal y recibimos el mensaje tal", paqueteRecibido->stream);
+}
+
 
 int main(int argc, char *argv[])
 {
 	logger = log_create("gameBoy.log", "GameBoy", true, LOG_LEVEL_INFO);
+	log_info(logger,"Hola como estan");
 
 	// CREAR CONFIG Y OBTENER VALORES (IP=PUERTO)
 	t_config* config = config_create("gameBoy.config");
@@ -44,48 +42,44 @@ int main(int argc, char *argv[])
 	char* puertoGameCard = config_get_string_value(config, "PUERTO_GAMECARD");
 
 	//CREACION EVENTOS
-	Eventos* eventos //= Eventos_Crear(&ClienteConectado, &ClienteDesconectado, &ClienteError);
-//	Eventos_AgregarOperacion(eventos, APPEARED_POKEMON, &ClienteOperacion_MENSAJE);
-//	Eventos_AgregarOperacion(eventos, NEW_POKEMON, &ClienteOperacion_MENSAJE);
-//	Eventos_AgregarOperacion(eventos, GET_POKEMON, &ClienteOperacion_MENSAJE);
-//	Eventos_AgregarOperacion(eventos, CATCH_POKEMON, &ClienteOperacion_MENSAJE);
-//	Eventos_AgregarOperacion(eventos, CAUGHT_POKEMON, &ClienteOperacion_MENSAJE);
+	Eventos* eventos = Eventos_Crear(&ClienteConectado, &ClienteDesconectado, &ClienteError);
+	Eventos_AgregarOperacion(eventos, APPEARED_POKEMON, &ClienteOperacion_SUSCRIPTOR);
 
 
 	// GESTION DE MENSAJES
 
 	if (sonIguales(argv[1],"TEAM") && sonIguales(argv[2],"APPEARED_POKEMON")) {
-		int conexionTeam = Socket_Crear(ipTeam, puertoTeam, eventos);
-		gestionarAppeared(argv,conexionTeam);
-		Socket_Destruir(conexionTeam);
+		Cliente* clienteTeam = CrearCliente(ipTeam,puertoTeam,eventos);
+		gestionarAppeared(argv,clienteTeam->socket);
+		//Socket_Destruir(conexionTeam);
 
 	} else if (sonIguales(argv[1],"BROKER")) {
-		int conexionBroker = Socket_Crear(ipBroker, puertoBroker, eventos);
+		Cliente* clienteBroker = CrearCliente(ipBroker, puertoBroker, eventos);
 
 		if (sonIguales(argv[2], "NEW_POKEMON"))
-			gestionarNew(argv,conexionBroker);
+			gestionarNew(argv,clienteBroker->socket);
 		  else if (sonIguales(argv[2], "APPEARED_POKEMON"))
-			gestionarAppeared(argv,conexionBroker);
+			gestionarAppeared(argv,clienteBroker->socket);
 		  else if (sonIguales(argv[2], "CATCH_POKEMON"))
-	    	gestionarAppeared(argv,conexionBroker);
+	    	gestionarAppeared(argv,clienteBroker->socket);
 		  else if (sonIguales(argv[2], "CAUGHT_POKEMON"))
-	    	gestionarCaught(argv,conexionBroker);
+	    	gestionarCaught(argv,clienteBroker->socket);
 		  else if (sonIguales(argv[2], "GET_POKEMON"))
-			gestionarAppeared(argv,conexionBroker);
+			gestionarAppeared(argv,clienteBroker->socket);
 
-		Socket_Destruir(conexionBroker);
+		//Socket_Destruir(conexionBroker);
 
 	} else if (sonIguales(argv[1],"GAMECARD")) {
-		int conexionGameCard = Socket_Crear(ipGameCard, puertoGameCard, eventos);
+		Cliente* clienteGameCard = CrearCliente(ipGameCard, puertoGameCard, eventos);
 
 		if (sonIguales(argv[2], "NEW_POKEMON"))
-			gestionarNew(argv,conexionGameCard);
+			gestionarNew(argv,clienteGameCard->socket);
 		  else if (sonIguales(argv[2], "CATCH_POKEMON"))
-			gestionarCatch(argv,conexionGameCard);
+			gestionarCatch(argv,clienteGameCard->socket);
 		  else if (sonIguales(argv[2], "GET_POKEMON"))
-			gestionarGet(argv,conexionGameCard);
+			gestionarGet(argv,clienteGameCard->socket);
 
-		Socket_Destruir(conexionGameCard);
+		//Socket_Destruir(conexionGameCard);
 	}
 
 	// TERMINAR PROGRAMA
@@ -115,7 +109,7 @@ int sonIguales(char* a, char* b) {
 
 void gestionarAppeared(char* parametros[], int numSocket) {
 
-	DATOS_APPEARED_POKEMON* datos;
+	DATOS_APPEARED_POKEMON* datos = malloc(sizeof(DATOS_APPEARED_POKEMON));
 
 	datos->largoPokemon = (uint32_t) strlen(parametros[2]);
 	datos->pokemon = parametros[2];
@@ -148,8 +142,9 @@ void gestionarNew(char* parametros[], int numSocket) {
 
 	if (r == 0) {
 		log_info(logger, "Se envio APPEARED_POKEMON correctamente");
-	}
 */
+}
+
 void gestionarGet(char* parametros[], int numSocket) {
 /*
 	DATOS_GET_POKEMON* datos;
@@ -200,5 +195,4 @@ void gestionarCaught(char* parametros[], int numSocket) {
 	}
 	*/
 }
-
 
