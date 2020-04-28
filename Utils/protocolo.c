@@ -42,7 +42,7 @@ void* Serializar_NEW_POKEMON(DATOS_NEW_POKEMON* datos, int* tamanioBuffer)
 
 	int desplazamiento = 0;
 	memcpy(paqueteSerializado, &(datos->largoPokemon), sizeof(uint32_t));
-	desplazamiento += sizeof(datos->largoPokemon);
+	desplazamiento += sizeof(uint32_t);
 	memcpy(paqueteSerializado + desplazamiento, &(datos->pokemon), datos->largoPokemon);
 	desplazamiento += datos->largoPokemon;
 	memcpy(paqueteSerializado + desplazamiento, &((datos->posicion).posX), sizeof(uint32_t));
@@ -62,7 +62,7 @@ void* Serializar_APPEARED_POKEMON(DATOS_APPEARED_POKEMON* datos, int* tamanioBuf
 
 	int desplazamiento = 0;
 	memcpy(paqueteSerializado, &(datos->largoPokemon), sizeof(uint32_t));
-	desplazamiento += sizeof(datos->largoPokemon);
+	desplazamiento += sizeof(uint32_t);
 	memcpy(paqueteSerializado + desplazamiento, &(datos->pokemon), datos->largoPokemon);
 	desplazamiento += datos->largoPokemon;
 	memcpy(paqueteSerializado + desplazamiento, &((datos->posicion).posX), sizeof(uint32_t));
@@ -82,7 +82,7 @@ void* Serializar_CATCH_POKEMON(DATOS_CATCH_POKEMON* datos, int* tamanioBuffer)
 
 	int desplazamiento = 0;
 	memcpy(paqueteSerializado, &(datos->largoPokemon), sizeof(uint32_t));
-	desplazamiento += sizeof(datos->largoPokemon);
+	desplazamiento += sizeof(uint32_t);
 	memcpy(paqueteSerializado+desplazamiento, &(datos->pokemon), datos->largoPokemon);
 	desplazamiento += datos->largoPokemon;
 	memcpy(paqueteSerializado + desplazamiento, &((datos->posicion).posX), sizeof(uint32_t));
@@ -122,23 +122,34 @@ void* Serializar_GET_POKEMON(DATOS_GET_POKEMON* datos, int* tamanioBuffer)
 	return paqueteSerializado;
 }
 
-////7 TODO
-//void* Serializar_LOCALIZED_POKEMON(DATOS_LOCALIZED_POKEMON* datos, int* tamanioBuffer)
-//{
-//	*tamanioBuffer = ALGO NO SE;
-//	void* paqueteSerializado = malloc(*tamanioBuffer);
-//
-//	int desplazamiento = 0;
-//	memcpy(paqueteSerializado + desplazamiento, &(datos->nombre), sizeof(datos->nombre));
-//	desplazamiento += sizeof(datos->nombre);
-//	memcpy(paqueteSerializado + desplazamiento, &(datos->posicion->posX), sizeof(datos->posicion->posX));
-//	desplazamiento += sizeof(datos->posicion->posX);
-//	memcpy(paqueteSerializado + desplazamiento, &(datos->posicion->posY), sizeof(datos->posicion->posY));
-//	desplazamiento += sizeof(datos->posicion->posY);
-//	memcpy(paqueteSerializado + desplazamiento, &(datos->ID_MENSAJE), sizeof(datos->ID_MENSAJE));
-//
-//	return paqueteSerializado;
-//}
+//7 TODO
+void* Serializar_LOCALIZED_POKEMON(DATOS_LOCALIZED_POKEMON* datos, int* tamanioBuffer)
+{
+	/*
+	*tamanioBuffer = datos->largoPokemon + sizeof(uint32_t) + (datos->cantidad)*(sizeof(uint32_t)*2);
+	void* paqueteSerializado = malloc(*tamanioBuffer);
+
+	int desplazamiento = 0;
+	memcpy(paqueteSerializado, &(datos->ID_MENSAJE), sizeof(uint32_t));
+	desplazamiento += sizeof(uint32_t);
+	memcpy(paqueteSerializado, &(datos->largoPokemon), sizeof(uint32_t));
+	desplazamiento += sizeof(uint32_t);
+	memcpy(paqueteSerializado+desplazamiento, &(datos->pokemon), datos->largoPokemon);
+	desplazamiento += datos->largoPokemon;
+	memcpy(paqueteSerializado + desplazamiento, &(datos->cantidad), sizeof(uint32_t));
+	desplazamiento += sizeof(uint32_t);
+
+	for (int i = 0; i < datos->cantidad; i++){
+		memcpy(paqueteSerializado + desplazamiento, &(datos->posiciones->posX), sizeof(uint32_t));
+		desplazamiento += sizeof(uint32_t);
+		memcpy(paqueteSerializado + desplazamiento, &(datos->posiciones->posY), sizeof(uint32_t));
+		desplazamiento += sizeof(uint32_t);
+	}
+
+	return paqueteSerializado;
+	*/
+}
+
 
 // FUNCION DESERIALIZAR GENERAL, DEVUELVE -1 SI NO ES UN MENSAJE CORRECTO
 void* Deserializar(int socket) {

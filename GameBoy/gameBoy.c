@@ -10,15 +10,17 @@ void ClienteDesconectado()
 {
 	log_info(logger, "ClienteDesconectado");
 }
+
 void ClienteError(ErrorDeEscucha error, Paquete* paqueteRecibido)
 {
-	if (error == ERROR_RECIBIR)
+	if (error == 1)
 		log_info(logger, "Error al recibir paquete. (Cod. op.: %d)", paqueteRecibido->codigoOperacion);
-	else if (error == ERROR_OPERACION_INVALIDA)
+	else if (error == 2)
 		log_info(logger, "Recibido código de operación inválido. (Cod. op.: %d)", paqueteRecibido->codigoOperacion);
-	else if (error == ERROR_PROCESAR_PAQUETE)
+	else if (error == 3)
 		log_info(logger, "Error al procesar paquete. (Cod. op.: %d)", paqueteRecibido->codigoOperacion);
 }
+
 //void ClienteOperacion_MENSAJE(DatosConexion* conexion, Paquete* paqueteRecibido)
 //{
 //	log_info(logger, "ClienteOperacion_MENSAJE: %s", paqueteRecibido->stream);
@@ -42,7 +44,7 @@ int main(int argc, char *argv[])
 	char* puertoGameCard = config_get_string_value(config, "PUERTO_GAMECARD");
 
 	//CREACION EVENTOS
-	Eventos* eventos = Eventos_Crear(&ClienteConectado, &ClienteDesconectado, &ClienteError);
+	Eventos* eventos //= Eventos_Crear(&ClienteConectado, &ClienteDesconectado, &ClienteError);
 //	Eventos_AgregarOperacion(eventos, APPEARED_POKEMON, &ClienteOperacion_MENSAJE);
 //	Eventos_AgregarOperacion(eventos, NEW_POKEMON, &ClienteOperacion_MENSAJE);
 //	Eventos_AgregarOperacion(eventos, GET_POKEMON, &ClienteOperacion_MENSAJE);
@@ -112,7 +114,7 @@ int sonIguales(char* a, char* b) {
 }
 
 void gestionarAppeared(char* parametros[], int numSocket) {
-
+/*
 	DATOS_APPEARED_POKEMON* datos;
 	datos->largoPokemon = (uint32_t) strlen(parametros[2]);
 	datos->pokemon = parametros[2];
@@ -128,6 +130,7 @@ void gestionarAppeared(char* parametros[], int numSocket) {
 	if (r == 0) {
 		log_info(logger, "Se envio APPEARED_POKEMON correctamente");
 	}
+	*/
 }
 
 void gestionarNew(char* parametros[], int numSocket) {

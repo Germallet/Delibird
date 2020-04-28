@@ -40,9 +40,10 @@ typedef struct {
 
 typedef struct {
 	uint32_t ID_MENSAJE;
-	char* nombre;
+	uint32_t largoPokemon;
+	char* pokemon;
 	uint32_t cantidad;
-	Posicion* posiciones;
+	Posicion posiciones[];
 } DATOS_LOCALIZED_POKEMON;
 
 extern void* Serializar_APPEARED_POKEMON(DATOS_APPEARED_POKEMON* datos, int* tamanioBuffer);
