@@ -1,47 +1,48 @@
 #include <stdbool.h>
 #include "../Utils/net.h"
+#include <string.h>
+
 typedef struct {
-	int posX;
-	int posY;
+	uint32_t posX;
+	uint32_t posY;
 } Posicion;
 
 typedef struct {
-	char* nombre;
+	uint32_t largoPokemon;
+	char* pokemon;
 	Posicion posicion;
-	int ID_MENSAJE;
-} DATOS_APPEARED_POKEMON;
-
-typedef struct
-{
-	char* nombre;
-	Posicion posicion;
-	int cantidad;
+	uint32_t cantidad;
 } DATOS_NEW_POKEMON;
 
-typedef struct
-{
-	char* nombre;
+typedef struct {
+	uint32_t largoPokemon;
+	char* pokemon;
+	Posicion posicion;
+	uint32_t ID_MENSAJE;
+} DATOS_APPEARED_POKEMON;
+
+typedef struct {
+	uint32_t largoPokemon;
+	char* pokemon;
 	Posicion posicion;
 } DATOS_CATCH_POKEMON;
 
-typedef struct
-{
-	int ID_MENSAJE;
-	bool capturado;
+typedef struct {
+	uint32_t ID_MENSAJE;
+	uint32_t capturado;
 } DATOS_CAUGHT_POKEMON;
 
-typedef struct
-{
-	char* nombre;
+typedef struct {
+	uint32_t largoPokemon;
+	char* pokemon;
 } DATOS_GET_POKEMON;
 
 
-typedef struct
-{
-	int ID_MENSAJE;
+typedef struct {
+	uint32_t ID_MENSAJE;
 	char* nombre;
+	uint32_t cantidad;
 	Posicion* posiciones;
-	int* cantidades;
 } DATOS_LOCALIZED_POKEMON;
 
 extern void* Serializar_APPEARED_POKEMON(DATOS_APPEARED_POKEMON* datos, int* tamanioBuffer);

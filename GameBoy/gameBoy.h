@@ -7,6 +7,7 @@
 #include "../Utils/net.h"
 #include "../Utils/protocolo.h"
 #include "../Utils/socket.h"
+#include "../Utils/eventos.h"
 
 // DECLARACIONES
 void terminarPrograma(t_log* logger, t_config* config);

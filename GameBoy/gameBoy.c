@@ -128,11 +128,11 @@ void gestionarAppeared(char* parametros[], int numSocket) {
 		log_info(logger, "Se envio APPEARED_POKEMON correctamente");
 	}
 }
-
-void gestionarNew(char* parametros[], int numSocket) {
 /*
+void gestionarNew(char* parametros[], int numSocket) {
+
 	DATOS_NEW_POKEMON* datos;
-	datos.nombre = parametros[2];
+	datos-> = parametros[2];
 	datos.posicion.posX = atoi(parametros[3]);
 	datos.posicion.posY = atoi(parametros[4]);
 	datos.cantidad = atoi(parametros[5]);
@@ -145,9 +145,7 @@ void gestionarNew(char* parametros[], int numSocket) {
 	if (r == 0) {
 		log_info(logger, "Se envio APPEARED_POKEMON correctamente");
 	}
-	*/
-}
-
+*/
 void gestionarGet(char* parametros[], int numSocket) {
 /*
 	DATOS_GET_POKEMON* datos;
