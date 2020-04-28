@@ -11,6 +11,7 @@ void ClienteDesconectado()
 	log_info(logger, "ClienteDesconectado");
 }
 
+//TODO ver que errores pueden haber en la gameBoy
 void ClienteError(ErrorDeEscucha error, Paquete* paqueteRecibido)
 {
 	if (error == 1)
