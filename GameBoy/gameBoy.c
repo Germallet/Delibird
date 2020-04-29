@@ -2,7 +2,6 @@
 
 t_log* logger;
 
-//TODO poner los sockets destruir cuando ger los haga
 //TODO verificar que se recibieron la cantidad exacta de parametros y se recibieron bien
 
 int main(int argc, char *argv[])

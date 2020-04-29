@@ -3,7 +3,7 @@
 
 /* PREGUNTAS
  * 1) EN LOS strlen TENEMOS QUE PONER -1 POR EL /0 ???
- * 3) COMO VERIFICAR ?? TODO
+ * 3) COMO VERIFICAR ?? TODO verificar si se envio/recibio bien
  */
 //TODO agregar free()
 //TODO pulir funciones y fijarse que anden bien
@@ -123,7 +123,7 @@ void* Serializar_GET_POKEMON(DATOS_GET_POKEMON* datos, int* tamanioBuffer)
 	return paqueteSerializado;
 }
 
-//7 TODO
+//7 TODO serializar localized pokemon hacer
 /*
 void* Serializar_LOCALIZED_POKEMON(DATOS_LOCALIZED_POKEMON* datos, int* tamanioBuffer)
 {
@@ -173,7 +173,7 @@ void* Deserializar(int socket) {
 			return Deserializar_LOCALIZED_POKEMON(socket);
 		}
 	}
-	return (void*) -1; //MEJORAR ESTO TODO
+	return (void*) -1; //TODO mejorar el tipo de retorno
 }
 
 // FUNCIONES INDIVIDUALES PARA CADA DESSERIALIZAR SIN VERIFICACION
@@ -300,7 +300,10 @@ uint32_t Deserializar_NEW_POKEMON(int socket,DATOS_NEW_POKEMON* datos) {
 	verificador += recv(socket,&((datos->posicion).posY),sizeof(uint32_t),0);
 	verificador += recv(socket,&(datos->cantidad),sizeof(uint32_t),0);
 
-	return datos;
+	if(verificador == sizeof(DATOS_NEW_POKEMON))
+		return 0;
+	else
+		return -1;
 }
 
 //3
