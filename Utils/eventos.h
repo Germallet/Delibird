@@ -37,7 +37,7 @@ typedef struct
 	int socket;
 	struct sockaddr_in* direccion;
 	Eventos eventos;
-	pthread_t thread;
+	pthread_t* thread;
 } Cliente;
 
 typedef void (*EventoOperacion)(Cliente*, Paquete*);

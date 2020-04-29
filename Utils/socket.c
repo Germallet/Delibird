@@ -71,6 +71,7 @@ Servidor* Socket_Escuchar(int socket, uint16_t puerto, Eventos* eventos)
 	servidor->socket = socket;
 	servidor->puerto = puerto;
 	servidor->eventos = eventos;
+	servidor->thread = NULL;
 
 	free(direccionEscucha);
 	return servidor;
@@ -115,10 +116,15 @@ Cliente* Socket_AceptarConexion(Servidor* servidor)
 	cliente->socket = socketCliente;
 	cliente->direccion = direccionCliente;
 	cliente->eventos = *(servidor->eventos);
+	cliente->thread = NULL;
 	return cliente;
 }
 
-// ========== Destruir ==========
+// ========== Finalizar ==========
+void Socket_Cerrar(int socket)
+{
+	shutdown(socket, SHUT_RDWR);
+}
 void Socket_Destruir(int socket)
 {
 	close(socket);
