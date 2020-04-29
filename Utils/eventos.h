@@ -44,7 +44,9 @@ typedef struct
 
 typedef void (*EventoOperacion)(Cliente*, Paquete*);
 
-extern Eventos* Eventos_Crear(Evento conectado, Evento desconectado, EventoError error);
+extern Eventos* Eventos_Crear0();
+extern Eventos* Eventos_Crear2(Evento conectado, Evento desconectado);
+extern Eventos* Eventos_Crear3(Evento conectado, Evento desconectado, EventoError error);
 extern void Eventos_AgregarOperacion(Eventos* eventos, CodigoDeOperacion codigoDeOperacion, EventoOperacion evento);
 extern bool Eventos_TieneOperacion(Eventos* eventos, CodigoDeOperacion codigoDeOperacion);
 extern EventoOperacion Eventos_ObtenerOperacion(Eventos* eventos, CodigoDeOperacion codigoDeOperacion);

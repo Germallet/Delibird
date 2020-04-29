@@ -14,7 +14,7 @@ void Operacion_LOCALIZED_POKEMON(Cliente* cliente, Paquete* paqueteRecibido);
 
 void IniciarServidorBroker(char* ip, int puerto)
 {
-	Eventos* eventos = Eventos_Crear(&ClienteConectado, &ClienteDesconectado, &ClienteError);
+	Eventos* eventos = Eventos_Crear2(&ClienteConectado, &ClienteDesconectado);
 	Eventos_AgregarOperacion(eventos, SUSCRIPTOR, &Operacion_SUSCRIPTOR);
 	Eventos_AgregarOperacion(eventos, NEW_POKEMON, &Operacion_NEW_POKEMON);
 	Eventos_AgregarOperacion(eventos, APPEARED_POKEMON, &Operacion_APPEARED_POKEMON);
