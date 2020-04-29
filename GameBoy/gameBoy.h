@@ -9,6 +9,9 @@
 #include "../Utils/socket.h"
 
 // DECLARACIONES
+void ConectadoConProceso(char*);
+void DesconectadoProceso(char*);
+void ErrorMensaje(ErrorDeEscucha error, char* proceso, CodigoDeOperacion codigo);
 void terminarPrograma(t_log* logger, t_config* config);
 void verificarConexion(int conexion, t_log* logger);
 int sonIguales(char* a, char* b);

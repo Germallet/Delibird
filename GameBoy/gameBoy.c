@@ -2,31 +2,6 @@
 
 t_log* logger;
 
-void ClienteConectado()
-{
-	log_info(logger, "ClienteConectado");
-}
-void ClienteDesconectado()
-{
-	log_info(logger, "ClienteDesconectado");
-}
-
-//TODO ver que errores pueden haber en la gameBoy
-void ClienteError(ErrorDeEscucha error, Paquete* paqueteRecibido)
-{
-	if (error == 1)
-		log_info(logger, "Error al recibir paquete. (Cod. op.: %d)", paqueteRecibido->codigoOperacion);
-	else if (error == 2)
-		log_info(logger, "Recibido código de operación inválido. (Cod. op.: %d)", paqueteRecibido->codigoOperacion);
-	else if (error == 3)
-		log_info(logger, "Error al procesar paquete. (Cod. op.: %d)", paqueteRecibido->codigoOperacion);
-}
-
-void ClienteOperacion_SUSCRIPTOR(Cliente* conexion, Paquete* paqueteRecibido)
-{
-	log_info(logger, "Se suscribio a la cola tal y recibimos el mensaje tal", paqueteRecibido->stream);
-}
-
 //TODO poner los sockets destruir cuando ger los haga
 //TODO verificar que se recibieron la cantidad exacta de parametros y se recibieron bien
 
@@ -45,7 +20,7 @@ int main(int argc, char *argv[])
 	char* puertoGameCard = config_get_string_value(config, "PUERTO_GAMECARD");
 
 	//CREACION EVENTOS
-	Eventos* eventos = Eventos_Crear(&ClienteConectado, &ClienteDesconectado, &ClienteError);
+	Eventos* eventos = Eventos_Crear(&ConectadoConProceso, &DesconectadoProceso, &ErrorMensaje);
 	Eventos_AgregarOperacion(eventos, APPEARED_POKEMON, &ClienteOperacion_SUSCRIPTOR);
 
 
@@ -54,12 +29,15 @@ int main(int argc, char *argv[])
 	if (sonIguales(argv[1],"TEAM") && sonIguales(argv[2],"APPEARED_POKEMON")) {
 
 		Cliente* clienteTeam = CrearCliente(ipTeam,puertoTeam,eventos);
+		ConectadoConProceso("Team");
+
 		send_APPEARED_POKEMON(argv,clienteTeam->socket);
 		DestruirCliente(clienteTeam);
 
 	} else if (sonIguales(argv[1],"BROKER")) {
 
 		Cliente* clienteBroker = CrearCliente(ipBroker, puertoBroker, eventos); //CREO ACA DEBERIA CONECTARSE A LAS COLAS DEL BROKER
+		ConectadoConProceso("Broker");
 
 		if (sonIguales(argv[2], "NEW_POKEMON"))
 			send_NEW_POKEMON(argv,clienteBroker->socket);
@@ -76,6 +54,7 @@ int main(int argc, char *argv[])
 
 	} else if (sonIguales(argv[1],"GAMECARD")) {
 		Cliente* clienteGameCard = CrearCliente(ipGameCard, puertoGameCard, eventos);
+		ConectadoConProceso("GameCard");
 
 		if (sonIguales(argv[2], "NEW_POKEMON"))
 			send_NEW_POKEMON(argv,clienteGameCard->socket);
@@ -213,3 +192,18 @@ void conectarseCola(void* colaMensaje, int tiempoDeterminado) {
 	// TODO funcion para suscribirnos a una cola de mensajes y recbirlos por un tiempo determinado
 }
 
+void ConectadoConProceso(char* proceso) {
+	log_info(logger, "Se conectó correctamente al proceso: %s",proceso);
+}
+void DesconectadoProceso(char* proceso) {
+	log_info(logger, "Se desconectó correctamente al proceso: %s",proceso);
+}
+
+void ErrorMensaje(ErrorDeEscucha error, char* proceso, CodigoDeOperacion codigo) {
+	if (error == 4)
+		log_error(logger, "Error al enviar al proceso: %s, el mensaje: %d",proceso,codigo);
+}
+
+void ClienteOperacion_SUSCRIPTOR(Cliente* conexion, Paquete* paqueteRecibido) {
+	log_info(logger, "Se suscribio a la cola tal y recibimos el mensaje tal", paqueteRecibido->stream);
+}
