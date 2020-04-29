@@ -55,11 +55,11 @@ int main(int argc, char *argv[])
 
 		Cliente* clienteTeam = CrearCliente(ipTeam,puertoTeam,eventos);
 		send_APPEARED_POKEMON(argv,clienteTeam->socket);
-		//Socket_Destruir(conexionTeam);
+		DestruirCliente(clienteTeam);
 
 	} else if (sonIguales(argv[1],"BROKER")) {
 
-		Cliente* clienteBroker = CrearCliente(ipBroker, puertoBroker, eventos);
+		Cliente* clienteBroker = CrearCliente(ipBroker, puertoBroker, eventos); //CREO ACA DEBERIA CONECTARSE A LAS COLAS DEL BROKER
 
 		if (sonIguales(argv[2], "NEW_POKEMON"))
 			send_NEW_POKEMON(argv,clienteBroker->socket);
@@ -72,7 +72,7 @@ int main(int argc, char *argv[])
 		  else if (sonIguales(argv[2], "GET_POKEMON"))
 			  send_GET_POKEMON(argv,clienteBroker->socket);
 
-		//Socket_Destruir(conexionBroker);
+		DestruirCliente(clienteBroker);;
 
 	} else if (sonIguales(argv[1],"GAMECARD")) {
 		Cliente* clienteGameCard = CrearCliente(ipGameCard, puertoGameCard, eventos);
@@ -84,7 +84,7 @@ int main(int argc, char *argv[])
 		  else if (sonIguales(argv[2], "GET_POKEMON"))
 			  send_GET_POKEMON(argv,clienteGameCard->socket);
 
-		//Socket_Destruir(conexionGameCard);
+		DestruirCliente(clienteGameCard);
 	}
 
 	// TERMINAR PROGRAMA
@@ -206,12 +206,10 @@ void send_GET_POKEMON(char* parametros[], int numSocket) {
 }
 
 void send_LOCALIZED_POKEMON(char* parametros[], int numSocket) {
-	// ALGO QUE COMO NO ES NUESTRO NO LO HICIMOS
-	// TODO
+	// TODO hacer funcion para mandar mensajes localized
 }
 
-void algoquenosenosocurre_SUSCRIPTOR(char* parametros[], int numSocket) {
-	// ALGO QUE COMO NO ESTAN HECHAS LAS COLAS NO PODEMOS HACER
-	// TODO
+void conectarseCola(void* colaMensaje, int tiempoDeterminado) {
+	// TODO funcion para suscribirnos a una cola de mensajes y recbirlos por un tiempo determinado
 }
 

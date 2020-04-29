@@ -280,7 +280,7 @@ uint32_t Deserializar(int socket, void* datos) {
 			return Deserializar_LOCALIZED_POKEMON(socket,datos);
 		}
 	}
-	return -1; //MEJORAR ESTO TODO
+	return -1;
 }
 
 // FUNCIONES INDIVIDUALES PARA CADA DESSERIALIZAR SIN VERIFICACION
