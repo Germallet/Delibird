@@ -52,12 +52,12 @@ extern void* Serializar_GET_POKEMON(DATOS_GET_POKEMON* datos, int* tamanioBuffer
 extern void* Serializar_CAUGHT_POKEMON(DATOS_CAUGHT_POKEMON* datos, int* tamanioBuffer);
 extern void* Serializar_LOCALIZED_POKEMON(DATOS_LOCALIZED_POKEMON* datos, int* tamanioBuffer);
 
-extern void* Deserializar(int socket);
+//extern bool Deserializar(int socket, void* datos);
 
-extern DATOS_APPEARED_POKEMON* Deserializar_APPEARED_POKEMON();
-extern DATOS_NEW_POKEMON* Deserializar_NEW_POKEMON();
-extern DATOS_GET_POKEMON* Deserializar_GET_POKEMON();
-extern DATOS_CATCH_POKEMON* Deserializar_CATCH_POKEMON();
-extern DATOS_CAUGHT_POKEMON* Deserializar_CAUGHT_POKEMON();
-extern DATOS_LOCALIZED_POKEMON* Deserializar_LOCALIZED_POKEMON();
+extern bool Deserializar_APPEARED_POKEMON(int socket, DATOS_APPEARED_POKEMON* datos);
+extern bool Deserializar_NEW_POKEMON(int socket, DATOS_NEW_POKEMON* datos);
+extern bool Deserializar_GET_POKEMON(int socket, DATOS_GET_POKEMON* datos);
+extern bool Deserializar_CATCH_POKEMON(int socket, DATOS_CATCH_POKEMON* datos);
+extern bool Deserializar_CAUGHT_POKEMON(int socket, DATOS_CAUGHT_POKEMON* datos);
+extern bool Deserializar_LOCALIZED_POKEMON(int socket, DATOS_LOCALIZED_POKEMON* datos);
 

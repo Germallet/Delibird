@@ -24,7 +24,7 @@ int main(int argc, char *argv[])
 
 	// GESTION DE MENSAJES
 
-	if (sonIguales(argv[1],"TEAM") && sonIguales(argv[2],"APPEARED_POKEMON")) {
+	if (strcmp(argv[1],"TEAM") && sonIguales(argv[2],"APPEARED_POKEMON")) {
 
 		Cliente* clienteTeam = CrearCliente(ipTeam,puertoTeam,eventos);
 		ConectadoConProceso("Team");
@@ -35,6 +35,10 @@ int main(int argc, char *argv[])
 	} else if (sonIguales(argv[1],"BROKER")) {
 
 		Cliente* clienteBroker = CrearCliente(ipBroker, puertoBroker, eventos); //CREO ACA DEBERIA CONECTARSE A LAS COLAS DEL BROKER
+		if(clienteBroker == NULL) {
+			log_error(logger, "dale funciona");
+		} else {
+
 		ConectadoConProceso("Broker");
 
 		if (sonIguales(argv[2], "NEW_POKEMON"))
@@ -48,7 +52,8 @@ int main(int argc, char *argv[])
 		  else if (sonIguales(argv[2], "GET_POKEMON"))
 			  send_GET_POKEMON(argv,clienteBroker->socket);
 
-		DestruirCliente(clienteBroker);;
+		DestruirCliente(clienteBroker);
+		}
 
 	} else if (sonIguales(argv[1],"GAMECARD")) {
 		Cliente* clienteGameCard = CrearCliente(ipGameCard, puertoGameCard, eventos);
@@ -85,8 +90,8 @@ void verificarConexion(int conexion, t_log* logger) {
 		}
 }
 
-int sonIguales(char* a, char* b) {
-	return strcmp(a,b) != 0;
+bool sonIguales(char* a, char* b) {
+	return strcmp(a,b) == 0;
 }
 
 void send_NEW_POKEMON(char* parametros[], int numSocket) {
@@ -103,6 +108,8 @@ void send_NEW_POKEMON(char* parametros[], int numSocket) {
 
 	void* buffer = Serializar_NEW_POKEMON(datos, tamanioBuffer);
 	int r = Socket_Enviar(NEW_POKEMON, buffer, *tamanioBuffer, numSocket);
+
+	free(datos);
 
 	if (r == 0) {
 		log_info(logger, "Se envio NEW_POKEMON correctamente");
@@ -124,6 +131,8 @@ void send_APPEARED_POKEMON(char* parametros[], int numSocket) {
 	void* buffer = Serializar_APPEARED_POKEMON(datos, tamanioBuffer);
 	int r = Socket_Enviar(APPEARED_POKEMON, buffer, *tamanioBuffer, numSocket);
 
+	free(datos);
+
 	if (r == 0) {
 		log_info(logger, "Se envio APPEARED_POKEMON correctamente");
 	}
@@ -143,6 +152,8 @@ void send_CATCH_POKEMON(char* parametros[], int numSocket) {
 	void* buffer = Serializar_CATCH_POKEMON(datos, tamanioBuffer);
 	int r = Socket_Enviar(CATCH_POKEMON, buffer, *tamanioBuffer, numSocket);
 
+	free(datos);
+
 	if (r == 0) {
 		log_info(logger, "Se envio CATCH_POKEMON correctamente");
 	}
@@ -160,6 +171,8 @@ void send_CAUGHT_POKEMON(char* parametros[], int numSocket) {
 	void* buffer = Serializar_CAUGHT_POKEMON(datos, tamanioBuffer);
 	int r = Socket_Enviar(CAUGHT_POKEMON, buffer, *tamanioBuffer, numSocket);
 
+	free(datos);
+
 	if (r == 0) {
 		log_info(logger, "Se envio CAUGHT_POKEMON correctamente");
 	}
@@ -176,6 +189,8 @@ void send_GET_POKEMON(char* parametros[], int numSocket) {
 
 	void* buffer = Serializar_GET_POKEMON(datos, tamanioBuffer);
 	int r = Socket_Enviar(GET_POKEMON, buffer, *tamanioBuffer, numSocket);
+
+	free(datos);
 
 	if (r == 0) {
 		log_info(logger, "Se envio GET_POKEMON correctamente");

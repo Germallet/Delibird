@@ -14,7 +14,7 @@ void DesconectadoProceso(char*);
 void ErrorMensaje(ErrorDeEscucha error, char* proceso, CodigoDeOperacion codigo);
 void terminarPrograma(t_log* logger, t_config* config);
 void verificarConexion(int conexion, t_log* logger);
-int sonIguales(char* a, char* b);
+bool sonIguales(char* a, char* b);
 void send_NEW_POKEMON(char* parametros[], int numSocket);
 void send_APPEARED_POKEMON(char* parametros[], int numSocket);
 void send_CATCH_POKEMON(char* parametros[], int numSocket);
