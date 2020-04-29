@@ -150,6 +150,7 @@ void* Serializar_LOCALIZED_POKEMON(DATOS_LOCALIZED_POKEMON* datos, int* tamanioB
 }
 */
 
+/*
 
 // FUNCION DESERIALIZAR GENERAL, DEVUELVE -1 SI NO ES UN MENSAJE CORRECTO
 void* Deserializar(int socket) {
@@ -247,19 +248,19 @@ DATOS_GET_POKEMON* Deserializar_GET_POKEMON(int socket) {
 DATOS_LOCALIZED_POKEMON* Deserializar_LOCALIZED_POKEMON(int socket) {
 
 	DATOS_LOCALIZED_POKEMON* datos = malloc(sizeof(DATOS_LOCALIZED_POKEMON));
-/*
+
 	recv(socket,datos->largoPokemon,sizeof(uint32_t),0);
  	recv(socket,datos->pokemon,datos->largoPokemon,0);
 	recv(socket,datos->posicion->posX,sizeof(datos->posicion->posX),0);
 	recv(socket,datos->posicion->posY,sizeof(datos->posicion->posY),0);
 	recv(socket,datos->ID_MENSAJE,sizeof(datos->ID_MENSAJE),0);
-*/
+
 	return datos;
 }
-
-/*
- * // FUNCION DESERIALIZAR GENERAL, DEVUELVE -1 SI NO ES UN MENSAJE CORRECTO
-uint32_t Deserializar(int socket, void* datos) {
+*/
+// TODO VER EL TEMA DE PARAMETROS POR REFERENCIA
+// FUNCION DESERIALIZAR GENERAL, DEVUELVE -1 SI NO ES UN MENSAJE CORRECTO
+bool Deserializar(int socket, void* datos) {
 
 	CodigoDeOperacion* codigoDeOperacion = NULL;
 
@@ -280,7 +281,7 @@ uint32_t Deserializar(int socket, void* datos) {
 			return Deserializar_LOCALIZED_POKEMON(socket,datos);
 		}
 	}
-	return -1;
+	return false;
 }
 
 // FUNCIONES INDIVIDUALES PARA CADA DESSERIALIZAR SIN VERIFICACION
@@ -288,7 +289,7 @@ uint32_t Deserializar(int socket, void* datos) {
 // LE FALTAN LAS VERIFICACIONES DE LOS recv
 
 //2
-uint32_t Deserializar_NEW_POKEMON(int socket,DATOS_NEW_POKEMON* datos) {
+bool Deserializar_NEW_POKEMON(int socket,DATOS_NEW_POKEMON* datos) {
 
 	datos = malloc(sizeof(DATOS_NEW_POKEMON));
 
@@ -300,64 +301,69 @@ uint32_t Deserializar_NEW_POKEMON(int socket,DATOS_NEW_POKEMON* datos) {
 	verificador += recv(socket,&((datos->posicion).posY),sizeof(uint32_t),0);
 	verificador += recv(socket,&(datos->cantidad),sizeof(uint32_t),0);
 
-	if(verificador == sizeof(DATOS_NEW_POKEMON))
-		return 0;
-	else
-		return -1;
+	return verificador == sizeof(DATOS_NEW_POKEMON);
 }
 
 //3
-uint32_t Deserializar_APPEARED_POKEMON(int socket,DATOS_APPEARED_POKEMON* datos) {
+bool Deserializar_APPEARED_POKEMON(int socket,DATOS_APPEARED_POKEMON* datos) {
 
 	datos = malloc(sizeof(DATOS_APPEARED_POKEMON));
 
-	recv(socket,&(datos->largoPokemon),sizeof(uint32_t),0);
-	recv(socket,datos->pokemon,datos->largoPokemon,0);
-	recv(socket,&((datos->posicion).posX),sizeof(uint32_t),0);
-	recv(socket,&((datos->posicion).posY),sizeof(uint32_t),0);
-	recv(socket,&(datos->ID_MENSAJE),sizeof(uint32_t),0);
+	uint32_t verificador = 0;
 
-	return datos;
+	verificador += recv(socket,&(datos->largoPokemon),sizeof(uint32_t),0);
+	verificador += recv(socket,datos->pokemon,datos->largoPokemon,0);
+	verificador += recv(socket,&((datos->posicion).posX),sizeof(uint32_t),0);
+	verificador += recv(socket,&((datos->posicion).posY),sizeof(uint32_t),0);
+	verificador += recv(socket,&(datos->ID_MENSAJE),sizeof(uint32_t),0);
+
+	return verificador == sizeof(DATOS_APPEARED_POKEMON);
 }
 
 //4
-uint32_t Deserializar_CATCH_POKEMON(int socket,DATOS_CATCH_POKEMON* datos) {
+bool Deserializar_CATCH_POKEMON(int socket,DATOS_CATCH_POKEMON* datos) {
 
 	datos = malloc(sizeof(DATOS_CATCH_POKEMON));
 
-	recv(socket,&(datos->largoPokemon),sizeof(uint32_t),0);
-	recv(socket,datos->pokemon,datos->largoPokemon,0);
-	recv(socket,&((datos->posicion).posX),sizeof(uint32_t),0);
-	recv(socket,&((datos->posicion).posY),sizeof(uint32_t),0);
+	uint32_t verificador = 0;
 
-	return datos;
+	verificador += recv(socket,&(datos->largoPokemon),sizeof(uint32_t),0);
+	verificador += recv(socket,datos->pokemon,datos->largoPokemon,0);
+	verificador += recv(socket,&((datos->posicion).posX),sizeof(uint32_t),0);
+	verificador += recv(socket,&((datos->posicion).posY),sizeof(uint32_t),0);
+
+	return verificador == sizeof(DATOS_CATCH_POKEMON);
 }
 
 //5
-uint32_t Deserializar_CAUGHT_POKEMON(int socket,DATOS_CAUGHT_POKEMON* datos) {
+bool Deserializar_CAUGHT_POKEMON(int socket,DATOS_CAUGHT_POKEMON* datos) {
 
 	datos = malloc(sizeof(DATOS_CAUGHT_POKEMON));
 
-	recv(socket,&(datos->ID_MENSAJE),sizeof(uint32_t),0);
-	recv(socket,&(datos->capturado),sizeof(uint32_t),0);
+	uint32_t verificador = 0;
 
-	return datos;
+	verificador += recv(socket,&(datos->ID_MENSAJE),sizeof(uint32_t),0);
+	verificador += recv(socket,&(datos->capturado),sizeof(uint32_t),0);
+
+	return verificador == sizeof(DATOS_CAUGHT_POKEMON);
 }
 
 //6
-uint32_t Deserializar_GET_POKEMON(int socket,DATOS_GET_POKEMON* datos) {
+bool Deserializar_GET_POKEMON(int socket,DATOS_GET_POKEMON* datos) {
 
 	datos = malloc(sizeof(DATOS_GET_POKEMON));
 
-	recv(socket,&(datos->largoPokemon),sizeof(uint32_t),0);
-	recv(socket,datos->pokemon,datos->largoPokemon,0);
+	uint32_t verificador = 0;
 
-	return datos;
+	verificador += recv(socket,&(datos->largoPokemon),sizeof(uint32_t),0);
+	verificador += recv(socket,datos->pokemon,datos->largoPokemon,0);
+
+	return verificador == sizeof(DATOS_GET_POKEMON);
 }
 
 //7
-uint32_t Deserializar_LOCALIZED_POKEMON(int socket,DATOS_LOCALIZED_POKEMON* datos) {
-
+bool Deserializar_LOCALIZED_POKEMON(int socket,DATOS_LOCALIZED_POKEMON* datos) {
+/*
 	datos = malloc(sizeof(DATOS_LOCALIZED_POKEMON));
 
 	recv(socket,datos->largoPokemon,sizeof(uint32_t),0);
@@ -365,8 +371,6 @@ uint32_t Deserializar_LOCALIZED_POKEMON(int socket,DATOS_LOCALIZED_POKEMON* dato
 	recv(socket,datos->posicion->posX,sizeof(datos->posicion->posX),0);
 	recv(socket,datos->posicion->posY,sizeof(datos->posicion->posY),0);
 	recv(socket,datos->ID_MENSAJE,sizeof(datos->ID_MENSAJE),0);
-
-	return datos;
+*/
+	return true;
 }
- *
- */
