@@ -1,56 +1,42 @@
 #include "broker.h"
-#include <commons/log.h>
-#include "../Utils/net.h"
+#include "servidor.h"
+#include "memoria.h"
+#include <commons/config.h>
+#include <string.h>
+#include <pthread.h>
 
-t_log* logger;
+char* Config_String(char* variable);
+int Config_Int(char* variable);
+void EsperarHilos();
+void Finalizar();
 
-void ClienteConectado()
-{
-	log_info(logger, "ClienteConectado");
-}
-void ClienteDesconectado()
-{
-	log_info(logger, "ClienteDesconectado");
-}
-void ClienteError(ErrorDeEscucha error, Paquete* paqueteRecibido)
-{
-	if (error == ERROR_RECIBIR)
-		log_info(logger, "Error al recibir paquete. (Cod. op.: %d)", paqueteRecibido->codigoOperacion);
-	else if (error == ERROR_OPERACION_INVALIDA)
-		log_info(logger, "Recibido código de operación inválido. (Cod. op.: %d)", paqueteRecibido->codigoOperacion);
-	else if (error == ERROR_PROCESAR_PAQUETE)
-		log_info(logger, "Error al procesar paquete. (Cod. op.: %d)", paqueteRecibido->codigoOperacion);
-}
-void ClienteOperacion_MENSAJE(Cliente* cliente, Paquete* paqueteRecibido)
-{
-	log_info(logger, "ClienteOperacion_MENSAJE: %s", paqueteRecibido->stream);
-}
-void ClienteOperacion_NEW_POKEMON(Cliente* cliente, Paquete* paqueteRecibido)
-{
-	log_info(logger, "ClienteOperacion_NEW_POKEMON");
-}
+t_config* config;
 
 int main()
 {
-	logger = log_create("broker.log", "Broker", true, LOG_LEVEL_INFO);
+	config = config_create("broker.config");
+	logger = log_create(Config_String("LOG_FILE"), "Broker", true, LOG_LEVEL_INFO);
 
-	// Crear Eventos
-	Eventos* eventos = Eventos_Crear(&ClienteConectado, &ClienteDesconectado, &ClienteError);
-	Eventos_AgregarOperacion(eventos, MENSAJE, &ClienteOperacion_MENSAJE);
-	Eventos_AgregarOperacion(eventos, NEW_POKEMON, &ClienteOperacion_NEW_POKEMON);
+	IniciarMemoria();
+	IniciarServidorBroker(Config_String("IP_BROKER"), Config_Int("PUERTO_BROKER"));
 
-	// Iniciar escucha
-	Servidor* servidor = CrearServidor(5003, eventos);
-	if (servidor != NULL)
-		log_info(logger, "Escucha iniciada");
-	else
-		log_info(logger, "Error al iniciar escucha");
+	EsperarHilos();
+	Finalizar();
+}
 
+char* Config_String(char* variable) { return config_get_string_value(config, variable); }
+int Config_Int(char* variable) { return config_get_int_value(config, variable); }
+
+void EsperarHilos()
+{
 	pthread_mutex_t mx_main;
 	pthread_mutex_init(&mx_main, NULL);
 	pthread_mutex_lock(&mx_main);
 	pthread_mutex_lock(&mx_main);
+}
 
-	log_info(logger, "Saliendo");
+void Finalizar()
+{
+	config_destroy(config);
 	log_destroy(logger);
 }

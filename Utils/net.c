@@ -87,13 +87,13 @@ Cliente* CrearCliente(char *ip, char* puerto, Eventos* eventos)
 	return cliente;
 }
 
-Servidor* CrearServidor(uint16_t puerto, Eventos* eventos)
+Servidor* CrearServidor(char* ip, uint16_t puerto, Eventos* eventos)
 {
 	int socketDeEscucha = Socket_Crear(AF_INET, SOCK_STREAM, 0);
 	if (socketDeEscucha == -1)
 		return NULL;
 
-	Servidor* servidor = Socket_Escuchar(socketDeEscucha, puerto, eventos);
+	Servidor* servidor = Socket_Escuchar(ip, socketDeEscucha, puerto, eventos);
 	if (servidor->socket != -1)
 	{
 		servidor->thread = malloc(sizeof(pthread_t));

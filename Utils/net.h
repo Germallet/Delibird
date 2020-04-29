@@ -14,6 +14,6 @@ typedef struct
 //typedef struct Cliente; //Para evitar referencia circular fue declarado en eventos.h
 
 extern Cliente* CrearCliente(char *ip, char* puerto, Eventos* eventos);
-extern Servidor* CrearServidor(uint16_t puerto, Eventos* eventos);
+extern Servidor* CrearServidor(char* ip, uint16_t puerto, Eventos* eventos);
 extern void DestruirCliente(Cliente* cliente);
 extern void DestruirServidor(Servidor* servidor);

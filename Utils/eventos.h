@@ -12,6 +12,7 @@ typedef enum
 	GET_POKEMON = 6,
 	LOCALIZED_POKEMON = 7,
 	SUSCRIPTOR = 8,
+	OK = 0
 } CodigoDeOperacion;
 
 typedef enum

@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
+#include <arpa/inet.h>
 
 // ========== Crear ==========
 static int NoBloquearPuerto(int numSocket)
@@ -44,18 +45,18 @@ struct sockaddr_in* Socket_Conectar(int socket, char* ip, char* puerto)
 }
 
 // ========== Escuchar ==========
-static struct sockaddr_in* GenerarDireccionEscucha(uint16_t puerto)
+static struct sockaddr_in* GenerarDireccionEscucha(char* ip, uint16_t puerto)
 {
 	struct sockaddr_in* direccionEscucha = calloc(1, sizeof(struct sockaddr_in));
 	memset(direccionEscucha, 0, sizeof(struct sockaddr_in));
 	direccionEscucha->sin_family = AF_INET;
 	direccionEscucha->sin_port = htons(puerto);
-	direccionEscucha->sin_addr.s_addr = INADDR_ANY;
+	direccionEscucha->sin_addr.s_addr = ip == NULL ? INADDR_ANY : inet_addr(ip);
 	return direccionEscucha;
 }
-Servidor* Socket_Escuchar(int socket, uint16_t puerto, Eventos* eventos)
+Servidor* Socket_Escuchar(char* ip, int socket, uint16_t puerto, Eventos* eventos)
 {
-	struct sockaddr_in* direccionEscucha = GenerarDireccionEscucha(puerto);
+	struct sockaddr_in* direccionEscucha = GenerarDireccionEscucha(ip, puerto);
 	if (bind(socket, (struct sockaddr *)direccionEscucha, sizeof(struct sockaddr)) == -1)
 	{
 		Socket_Destruir(socket);
