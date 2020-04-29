@@ -19,8 +19,7 @@ int main(int argc, char *argv[])
 	char* puertoGameCard = config_get_string_value(config, "PUERTO_GAMECARD");
 
 	//CREACION EVENTOS
-	Eventos* eventos = Eventos_Crear(&ConectadoConProceso, &DesconectadoProceso, &ErrorMensaje);
-	Eventos_AgregarOperacion(eventos, APPEARED_POKEMON, &ClienteOperacion_SUSCRIPTOR);
+	Eventos* eventos = Eventos_Crear0();
 
 
 	// GESTION DE MENSAJES
@@ -198,11 +197,3 @@ void DesconectadoProceso(char* proceso) {
 	log_info(logger, "Se desconectó correctamente al proceso: %s",proceso);
 }
 
-void ErrorMensaje(ErrorDeEscucha error, char* proceso, CodigoDeOperacion codigo) {
-	if (error == 4)
-		log_error(logger, "Error al enviar al proceso: %s, el mensaje: %d",proceso,codigo);
-}
-
-void ClienteOperacion_SUSCRIPTOR(Cliente* conexion, Paquete* paqueteRecibido) {
-	log_info(logger, "Se suscribio a la cola tal y recibimos el mensaje tal", paqueteRecibido->stream);
-}
