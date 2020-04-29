@@ -19,7 +19,8 @@ typedef enum
 {
 	ERROR_RECIBIR = 1,
 	ERROR_OPERACION_INVALIDA = 2,
-	ERROR_PROCESAR_PAQUETE = 3
+	ERROR_PROCESAR_PAQUETE = 3,
+	ERROR_ENVIAR = 4
 } ErrorDeEscucha;
 
 typedef void (*Evento)(void);
