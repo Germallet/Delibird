@@ -133,7 +133,7 @@ void send_NEW_POKEMON(char* parametros[], int numSocket) {
 
 	free(datos);
 
-	if (r == 0)
+	if (r > 0)
 	    log_info(logger, "Se envio NEW_POKEMON correctamente");
 	else {
 		log_error(logger, "No se envio correctamente el mensaje");
@@ -163,7 +163,7 @@ void send_APPEARED_POKEMON(char* parametros[], int numSocket) {
 
 	free(datos);
 
-	if (r == 0)
+	if (r > 0)
 		log_info(logger, "Se envio NEW_POKEMON correctamente");
 	else {
 		log_error(logger, "No se envio correctamente el mensaje");
@@ -193,7 +193,7 @@ void send_CATCH_POKEMON(char* parametros[], int numSocket) {
 
 	free(datos);
 
-	if (r == 0)
+	if (r > 0)
 		log_info(logger, "Se envio NEW_POKEMON correctamente");
 	else {
 		log_error(logger, "No se envio correctamente el mensaje");
@@ -220,7 +220,7 @@ void send_CAUGHT_POKEMON(char* parametros[], int numSocket) {
 
 	free(datos);
 
-	if (r == 0)
+	if (r > 0)
 		log_info(logger, "Se envio NEW_POKEMON correctamente");
 	else {
 		log_error(logger, "No se envio correctamente el mensaje");
@@ -247,7 +247,7 @@ void send_GET_POKEMON(char* parametros[], int numSocket) {
 
 	free(datos);
 
-	if (r == 0)
+	if (r > 0)
 		log_info(logger, "Se envio NEW_POKEMON correctamente");
 	else {
 		log_error(logger, "No se envio correctamente el mensaje");
