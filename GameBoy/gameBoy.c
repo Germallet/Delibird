@@ -126,10 +126,10 @@ void send_NEW_POKEMON(char* parametros[], int numSocket) {
 	(datos->posicion).posY = strtol(parametros[4],NULL,10);
 	datos->cantidad = strtol(parametros[5],NULL,10);
 
-	int* tamanioBuffer = NULL;
+	int tamanioBuffer;
 
-	void* buffer = Serializar_NEW_POKEMON(datos, tamanioBuffer);
-	int r = Socket_Enviar(NEW_POKEMON, buffer, *tamanioBuffer, numSocket);
+	void* buffer = Serializar_NEW_POKEMON(datos, &tamanioBuffer);
+	int r = Socket_Enviar(NEW_POKEMON, buffer, tamanioBuffer, numSocket);
 
 	free(datos);
 
@@ -156,10 +156,10 @@ void send_APPEARED_POKEMON(char* parametros[], int numSocket) {
 	(datos->posicion).posY = strtol(parametros[4],NULL,10);
 	datos->ID_MENSAJE = strtol(parametros[5],NULL,10);
 
-	int* tamanioBuffer = NULL;
+	int tamanioBuffer;
 
-	void* buffer = Serializar_APPEARED_POKEMON(datos, tamanioBuffer);
-	int r = Socket_Enviar(APPEARED_POKEMON, buffer, *tamanioBuffer, numSocket);
+	void* buffer = Serializar_APPEARED_POKEMON(datos, &tamanioBuffer);
+	int r = Socket_Enviar(APPEARED_POKEMON, buffer, tamanioBuffer, numSocket);
 
 	free(datos);
 
@@ -186,10 +186,10 @@ void send_CATCH_POKEMON(char* parametros[], int numSocket) {
 	(datos->posicion).posX = strtol(parametros[3],NULL,10);
 	(datos->posicion).posY = strtol(parametros[4],NULL,10);
 
-	int* tamanioBuffer = NULL;
+	int tamanioBuffer;
 
-	void* buffer = Serializar_CATCH_POKEMON(datos, tamanioBuffer);
-	int r = Socket_Enviar(CATCH_POKEMON, buffer, *tamanioBuffer, numSocket);
+	void* buffer = Serializar_CATCH_POKEMON(datos, &tamanioBuffer);
+	int r = Socket_Enviar(CATCH_POKEMON, buffer, tamanioBuffer, numSocket);
 
 	free(datos);
 
@@ -213,10 +213,10 @@ void send_CAUGHT_POKEMON(char* parametros[], int numSocket) {
 	datos->ID_MENSAJE = strtol(parametros[2],NULL,10);
 	datos->capturado = strtol(parametros[3],NULL,10);
 
-	int* tamanioBuffer = NULL;
+	int tamanioBuffer;
 
-	void* buffer = Serializar_CAUGHT_POKEMON(datos, tamanioBuffer);
-	int r = Socket_Enviar(CAUGHT_POKEMON, buffer, *tamanioBuffer, numSocket);
+	void* buffer = Serializar_CAUGHT_POKEMON(datos, &tamanioBuffer);
+	int r = Socket_Enviar(CAUGHT_POKEMON, buffer, tamanioBuffer, numSocket);
 
 	free(datos);
 
@@ -240,10 +240,10 @@ void send_GET_POKEMON(char* parametros[], int numSocket) {
 	datos->largoPokemon = (uint32_t) strlen(parametros[2]);
 	datos->pokemon = parametros[2];
 
-	int* tamanioBuffer = NULL;
+	int tamanioBuffer;
 
-	void* buffer = Serializar_GET_POKEMON(datos, tamanioBuffer);
-	int r = Socket_Enviar(GET_POKEMON, buffer, *tamanioBuffer, numSocket);
+	void* buffer = Serializar_GET_POKEMON(datos, &tamanioBuffer);
+	int r = Socket_Enviar(GET_POKEMON, buffer, tamanioBuffer, numSocket);
 
 	free(datos);
 
