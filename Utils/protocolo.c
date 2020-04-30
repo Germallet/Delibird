@@ -1,43 +1,16 @@
 #include "protocolo.h"
 #include <stdlib.h>
 
-/* PREGUNTAS
- * 1) TODO EN LOS strlen TENEMOS QUE PONER -1 POR EL /0 ???
- */
+//TODO EN LOS strlen TENEMOS QUE PONER -1 POR EL /0 ???
 //TODO Agregar free()
-//TODO pulir funciones
 //TODO cuando ger termine las colas hay que hacer la de suscriptor
-
-//FUNCIONES QUE TE DEVUELVEN EL TAMANIO DE LOS STRUCTS
-/*
-uint32_t size_NEW_POKEMON(DATOS_NEW_POKEMON* datos) {
-	return datos->largoPokemon + sizeof(uint32_t)*4;
-}
-
-uint32_t size_APPEARED_POKEMON(DATOS_APPEARED_POKEMON* datos) {
-	return datos->largoPokemon + sizeof(uint32_t)*4;
-}
-
-uint32_t size_GET_POKEMON(DATOS_GET_POKEMON* datos) {
-	return datos->largoPokemon + sizeof(uint32_t);
-}
-
-uint32_t size_CATCH_POKEMON(DATOS_CATCH_POKEMON* datos) {
-	return datos->largoPokemon + sizeof(uint32_t)*3;
-}
-
-uint32_t size_CAUGHT_POKEMON(DATOS_CAUGHT_POKEMON* datos) {
-	return sizeof(uint32_t)*2;
-}
-*/
+//TODO HABRIA QUE VER COMO VERIFICAR SI TOODO SE COPIO BIEN
 
 // FUNCIONES INDIVIDUALES PARA CADA SERIALIZAR
-//HABRIA QUE VER COMO VERIFICAR SI TOODO SE COPIO BIEN
-
 //2
 void* Serializar_NEW_POKEMON(DATOS_NEW_POKEMON* datos, int* tamanioBuffer)
 {
-	*tamanioBuffer = datos->largoPokemon + sizeof(uint32_t)*4; //VER CON GERMAN SI ESTA BIEN
+	*tamanioBuffer = datos->largoPokemon + sizeof(uint32_t)*4; //TODO VER CON GERMAN SI ESTA BIEN
 	void* paqueteSerializado = malloc(*tamanioBuffer);
 
 	int desplazamiento = 0;
@@ -175,10 +148,8 @@ bool Deserializar(int socket, void* datos) {
 	return false;
 }
 */
+
 // FUNCIONES INDIVIDUALES PARA CADA DESSERIALIZAR SIN VERIFICACION
-
-// LE FALTAN LAS VERIFICACIONES DE LOS recv
-
 //2
 bool Deserializar_NEW_POKEMON(int socket,DATOS_NEW_POKEMON* datos) {
 
@@ -265,3 +236,26 @@ bool Deserializar_LOCALIZED_POKEMON(int socket,DATOS_LOCALIZED_POKEMON* datos) {
 */
 	return true;
 }
+
+// FUNCIONES QUE DEVUELVEN EL TAMANIO DE LOS MENSAJES
+/*
+uint32_t size_NEW_POKEMON(DATOS_NEW_POKEMON* datos) {
+	return datos->largoPokemon + sizeof(uint32_t)*4;
+}
+
+uint32_t size_APPEARED_POKEMON(DATOS_APPEARED_POKEMON* datos) {
+	return datos->largoPokemon + sizeof(uint32_t)*4;
+}
+
+uint32_t size_GET_POKEMON(DATOS_GET_POKEMON* datos) {
+	return datos->largoPokemon + sizeof(uint32_t);
+}
+
+uint32_t size_CATCH_POKEMON(DATOS_CATCH_POKEMON* datos) {
+	return datos->largoPokemon + sizeof(uint32_t)*3;
+}
+
+uint32_t size_CAUGHT_POKEMON(DATOS_CAUGHT_POKEMON* datos) {
+	return sizeof(uint32_t)*2;
+}
+*/

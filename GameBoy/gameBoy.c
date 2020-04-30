@@ -3,10 +3,10 @@
 t_log* logger;
 
 //TODO DECIDIR ENTRE VERIFICAR EN EL MAIN O EN CADA FUNCION Y AGREGAR COMO PARAMETRO OTRO.
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
 	logger = log_create("gameBoy.log", "GameBoy", true, LOG_LEVEL_INFO);
-	log_info(logger,"Hola como estan");
+	log_info(logger,"Te damos la bienvenida a mundo GameBoy!");
 
 	// CREAR CONFIG Y OBTENER VALORES (IP=PUERTO)
 	t_config* config = config_create("gameBoy.config");
@@ -17,19 +17,16 @@ int main(int argc, char *argv[])
 	char* ipGameCard = config_get_string_value(config, "IP_GAMECARD");
 	int puertoGameCard = config_get_int_value(config, "PUERTO_GAMECARD");
 
-	//CREACION EVENTOS
+	// CREACION EVENTOS
 	Eventos* eventos = Eventos_Crear0();
 
-	printf("Se recibieron %d parametros \n", argc);
-
 	// GESTION DE MENSAJES
-
 	if (argc <= 3) {
-		log_error(logger, "Faltan parametros en el mensaje que busca enviar");
+		log_error(logger, "TE FALTAN PARAMETROS");
 		exit(-1);
 	}
 
-	if (sonIguales(argv[1],"TEAM") && sonIguales(argv[2],"APPEARED_POKEMON")) {
+	if (sonIguales(argv[1],"TEAM")) {
 
 		Cliente* clienteTeam = CrearCliente(ipTeam,puertoTeam,eventos);
 
@@ -38,14 +35,14 @@ int main(int argc, char *argv[])
 			exit(-1);
 		}
 
-		if (cantidadParametros(argv) > 2) {
-			log_error(logger, "ERROR CANTIDAD DE PARAMETROS");
-			exit(-1);
+		ConectadoConProceso("TEAM");
+
+		if (sonIguales(argv[2],"APPEARED_POKEMON")) {
+			send_APPEARED_POKEMON(argv,clienteTeam->socket);
+		} else {
+			log_error(logger, "TEAM NO ENTIENDE TU OPERACION");
+			exit (-1);
 		}
-
-		ConectadoConProceso("Team");
-
-		send_APPEARED_POKEMON(argv,clienteTeam->socket);
 
 		DestruirCliente(clienteTeam);
 
@@ -54,11 +51,11 @@ int main(int argc, char *argv[])
 		Cliente* clienteBroker = CrearCliente(ipBroker, puertoBroker, eventos); //CREO ACA DEBERIA CONECTARSE A LAS COLAS DEL BROKER
 
 		if(clienteBroker == NULL) {
-			log_error(logger, "NO SE PUDO CONECTAR AL BROKER");
+			log_error(logger, "NO SE PUDO CONECTAR AL MENSAJE");
 			exit(-1);
 		}
 
-		ConectadoConProceso("Broker");
+		ConectadoConProceso("BROKER");
 
 		if (sonIguales(argv[2], "NEW_POKEMON"))
 			send_NEW_POKEMON(argv,clienteBroker->socket);
@@ -70,6 +67,10 @@ int main(int argc, char *argv[])
 			send_CAUGHT_POKEMON(argv,clienteBroker->socket);
 		  else if (sonIguales(argv[2], "GET_POKEMON"))
 			send_GET_POKEMON(argv,clienteBroker->socket);
+		  else {
+		  	log_error(logger, "BROKER NO ENTIENDE TU MENSAJE");
+		  	exit (-1);
+		  }
 
 		DestruirCliente(clienteBroker);
 
@@ -82,7 +83,7 @@ int main(int argc, char *argv[])
 			exit(-1);
 		}
 
-		ConectadoConProceso("GameCard");
+		ConectadoConProceso("GAMECARD");
 
 		if (sonIguales(argv[2], "NEW_POKEMON"))
 			send_NEW_POKEMON(argv,clienteGameCard->socket);
@@ -90,9 +91,18 @@ int main(int argc, char *argv[])
 			  send_CATCH_POKEMON(argv,clienteGameCard->socket);
 		  else if (sonIguales(argv[2], "GET_POKEMON"))
 			  send_GET_POKEMON(argv,clienteGameCard->socket);
+		  else {
+			  log_error(logger, "GAMECARD NO ENTIENDE TU MENSAJE");
+			  exit (-1);
+		  	}
 
 		DestruirCliente(clienteGameCard);
+
+	} else {
+		log_error(logger, "TENEMOS LA SOSPECHA QUE ESCRIBISTE MAL EL PROCESO");
+		exit (-1);
 	}
+
 
 	// TERMINAR PROGRAMA
 	terminarPrograma(logger, config);
@@ -106,7 +116,6 @@ void terminarPrograma(t_log* logger, t_config* config) {
 	config_destroy(config);
 }
 
-//TODO Eliminar esta funcion
 bool sonIguales(char* a, char* b) {
 	return strcmp(a,b) == 0;
 }
@@ -114,7 +123,7 @@ bool sonIguales(char* a, char* b) {
 void send_NEW_POKEMON(char* parametros[], int numSocket) {
 
 	if(cantidadParametros(parametros) != 7) {
-		log_error(logger, "Faltan parametros");
+		log_error(logger, "Mandaste mal los parametros sabandija");
 		exit(-1);
 	}
 
@@ -144,7 +153,7 @@ void send_NEW_POKEMON(char* parametros[], int numSocket) {
 void send_APPEARED_POKEMON(char* parametros[], int numSocket) {
 
 	if(cantidadParametros(parametros) != 7) {
-		log_error(logger, "Faltan parametros");
+		log_error(logger, "Mandaste mal los parametros sabandija");
 		exit(-1);
 	}
 
@@ -164,7 +173,7 @@ void send_APPEARED_POKEMON(char* parametros[], int numSocket) {
 	free(datos);
 
 	if (r > 0)
-		log_info(logger, "Se envio NEW_POKEMON correctamente");
+		log_info(logger, "Se envio APPEARED_POKEMON correctamente");
 	else {
 		log_error(logger, "No se envio correctamente el mensaje");
 		exit(-1);
@@ -174,7 +183,7 @@ void send_APPEARED_POKEMON(char* parametros[], int numSocket) {
 void send_CATCH_POKEMON(char* parametros[], int numSocket) {
 
 	if(cantidadParametros(parametros) != 6) {
-		log_error(logger, "Faltan parametros");
+		log_error(logger, "Mandaste mal los parametros sabandija");
 		exit(-1);
 	}
 
@@ -194,7 +203,7 @@ void send_CATCH_POKEMON(char* parametros[], int numSocket) {
 	free(datos);
 
 	if (r > 0)
-		log_info(logger, "Se envio NEW_POKEMON correctamente");
+		log_info(logger, "Se envio CATCH_POKEMON correctamente");
 	else {
 		log_error(logger, "No se envio correctamente el mensaje");
 		exit(-1);
@@ -204,7 +213,7 @@ void send_CATCH_POKEMON(char* parametros[], int numSocket) {
 void send_CAUGHT_POKEMON(char* parametros[], int numSocket) {
 
 	if(cantidadParametros(parametros) != 5) {
-		log_error(logger, "Faltan parametros");
+		log_error(logger, "Mandaste mal los parametros sabandija");
 		exit(-1);
 	}
 
@@ -221,7 +230,7 @@ void send_CAUGHT_POKEMON(char* parametros[], int numSocket) {
 	free(datos);
 
 	if (r > 0)
-		log_info(logger, "Se envio NEW_POKEMON correctamente");
+		log_info(logger, "Se envio CAUGHT_POKEMON correctamente");
 	else {
 		log_error(logger, "No se envio correctamente el mensaje");
 		exit(-1);
@@ -231,7 +240,7 @@ void send_CAUGHT_POKEMON(char* parametros[], int numSocket) {
 void send_GET_POKEMON(char* parametros[], int numSocket) {
 
 	if(cantidadParametros(parametros) != 4) {
-		log_error(logger, "Faltan parametros");
+		log_error(logger, "Mandaste mal los parametros sabandija");
 		exit(-1);
 	}
 
@@ -248,7 +257,7 @@ void send_GET_POKEMON(char* parametros[], int numSocket) {
 	free(datos);
 
 	if (r > 0)
-		log_info(logger, "Se envio NEW_POKEMON correctamente");
+		log_info(logger, "Se envio GET_POKEMON correctamente");
 	else {
 		log_error(logger, "No se envio correctamente el mensaje");
 		exit(-1);
@@ -264,13 +273,13 @@ void conectarseCola(void* colaMensaje, int tiempoDeterminado) {
 }
 
 void ConectadoConProceso(char* proceso) {
-	log_info(logger, "Se conectó correctamente al proceso: %s",proceso);
+	log_info(logger, "Se conectó correctamente al proceso %s",proceso);
 }
 void DesconectadoProceso(char* proceso) {
-	log_info(logger, "Se desconectó correctamente al proceso: %s",proceso);
+	log_info(logger, "Se desconectó correctamente al proceso %s",proceso);
 }
 
-int cantidadParametros(char* parametros[]) { //TODO BORRAR NO ES NECESARIA PERO POR AHORA TIENE QUE ESTAR
+int cantidadParametros(char* parametros[]) {
 	int c = 0;
 
 	while (parametros[c] != '\0')
