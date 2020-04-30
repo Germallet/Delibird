@@ -3,6 +3,26 @@
 #include <unistd.h>
 #include <string.h>
 #include <arpa/inet.h>
+#include <errno.h>
+#include <stdio.h>
+
+static struct addrinfo GenerarHints()
+{
+	struct addrinfo hints;
+	memset(&hints, 0, sizeof(hints));
+	hints.ai_family = AF_UNSPEC;
+	hints.ai_socktype = SOCK_STREAM;
+	hints.ai_flags = AI_PASSIVE;
+	return hints;
+}
+static int GenerarDirecciones(char* ip, uint16_t puerto, struct addrinfo** infoDireccion)
+{
+	char puertoStr[80];
+	sprintf(puertoStr, "%d", puerto);
+
+	struct addrinfo hints = GenerarHints();
+	return getaddrinfo(ip, puertoStr, &hints, infoDireccion);
+}
 
 // ========== Crear ==========
 static int NoBloquearPuerto(int numSocket)
@@ -10,25 +30,25 @@ static int NoBloquearPuerto(int numSocket)
 	int activado = 1;
 	return setsockopt(numSocket, SOL_SOCKET, SO_REUSEADDR, &activado, sizeof(activado));
 }
-int Socket_Crear(int domain, int type, int protocol)
+int Socket_Crear(char* ip, uint16_t puerto)
 {
-	int nuevoSocket = socket(domain, type, protocol);
+	struct addrinfo* direccion = NULL;
+	if (GenerarDirecciones(ip, puerto, &direccion) != 0)
+	{
+		freeaddrinfo(direccion);
+		return -1;
+	}
+
+	int nuevoSocket = socket(direccion->ai_family, direccion->ai_socktype, direccion->ai_protocol);
+	freeaddrinfo(direccion);
+
 	if (nuevoSocket == -1 || NoBloquearPuerto(nuevoSocket) == -1)
 		return -1;
 	return nuevoSocket;
 }
 
 // ========== Conectar ==========
-static int GenerarDirecciones(char* ip, char* puerto, struct addrinfo** infoDireccion)
-{
-	struct addrinfo hints;
-	memset(&hints, 0, sizeof(hints));
-	hints.ai_family = AF_UNSPEC;
-	hints.ai_socktype = SOCK_STREAM;
-	hints.ai_flags = AI_PASSIVE;
-	return getaddrinfo(ip, puerto, &hints, infoDireccion);
-}
-struct sockaddr_in* Socket_Conectar(int socket, char* ip, char* puerto)
+struct sockaddr_in* Socket_Conectar(int socket, char* ip, uint16_t puerto)
 {
 	struct addrinfo* infoServidor = NULL;
 	if (GenerarDirecciones(ip, puerto, &infoServidor) != 0)
@@ -82,7 +102,13 @@ Servidor* Socket_Escuchar(char* ip, int socket, uint16_t puerto, Eventos* evento
 int Socket_RecibirPaquete(int numSocket, Paquete** paquete)
 {
 	*paquete = malloc(sizeof(Paquete));
-	return recv(numSocket, &((*paquete)->codigoOperacion), sizeof((*paquete)->codigoOperacion), MSG_WAITALL);
+	int bytesRecibidos = recv(numSocket, &((*paquete)->codigoOperacion), sizeof((*paquete)->codigoOperacion), MSG_WAITALL);
+	if (bytesRecibidos <= 0)
+	{
+		free(*paquete);
+		*paquete = NULL;
+	}
+	return bytesRecibidos;
 }
 int Socket_Enviar(uint32_t codigoOperacion, void* stream, int tamanio, int numSocket)
 {
@@ -118,6 +144,8 @@ Cliente* Socket_AceptarConexion(Servidor* servidor)
 	cliente->direccion = direccionCliente;
 	cliente->eventos = *(servidor->eventos);
 	cliente->thread = NULL;
+	pthread_mutex_init(&cliente->mx_destruir, NULL);
+
 	return cliente;
 }
 

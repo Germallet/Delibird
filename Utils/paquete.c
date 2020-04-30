@@ -35,6 +35,8 @@ int Paquete_Procesar(int numSocket, Paquete* paquete)
 
 void Paquete_Liberar(Paquete* paquete)
 {
+	if (paquete == NULL)
+		return;
 	free(paquete->stream);
 	free(paquete);
 }

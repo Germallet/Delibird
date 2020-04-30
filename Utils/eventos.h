@@ -39,6 +39,7 @@ typedef struct
 	struct sockaddr_in* direccion;
 	Eventos eventos;
 	pthread_t* thread;
+	pthread_mutex_t mx_destruir;
 } Cliente;
 
 typedef void (*EventoOperacion)(Cliente*, Paquete*);

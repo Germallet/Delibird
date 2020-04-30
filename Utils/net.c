@@ -7,13 +7,19 @@
 
 static void EscucharMensajes(Cliente* cliente)
 {
-	while(cliente->thread != NULL)
+	while(true)
 	{
 		Paquete* paqueteRecibido = NULL;
-		if (Socket_RecibirPaquete(cliente->socket, &paqueteRecibido) == -1)
+		if (Socket_RecibirPaquete(cliente->socket, &paqueteRecibido) <= 0)
 		{
-			if(cliente->eventos.error != NULL)
-				(cliente->eventos.error)(ERROR_RECIBIR, paqueteRecibido);
+			if (paqueteRecibido == NULL)
+			{
+				if(cliente->eventos.desconectado != NULL) (cliente->eventos.desconectado)();
+				DestruirCliente(cliente);
+			}
+			else
+				if(cliente->eventos.error != NULL)
+					(cliente->eventos.error)(ERROR_RECIBIR, paqueteRecibido);
 			Paquete_Liberar(paqueteRecibido);
 			break;
 		}
@@ -27,16 +33,14 @@ static void EscucharMensajes(Cliente* cliente)
 		{
 			if(cliente->eventos.error != NULL)
 				(cliente->eventos.error)(ERROR_PROCESAR_PAQUETE, paqueteRecibido);
+			if(cliente->eventos.desconectado != NULL) (cliente->eventos.desconectado)();
+			DestruirCliente(cliente);
 			break;
 		}
 		Eventos_ObtenerOperacion(&(cliente->eventos), paqueteRecibido->codigoOperacion)(cliente, paqueteRecibido);
 
 		Paquete_Liberar(paqueteRecibido);
 	}
-
-	if(cliente->eventos.error != NULL) (cliente->eventos.desconectado)();
-
-	DestruirCliente(cliente);
 }
 
 // ===== Escuchar nuevas conexiones =====
@@ -61,9 +65,14 @@ static void EscucharConexiones(Servidor* servidor)
 }
 
 // ===== Creación de sockets =====
-Cliente* CrearCliente(char *ip, char* puerto, Eventos* eventos)
+Cliente* CrearCliente(char *ip, uint16_t puerto, Eventos* eventos)
 {
-	int socketCliente = Socket_Crear(AF_UNSPEC, SOCK_STREAM, AI_PASSIVE);
+	int socketCliente = Socket_Crear(ip, puerto);
+	if (socketCliente == -1)
+	{
+		Eventos_Destruir(eventos);
+		return NULL;
+	}
 
 	struct sockaddr_in* direccion = Socket_Conectar(socketCliente, ip, puerto);
 	if (direccion == NULL)
@@ -78,10 +87,14 @@ Cliente* CrearCliente(char *ip, char* puerto, Eventos* eventos)
 	cliente->socket = socketCliente;
 	cliente->direccion = direccion;
 	cliente->eventos = *eventos;
-
 	cliente->thread = malloc(sizeof(pthread_t));
-	pthread_create(cliente->thread, NULL, (void*)EscucharMensajes, cliente);
-	pthread_detach(*(cliente->thread));
+	pthread_mutex_init(&cliente->mx_destruir, NULL);
+
+	pthread_attr_t attr;
+	pthread_attr_init(&attr);
+	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
+	pthread_create(cliente->thread, &attr, (void*)EscucharMensajes, cliente);
+	//pthread_detach(*(cliente->thread));
 
 	Eventos_Destruir(eventos);
 	return cliente;
@@ -89,7 +102,7 @@ Cliente* CrearCliente(char *ip, char* puerto, Eventos* eventos)
 
 Servidor* CrearServidor(char* ip, uint16_t puerto, Eventos* eventos)
 {
-	int socketDeEscucha = Socket_Crear(AF_INET, SOCK_STREAM, 0);
+	int socketDeEscucha = Socket_Crear(ip, puerto);
 	if (socketDeEscucha == -1)
 		return NULL;
 
@@ -106,6 +119,8 @@ Servidor* CrearServidor(char* ip, uint16_t puerto, Eventos* eventos)
 
 void DestruirCliente(Cliente* cliente)
 {
+	pthread_mutex_lock(&cliente->mx_destruir);
+	pthread_mutex_t copiaMutex = cliente->mx_destruir;
 	if (cliente->thread != NULL)
 	{
 		cliente->thread = NULL;
@@ -116,7 +131,9 @@ void DestruirCliente(Cliente* cliente)
 		Socket_Destruir(cliente->socket);
 		freeaddrinfo((struct addrinfo*)cliente->direccion);
 		free(cliente);
+		cliente = NULL;
 	}
+	pthread_mutex_unlock(&copiaMutex);
 }
 
 void DestruirServidor(Servidor* servidor)

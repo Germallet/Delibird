@@ -4,13 +4,14 @@
 
 static void ClienteErrorDefault(ErrorDeEscucha error, Paquete* paqueteRecibido)
 {
+	uint32_t codOp = paqueteRecibido == NULL ? -1 : paqueteRecibido->codigoOperacion;
 	t_log* logger = log_create("Utils.log", "Utils", true, LOG_LEVEL_INFO);
 	if (error == ERROR_RECIBIR)
-		log_error(logger, "Error al recibir paquete. (Cod. op.: %d)", paqueteRecibido->codigoOperacion);
+		log_error(logger, "Error al recibir paquete. (Cod. op.: %d)", codOp);
 	else if (error == ERROR_OPERACION_INVALIDA)
-		log_error(logger, "Recibido código de operación inválido. (Cod. op.: %d)", paqueteRecibido->codigoOperacion);
+		log_error(logger, "Recibido código de operación inválido. (Cod. op.: %d)", codOp);
 	else if (error == ERROR_PROCESAR_PAQUETE)
-		log_error(logger, "Error al procesar paquete. (Cod. op.: %d)", paqueteRecibido->codigoOperacion);
+		log_error(logger, "Error al procesar paquete. (Cod. op.: %d)", codOp);
 	log_destroy(logger);
 }
 
