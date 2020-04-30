@@ -11,11 +11,11 @@ int main(int argc, char *argv[])
 	// CREAR CONFIG Y OBTENER VALORES (IP=PUERTO)
 	t_config* config = config_create("gameBoy.config");
 	char* ipBroker = config_get_string_value(config, "IP_BROKER");
-	char* puertoBroker = config_get_string_value(config, "PUERTO_BROKER");
+	int puertoBroker = config_get_int_value(config, "PUERTO_BROKER");
 	char* ipTeam = config_get_string_value(config, "IP_TEAM");
-	char* puertoTeam = config_get_string_value(config, "PUERTO_TEAM");
+	int puertoTeam = config_get_int_value(config, "PUERTO_TEAM");
 	char* ipGameCard = config_get_string_value(config, "IP_GAMECARD");
-	char* puertoGameCard = config_get_string_value(config, "PUERTO_GAMECARD");
+	int puertoGameCard = config_get_int_value(config, "PUERTO_GAMECARD");
 
 	//CREACION EVENTOS
 	Eventos* eventos = Eventos_Crear0();
