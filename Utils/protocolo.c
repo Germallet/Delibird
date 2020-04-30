@@ -2,11 +2,10 @@
 #include <stdlib.h>
 
 /* PREGUNTAS
- * 1) EN LOS strlen TENEMOS QUE PONER -1 POR EL /0 ???
- * 3) COMO VERIFICAR ?? TODO verificar si se envio/recibio bien
+ * 1) TODO EN LOS strlen TENEMOS QUE PONER -1 POR EL /0 ???
  */
-//TODO agregar free()
-//TODO pulir funciones y fijarse que anden bien
+//TODO Agregar free()
+//TODO pulir funciones
 //TODO cuando ger termine las colas hay que hacer la de suscriptor
 
 //FUNCIONES QUE TE DEVUELVEN EL TAMANIO DE LOS STRUCTS
@@ -150,7 +149,6 @@ void* Serializar_LOCALIZED_POKEMON(DATOS_LOCALIZED_POKEMON* datos, int* tamanioB
 }
 
 
-// TODO VER EL TEMA DE PARAMETROS POR REFERENCIA
 // FUNCION DESERIALIZAR GENERAL, DEVUELVE -1 SI NO ES UN MENSAJE CORRECTO
 /*
 bool Deserializar(int socket, void* datos) {
