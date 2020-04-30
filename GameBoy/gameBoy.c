@@ -2,6 +2,7 @@
 
 t_log* logger;
 
+//TODO DECIDIR ENTRE VERIFICAR EN EL MAIN O EN CADA FUNCION Y AGREGAR COMO PARAMETRO OTRO.
 int main(int argc, char *argv[])
 {
 	logger = log_create("gameBoy.log", "GameBoy", true, LOG_LEVEL_INFO);
@@ -19,10 +20,16 @@ int main(int argc, char *argv[])
 	//CREACION EVENTOS
 	Eventos* eventos = Eventos_Crear0();
 
+	printf("Se recibieron %d parametros \n", argc);
 
 	// GESTION DE MENSAJES
 
-	if (cantidadParametros(argv) == sonIguales(argv[1],"TEAM") && sonIguales(argv[2],"APPEARED_POKEMON")) {
+	if (argc <= 3) {
+		log_error(logger, "Faltan parametros en el mensaje que busca enviar");
+		exit(-1);
+	}
+
+	if (sonIguales(argv[1],"TEAM") && sonIguales(argv[2],"APPEARED_POKEMON")) {
 
 		Cliente* clienteTeam = CrearCliente(ipTeam,puertoTeam,eventos);
 
@@ -99,6 +106,7 @@ void terminarPrograma(t_log* logger, t_config* config) {
 	config_destroy(config);
 }
 
+//TODO Eliminar esta funcion
 bool sonIguales(char* a, char* b) {
 	return strcmp(a,b) == 0;
 }
@@ -262,7 +270,7 @@ void DesconectadoProceso(char* proceso) {
 	log_info(logger, "Se desconectó correctamente al proceso: %s",proceso);
 }
 
-int cantidadParametros(char* parametros[]) { //TODO MEJORAR LA VERIFICACION DE CANTIDAD DE PARAMETROS
+int cantidadParametros(char* parametros[]) { //TODO BORRAR NO ES NECESARIA PERO POR AHORA TIENE QUE ESTAR
 	int c = 0;
 
 	while (parametros[c] != '\0')

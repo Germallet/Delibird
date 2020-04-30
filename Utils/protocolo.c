@@ -4,7 +4,7 @@
 /* PREGUNTAS
  * 1) TODO EN LOS strlen TENEMOS QUE PONER -1 POR EL /0 ???
  */
-//TODO agregar free()
+//TODO Agregar free()
 //TODO pulir funciones
 //TODO cuando ger termine las colas hay que hacer la de suscriptor
 
