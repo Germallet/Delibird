@@ -1,6 +1,7 @@
 #include "broker.h"
 #include "servidor.h"
 #include "memoria.h"
+#include "cola.h"
 #include <commons/config.h>
 #include <string.h>
 #include <pthread.h>
@@ -18,6 +19,7 @@ int main()
 	logger = log_create(Config_String("LOG_FILE"), "Broker", true, LOG_LEVEL_INFO);
 
 	IniciarMemoria();
+	CrearColas();
 	IniciarServidorBroker(Config_String("IP_BROKER"), Config_Int("PUERTO_BROKER"));
 
 	EsperarHilos();
@@ -37,6 +39,7 @@ void EsperarHilos()
 
 void Finalizar()
 {
+	DestruirColas();
 	config_destroy(config);
 	log_destroy(logger);
 }
