@@ -119,26 +119,29 @@ bool sonIguales(char* a, char* b) {
 	return strcmp(a,b) == 0;
 }
 
+//./GameBoy BROKER NEW_POKEMON pikachu 3 1 3 ID()
+//    1        2        3         4    5 6 7  8
+//    0        1        2         3    4 5 6  7
 void send_NEW_POKEMON(int cantParametros, char* parametros[], int numSocket) {
 
-	if (cantParametros != 7 || cantParametros != 8){
+	if (cantParametros != 7 && cantParametros != 8){
 	    log_error(logger, "Mandaste mal los parametros sabandija");
 	    exit(-1);
 	}
 
 	DATOS_NEW_POKEMON* datos = malloc(sizeof(DATOS_NEW_POKEMON));
 
-	datos->largoPokemon = (uint32_t) strlen(parametros[2]);
-	datos->pokemon = parametros[2];
-	(datos->posicion).posX = strtol(parametros[3],NULL,10);
-	(datos->posicion).posY = strtol(parametros[4],NULL,10);
-	datos->cantidad = strtol(parametros[5],NULL,10);
+	datos->largoPokemon = (uint32_t) strlen(parametros[3]);
+	datos->pokemon = parametros[3];
+	(datos->posicion).posX = strtol(parametros[4],NULL,10);
+	(datos->posicion).posY = strtol(parametros[5],NULL,10);
+	datos->cantidad = strtol(parametros[6],NULL,10);
 
 	int tamanioBuffer;
 	void* buffer = Serializar_NEW_POKEMON(datos, &tamanioBuffer);
 
 	if (cantParametros == 8) {
-		uint32_t ID = strtol(parametros[6],NULL,10);
+		uint32_t ID = strtol(parametros[7],NULL,10);
 		buffer = Serializar_ID_MENSAJE(&ID, buffer, &tamanioBuffer);
 	}
 
@@ -154,6 +157,9 @@ void send_NEW_POKEMON(int cantParametros, char* parametros[], int numSocket) {
 	}
 }
 
+//./GameBoy BROKER APPEARED_POKEMON pikachu 3 1 ID()
+//    1        2        3             4     5 6  7
+//    0        1        2             3     4 5  6
 void send_APPEARED_POKEMON(int cantParametros, char* parametros[], int numSocket) {
 
 	if(cantParametros != 7) {
@@ -163,12 +169,12 @@ void send_APPEARED_POKEMON(int cantParametros, char* parametros[], int numSocket
 
 	DATOS_APPEARED_POKEMON* datos = malloc(sizeof(DATOS_APPEARED_POKEMON));
 
-	datos->largoPokemon = (uint32_t) strlen(parametros[2]);
-	datos->pokemon = parametros[2];
-	(datos->posicion).posX = strtol(parametros[3],NULL,10);
-	(datos->posicion).posY = strtol(parametros[4],NULL,10);
+	datos->largoPokemon = (uint32_t) strlen(parametros[3]);
+	datos->pokemon = parametros[3];
+	(datos->posicion).posX = strtol(parametros[4],NULL,10);
+	(datos->posicion).posY = strtol(parametros[5],NULL,10);
 
-	uint32_t ID = strtol(parametros[5],NULL,10);
+	uint32_t ID = strtol(parametros[6],NULL,10);
 
 	int tamanioBuffer;
 
@@ -187,26 +193,29 @@ void send_APPEARED_POKEMON(int cantParametros, char* parametros[], int numSocket
 	}
 }
 
+//./GameBoy BROKER CATCH_POKEMON pikachu 3 1 ID()
+//    1        2        3          4     5 6  7
+//    0        1        2          3     4 5  6
 void send_CATCH_POKEMON(int cantParametros, char* parametros[], int numSocket) {
 
-	if(cantParametros != 6 || cantParametros != 7) {
+	if(cantParametros != 6 && cantParametros != 7) {
 		log_error(logger, "Mandaste mal los parametros sabandija");
 		exit(-1);
 	}
 
 	DATOS_CATCH_POKEMON* datos = malloc(sizeof(DATOS_CATCH_POKEMON));
 
-	datos->largoPokemon = (uint32_t) strlen(parametros[2]);
-	datos->pokemon = parametros[2];
-	(datos->posicion).posX = strtol(parametros[3],NULL,10);
-	(datos->posicion).posY = strtol(parametros[4],NULL,10);
+	datos->largoPokemon = (uint32_t) strlen(parametros[3]);
+	datos->pokemon = parametros[3];
+	(datos->posicion).posX = strtol(parametros[4],NULL,10);
+	(datos->posicion).posY = strtol(parametros[5],NULL,10);
 
 	int tamanioBuffer;
 
 	void* buffer = Serializar_CATCH_POKEMON(datos, &tamanioBuffer);
 
 	if (cantParametros == 7) {
-		uint32_t ID = strtol(parametros[5],NULL,10);
+		uint32_t ID = strtol(parametros[6],NULL,10);
 		buffer = Serializar_ID_MENSAJE(&ID,buffer,&tamanioBuffer);
 	}
 
@@ -222,6 +231,9 @@ void send_CATCH_POKEMON(int cantParametros, char* parametros[], int numSocket) {
 	}
 }
 
+//./GameBoy BROKER CAUGHT_POKEMON bool ID
+//    1        2        3          4    5
+//    0        1        2          3    4
 void send_CAUGHT_POKEMON(int cantParametros, char* parametros[], int numSocket) {
 
 	if(cantParametros != 5) {
@@ -231,8 +243,8 @@ void send_CAUGHT_POKEMON(int cantParametros, char* parametros[], int numSocket) 
 
 	DATOS_CAUGHT_POKEMON* datos = malloc(sizeof(DATOS_CAUGHT_POKEMON));
 
-	uint32_t ID = strtol(parametros[2],NULL,10);
-	datos->capturado = strtol(parametros[3],NULL,10);
+	uint32_t ID = strtol(parametros[3],NULL,10);
+	datos->capturado = strtol(parametros[4],NULL,10);
 
 	int tamanioBuffer;
 
@@ -250,6 +262,9 @@ void send_CAUGHT_POKEMON(int cantParametros, char* parametros[], int numSocket) 
 	}
 }
 
+//./GameBoy BROKER GET_POKEMON pokemon
+//    1        2        3         4
+//    0        1        2         3
 void send_GET_POKEMON(int cantParametros, char* parametros[], int numSocket) {
 
 	if(cantParametros != 4) {
@@ -259,8 +274,8 @@ void send_GET_POKEMON(int cantParametros, char* parametros[], int numSocket) {
 
 	DATOS_GET_POKEMON* datos = malloc(sizeof(DATOS_GET_POKEMON));
 
-	datos->largoPokemon = (uint32_t) strlen(parametros[2]);
-	datos->pokemon = parametros[2];
+	datos->largoPokemon = (uint32_t) strlen(parametros[3]);
+	datos->pokemon = parametros[3];
 
 	int tamanioBuffer;
 
@@ -277,34 +292,36 @@ void send_GET_POKEMON(int cantParametros, char* parametros[], int numSocket) {
 	}
 }
 
-//./GameBoy PROCESO MENSAJE POKEMON CANTPARES PARES
+//./GameBoy BROKER LOCALIZED_POKEMON pokemon cantidad coord*2     ALGUN ID POR ACA QUE NI IDEA
+//    1        2          3            4       5        6 7 ..
+//    0        1          2            3       4        5 6 ..
+void send_LOCALIZED_POKEMON(DATOS_LOCALIZED_POKEMON* datos, int numSocket) {
 
-void send_LOCALIZED_POKEMON(int cantParametros, char* parametros[], int numSocket) {
-
-	uint32_t cantPares = strtol(parametros[5], NULL, 10);
-
-	if(cantParametros != 5 + cantPares*2) {
-		log_error(logger, "Mandaste mal los parametros sabandija");
-		exit(-1);
-	}
-
-	DATOS_LOCALIZED_POKEMON* datos = malloc(sizeof(DATOS_LOCALIZED_POKEMON));
-
-	datos->largoPokemon = (uint32_t) strlen(parametros[2]);
-	datos->pokemon = parametros[2];
-	datos->cantidad = cantPares;
-
-	for (int i = 0; i < cantPares; i++) {
-		(datos->posiciones[i]).posX = strtol(parametros[i + 5], NULL, 10);
-		(datos->posiciones[i]).posY = strtol(parametros[i + 6], NULL, 10);
-	}
+//	uint32_t cantPares = strtol(parametros[4], NULL, 10);
+//
+//	if(cantParametros != 5 + cantPares*2) {
+//		log_error(logger, "Mandaste mal los parametros sabandija");
+//		exit(-1);
+//	}
+//
+//	DATOS_LOCALIZED_POKEMON* datos = malloc(sizeof(DATOS_LOCALIZED_POKEMON));
+//
+//	datos->largoPokemon = (uint32_t) strlen(parametros[3]);
+//	datos->pokemon = parametros[3];
+//	datos->cantidad = cantPares;
+//
+//	for (int i = 0; i < cantPares; i++) {
+//		(datos->posiciones[i]).posX = strtol(parametros[i + 5], NULL, 10);
+//		(datos->posiciones[i]).posY = strtol(parametros[i + 6], NULL, 10);
+//	}
+// TODO ver si hay que dejar esto como estaba o sacar al pingo lo comentado porque ya vamos a recibir un paquete
 
 	int tamanioBuffer;
 
 	void* buffer = Serializar_LOCALIZED_POKEMON(datos, &tamanioBuffer);
 	int r = Socket_Enviar(LOCALIZED_POKEMON, buffer, tamanioBuffer, numSocket);
 
-	free(datos);
+//	free(datos);
 
 	// TODO el tema de la ID faltaria agregar en localized
 

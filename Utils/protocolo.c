@@ -37,7 +37,7 @@ void* Serializar_NEW_POKEMON(DATOS_NEW_POKEMON* datos, int* tamanioBuffer)
 //3
 void* Serializar_APPEARED_POKEMON(DATOS_APPEARED_POKEMON* datos, int* tamanioBuffer)
 {
-	*tamanioBuffer = datos->largoPokemon + sizeof(uint32_t)*4;
+	*tamanioBuffer = datos->largoPokemon + sizeof(uint32_t)*3;
 	void* buffer = malloc(*tamanioBuffer);
 
 	int desplazamiento = 0;
@@ -75,7 +75,7 @@ void* Serializar_CATCH_POKEMON(DATOS_CATCH_POKEMON* datos, int* tamanioBuffer)
 //5
 void* Serializar_CAUGHT_POKEMON(DATOS_CAUGHT_POKEMON* datos, int* tamanioBuffer)
 {
-	*tamanioBuffer = sizeof(uint32_t)*2;
+	*tamanioBuffer = sizeof(uint32_t);
 	void* buffer = malloc(*tamanioBuffer);
 
 	int desplazamiento = 0; //BORRE EL ID

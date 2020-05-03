@@ -22,7 +22,7 @@ void send_APPEARED_POKEMON(int cantParametros, char* parametros[], int numSocket
 void send_CATCH_POKEMON(int cantParametros, char* parametros[], int numSocket);
 void send_CAUGHT_POKEMON(int cantParametros, char* parametros[], int numSocket);
 void send_GET_POKEMON(int cantParametros, char* parametros[], int numSocket);
-void send_LOCALIZED_POKEMON(int cantParametros, char* parametros[], int numSocket);
+void send_LOCALIZED_POKEMON(DATOS_LOCALIZED_POKEMON* datos, int numSocket);
 void algoquenosenosocurre_SUSCRIPTOR(int cantParametros, char* parametros[], int numSocket);
 
 
