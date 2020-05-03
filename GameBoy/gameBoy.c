@@ -2,7 +2,6 @@
 
 t_log* logger;
 
-//TODO DECIDIR ENTRE VERIFICAR EN EL MAIN O EN CADA FUNCION Y AGREGAR COMO PARAMETRO OTRO.
 int main(int argc, char* argv[])
 {
 	logger = log_create("gameBoy.log", "GameBoy", true, LOG_LEVEL_INFO);
@@ -51,7 +50,7 @@ int main(int argc, char* argv[])
 		Cliente* clienteBroker = CrearCliente(ipBroker, puertoBroker, eventos); //CREO ACA DEBERIA CONECTARSE A LAS COLAS DEL BROKER
 
 		if(clienteBroker == NULL) {
-			log_error(logger, "NO SE PUDO CONECTAR AL MENSAJE");
+			log_error(logger, "NO SE PUDO CONECTAR AL BROKER");
 			exit(-1);
 		}
 
@@ -120,9 +119,6 @@ bool sonIguales(char* a, char* b) {
 	return strcmp(a,b) == 0;
 }
 
-//TODO AGREGAR PRIMER PARAMETRO CANTIDAD PARAMETROS
-//TODO HACER UN IF MAYOR IGUAL A LA CANTIDAD MINIMA Y DESPUES DE HACER LO NECSARIO PARA TODAS, OTRO IF QUE HAGA SOLO DE SI ES MAYOR QUE 8
-
 void send_NEW_POKEMON(int cantParametros, char* parametros[], int numSocket) {
 
 	if (cantParametros != 7 || cantParametros != 8){
@@ -143,7 +139,7 @@ void send_NEW_POKEMON(int cantParametros, char* parametros[], int numSocket) {
 
 	if (cantParametros == 8) {
 		uint32_t ID = strtol(parametros[6],NULL,10);
-		buffer = Serializar_ID_MENSAJE(&ID, buffer, &tamanioBuffer); //TODO VER WARNING
+		buffer = Serializar_ID_MENSAJE(&ID, buffer, &tamanioBuffer);
 	}
 
 	int r = Socket_Enviar(NEW_POKEMON, buffer, tamanioBuffer, numSocket);
@@ -177,7 +173,7 @@ void send_APPEARED_POKEMON(int cantParametros, char* parametros[], int numSocket
 	int tamanioBuffer;
 
 	void* buffer = Serializar_APPEARED_POKEMON(datos, &tamanioBuffer);
-	buffer = Serializar_ID_MENSAJE(ID,buffer,&tamanioBuffer);
+	buffer = Serializar_ID_MENSAJE(&ID, buffer, &tamanioBuffer);
 
 	int r = Socket_Enviar(APPEARED_POKEMON, buffer, tamanioBuffer, numSocket);
 
@@ -207,15 +203,12 @@ void send_CATCH_POKEMON(int cantParametros, char* parametros[], int numSocket) {
 
 	int tamanioBuffer;
 
-
-
 	void* buffer = Serializar_CATCH_POKEMON(datos, &tamanioBuffer);
 
 	if (cantParametros == 7) {
 		uint32_t ID = strtol(parametros[5],NULL,10);
 		buffer = Serializar_ID_MENSAJE(&ID,buffer,&tamanioBuffer);
 	}
-
 
 	int r = Socket_Enviar(CATCH_POKEMON, buffer, tamanioBuffer, numSocket);
 
@@ -244,7 +237,7 @@ void send_CAUGHT_POKEMON(int cantParametros, char* parametros[], int numSocket) 
 	int tamanioBuffer;
 
 	void* buffer = Serializar_CAUGHT_POKEMON(datos, &tamanioBuffer);
-	buffer = Serializar_ID_MENSAJE(ID,buffer,&tamanioBuffer);
+	buffer = Serializar_ID_MENSAJE(&ID, buffer, &tamanioBuffer);
 	int r = Socket_Enviar(CAUGHT_POKEMON, buffer, tamanioBuffer, numSocket);
 
 	free(datos);
@@ -284,8 +277,44 @@ void send_GET_POKEMON(int cantParametros, char* parametros[], int numSocket) {
 	}
 }
 
+//./GameBoy PROCESO MENSAJE POKEMON CANTPARES PARES
+
 void send_LOCALIZED_POKEMON(int cantParametros, char* parametros[], int numSocket) {
-	// TODO hacer funcion para mandar mensajes localized
+
+	uint32_t cantPares = strtol(parametros[5], NULL, 10);
+
+	if(cantParametros != 5 + cantPares*2) {
+		log_error(logger, "Mandaste mal los parametros sabandija");
+		exit(-1);
+	}
+
+	DATOS_LOCALIZED_POKEMON* datos = malloc(sizeof(DATOS_LOCALIZED_POKEMON));
+
+	datos->largoPokemon = (uint32_t) strlen(parametros[2]);
+	datos->pokemon = parametros[2];
+	datos->cantidad = cantPares;
+
+	for (int i = 0; i < cantPares; i++) {
+		(datos->posiciones[i]).posX = strtol(parametros[i + 5], NULL, 10);
+		(datos->posiciones[i]).posY = strtol(parametros[i + 6], NULL, 10);
+	}
+
+	int tamanioBuffer;
+
+	void* buffer = Serializar_LOCALIZED_POKEMON(datos, &tamanioBuffer);
+	int r = Socket_Enviar(LOCALIZED_POKEMON, buffer, tamanioBuffer, numSocket);
+
+	free(datos);
+
+	// TODO el tema de la ID faltaria agregar en localized
+
+	if (r > 0)
+		log_info(logger, "Se envio LOCALIZED_POKEMON correctamente");
+	else {
+		log_error(logger, "No se envio correctamente el mensaje");
+		exit(-1);
+	}
+
 }
 
 void conectarseCola(void* colaMensaje, int tiempoDeterminado) {
