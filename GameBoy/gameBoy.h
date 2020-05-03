@@ -17,13 +17,13 @@ void verificarConexion(int conexion, t_log* logger);
 bool sonIguales(char* a, char* b);
 int cantidadParametros(char* parametros[]);
 
-void send_NEW_POKEMON(char* parametros[], int numSocket);
-void send_APPEARED_POKEMON(char* parametros[], int numSocket);
-void send_CATCH_POKEMON(char* parametros[], int numSocket);
-void send_CAUGHT_POKEMON(char* parametros[], int numSocket);
-void send_GET_POKEMON(char* parametros[], int numSocket);
-void send_LOCALIZED_POKEMON(char* parametros[], int numSocket);
-void algoquenosenosocurre_SUSCRIPTOR(char* parametros[], int numSocket);
+void send_NEW_POKEMON(int cantParametros, char* parametros[], int numSocket);
+void send_APPEARED_POKEMON(int cantParametros, char* parametros[], int numSocket);
+void send_CATCH_POKEMON(int cantParametros, char* parametros[], int numSocket);
+void send_CAUGHT_POKEMON(int cantParametros, char* parametros[], int numSocket);
+void send_GET_POKEMON(int cantParametros, char* parametros[], int numSocket);
+void send_LOCALIZED_POKEMON(int cantParametros, char* parametros[], int numSocket);
+void algoquenosenosocurre_SUSCRIPTOR(int cantParametros, char* parametros[], int numSocket);
 
 
 

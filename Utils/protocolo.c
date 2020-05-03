@@ -1,103 +1,99 @@
 #include "protocolo.h"
 #include <stdlib.h>
 
-//TODO Agregar free()
 //TODO cuando ger termine las colas hay que hacer la de suscriptor
 
 // FUNCIONES INDIVIDUALES PARA CADA SERIALIZAR
 //2
 void* Serializar_NEW_POKEMON(DATOS_NEW_POKEMON* datos, int* tamanioBuffer)
 {
-	*tamanioBuffer = datos->largoPokemon + sizeof(uint32_t)*4; //TODO VER CON GERMAN SI ESTA BIEN
-	void* paqueteSerializado = malloc(*tamanioBuffer);
+	*tamanioBuffer = datos->largoPokemon + sizeof(uint32_t)*4;
+	void* buffer = malloc(*tamanioBuffer);
 
 	int desplazamiento = 0;
-	memcpy(paqueteSerializado, &(datos->largoPokemon), sizeof(uint32_t));
+	memcpy(buffer, &(datos->largoPokemon), sizeof(uint32_t));
 	desplazamiento += sizeof(uint32_t);
-	memcpy(paqueteSerializado + desplazamiento, &(datos->pokemon), datos->largoPokemon);
+	memcpy(buffer + desplazamiento, datos->pokemon, datos->largoPokemon);
 	desplazamiento += datos->largoPokemon;
-	memcpy(paqueteSerializado + desplazamiento, &((datos->posicion).posX), sizeof(uint32_t));
+	memcpy(buffer + desplazamiento, &((datos->posicion).posX), sizeof(uint32_t));
 	desplazamiento += sizeof(uint32_t);
-	memcpy(paqueteSerializado + desplazamiento, &((datos->posicion).posY), sizeof(uint32_t));
+	memcpy(buffer + desplazamiento, &((datos->posicion).posY), sizeof(uint32_t));
 	desplazamiento += sizeof(uint32_t);
-	memcpy(paqueteSerializado + desplazamiento, &(datos->cantidad), sizeof(uint32_t));
+	memcpy(buffer + desplazamiento, &(datos->cantidad), sizeof(uint32_t));
 
-	return paqueteSerializado;
+	return buffer;
 }
 
 //3
 void* Serializar_APPEARED_POKEMON(DATOS_APPEARED_POKEMON* datos, int* tamanioBuffer)
 {
 	*tamanioBuffer = datos->largoPokemon + sizeof(uint32_t)*4;
-	void* paqueteSerializado = malloc(*tamanioBuffer);
+	void* buffer = malloc(*tamanioBuffer);
 
 	int desplazamiento = 0;
-	memcpy(paqueteSerializado, &(datos->largoPokemon), sizeof(uint32_t));
+	memcpy(buffer, &(datos->largoPokemon), sizeof(uint32_t));
 	desplazamiento += sizeof(uint32_t);
-	memcpy(paqueteSerializado + desplazamiento, &(datos->pokemon), datos->largoPokemon);
+	memcpy(buffer + desplazamiento, datos->pokemon, datos->largoPokemon);
 	desplazamiento += datos->largoPokemon;
-	memcpy(paqueteSerializado + desplazamiento, &((datos->posicion).posX), sizeof(uint32_t));
+	memcpy(buffer + desplazamiento, &((datos->posicion).posX), sizeof(uint32_t));
 	desplazamiento += sizeof(uint32_t);
-	memcpy(paqueteSerializado + desplazamiento, &((datos->posicion).posY), sizeof(uint32_t));
-	desplazamiento += sizeof(uint32_t);
-	memcpy(paqueteSerializado + desplazamiento, &(datos->ID_MENSAJE), sizeof(uint32_t));
+	memcpy(buffer + desplazamiento, &((datos->posicion).posY), sizeof(uint32_t));
+	desplazamiento += sizeof(uint32_t); //BORRE EL ID
 
-	return paqueteSerializado;
+	return buffer;
 }
 
 //4
 void* Serializar_CATCH_POKEMON(DATOS_CATCH_POKEMON* datos, int* tamanioBuffer)
 {
 	*tamanioBuffer = datos->largoPokemon + sizeof(uint32_t)*3;
-	void* paqueteSerializado = malloc(*tamanioBuffer);
+	void* buffer = malloc(*tamanioBuffer);
 
 	int desplazamiento = 0;
-	memcpy(paqueteSerializado, &(datos->largoPokemon), sizeof(uint32_t));
+	memcpy(buffer, &(datos->largoPokemon), sizeof(uint32_t));
 	desplazamiento += sizeof(uint32_t);
-	memcpy(paqueteSerializado+desplazamiento, &(datos->pokemon), datos->largoPokemon);
+	memcpy(buffer+desplazamiento, datos->pokemon, datos->largoPokemon);
 	desplazamiento += datos->largoPokemon;
-	memcpy(paqueteSerializado + desplazamiento, &((datos->posicion).posX), sizeof(uint32_t));
+	memcpy(buffer + desplazamiento, &((datos->posicion).posX), sizeof(uint32_t));
 	desplazamiento += sizeof(uint32_t);
-	memcpy(paqueteSerializado + desplazamiento, &((datos->posicion).posY), sizeof(uint32_t));
+	memcpy(buffer + desplazamiento, &((datos->posicion).posY), sizeof(uint32_t));
 	desplazamiento += sizeof(uint32_t);
 
-	return paqueteSerializado;
+	return buffer;
 }
 
 //5
 void* Serializar_CAUGHT_POKEMON(DATOS_CAUGHT_POKEMON* datos, int* tamanioBuffer)
 {
 	*tamanioBuffer = sizeof(uint32_t)*2;
-	void* paqueteSerializado = malloc(*tamanioBuffer);
+	void* buffer = malloc(*tamanioBuffer);
 
-	int desplazamiento = 0;
-	memcpy(paqueteSerializado, &(datos->ID_MENSAJE), sizeof(uint32_t));
-	desplazamiento += sizeof(uint32_t);
-	memcpy(paqueteSerializado + desplazamiento, &(datos->capturado), sizeof(uint32_t));
+	int desplazamiento = 0; //BORRE EL ID
+	memcpy(buffer + desplazamiento, &(datos->capturado), sizeof(uint32_t));
 	desplazamiento += sizeof(uint32_t);
 
-	return paqueteSerializado;
+	return buffer;
 }
 
 //6
 void* Serializar_GET_POKEMON(DATOS_GET_POKEMON* datos, int* tamanioBuffer)
 {
 	*tamanioBuffer = datos->largoPokemon + sizeof(uint32_t);
-	void* paqueteSerializado = malloc(*tamanioBuffer);
+	void* buffer = malloc(*tamanioBuffer);
 
 	int desplazamiento = 0;
-	memcpy(paqueteSerializado, &(datos->largoPokemon), sizeof(uint32_t));
+	memcpy(buffer, &(datos->largoPokemon), sizeof(uint32_t));
 	desplazamiento += sizeof(uint32_t);
-	memcpy(paqueteSerializado+desplazamiento, datos->pokemon, datos->largoPokemon);
+	memcpy(buffer+desplazamiento, datos->pokemon, datos->largoPokemon);
 
-	return paqueteSerializado;
+	return buffer;
 }
 
 //7 TODO serializar localized pokemon hacer
 void* Serializar_LOCALIZED_POKEMON(DATOS_LOCALIZED_POKEMON* datos, int* tamanioBuffer){
 
 	*tamanioBuffer = datos->largoPokemon + sizeof(uint32_t) + (datos->cantidad)*(sizeof(uint32_t)*2);
-	void* paqueteSerializado = malloc(*tamanioBuffer);
+	void* buffer = malloc(*tamanioBuffer);
 /*
 	int desplazamiento = 0;
 	memcpy(paqueteSerializado, &(datos->ID_MENSAJE), sizeof(uint32_t));
@@ -116,15 +112,34 @@ void* Serializar_LOCALIZED_POKEMON(DATOS_LOCALIZED_POKEMON* datos, int* tamanioB
 		desplazamiento += sizeof(uint32_t);
 	}
 */
-	return paqueteSerializado;
+	return buffer;
+}
+
+void* Serializar_ID_MENSAJE(uint32_t* ID, void* buffer, int* tamanioBuffer) {
+
+	int desplazamiento = sizeof(&tamanioBuffer);
+
+	*tamanioBuffer += sizeof(uint32_t);
+
+	memcpy(buffer + desplazamiento, &ID,sizeof(uint32_t));
+
+	return buffer;
 }
 
 // FUNCIONES INDIVIDUALES PARA CADA DESSERIALIZAR
+
+
+bool Deserializar_ID_MENSAJE(Paquete* paquete, DATOS_MENSAJE* datos)
+{
+	if (!Paquete_Deserializar(paquete, &(datos->ID), sizeof(uint32_t))) return false;
+	return true;
+}
+
 //2
 bool Deserializar_NEW_POKEMON(Paquete* paquete, DATOS_NEW_POKEMON* datos)
 {
 	if (!Paquete_Deserializar(paquete, &(datos->largoPokemon), sizeof(uint32_t))) return false;
-	if (!Paquete_DeserializarString(paquete, &(datos->pokemon), datos->largoPokemon)) return false;
+	if (!Paquete_DeserializarString(paquete, &(datos->pokemon), datos->largoPokemon)) return false; //todo comentar a ger esto
 	if (!Paquete_Deserializar(paquete, &((datos->posicion).posX), sizeof(uint32_t))) return false;
 	if (!Paquete_Deserializar(paquete, &((datos->posicion).posY), sizeof(uint32_t))) return false;
 	if (!Paquete_Deserializar(paquete, &(datos->cantidad), sizeof(uint32_t))) return false;
@@ -137,8 +152,7 @@ bool Deserializar_APPEARED_POKEMON(Paquete* paquete, DATOS_APPEARED_POKEMON* dat
 	if (!Paquete_Deserializar(paquete, &(datos->largoPokemon), sizeof(uint32_t))) return false;
 	if (!Paquete_DeserializarString(paquete, &(datos->pokemon), datos->largoPokemon)) return false;
 	if (!Paquete_Deserializar(paquete, &((datos->posicion).posX), sizeof(uint32_t))) return false;
-	if (!Paquete_Deserializar(paquete, &((datos->posicion).posY), sizeof(uint32_t))) return false;
-	if (!Paquete_Deserializar(paquete, &(datos->ID_MENSAJE), sizeof(uint32_t))) return false;
+	if (!Paquete_Deserializar(paquete, &((datos->posicion).posY), sizeof(uint32_t))) return false; //BORRE EL ID, FUNCION APARTE
 	return true;
 }
 
@@ -155,8 +169,7 @@ bool Deserializar_CATCH_POKEMON(Paquete* paquete, DATOS_CATCH_POKEMON* datos)
 //5
 bool Deserializar_CAUGHT_POKEMON(Paquete* paquete, DATOS_CAUGHT_POKEMON* datos)
 {
-	if (!Paquete_Deserializar(paquete, &(datos->ID_MENSAJE), sizeof(uint32_t))) return false;
-	if (!Paquete_Deserializar(paquete, &(datos->capturado), sizeof(uint32_t))) return false;
+	if (!Paquete_Deserializar(paquete, &(datos->capturado), sizeof(uint32_t))) return false; //BORRE EL ID FUNCION APARTE
 	return true;
 }
 
