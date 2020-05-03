@@ -51,7 +51,7 @@ int main(int argc, char* argv[])
 		Cliente* clienteBroker = CrearCliente(ipBroker, puertoBroker, eventos); //CREO ACA DEBERIA CONECTARSE A LAS COLAS DEL BROKER
 
 		if(clienteBroker == NULL) {
-			log_error(logger, "NO SE PUDO CONECTAR AL MENSAJE");
+			log_error(logger, "NO SE PUDO CONECTAR AL BROKER");
 			exit(-1);
 		}
 
