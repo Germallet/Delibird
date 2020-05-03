@@ -14,7 +14,7 @@ static void EscucharMensajes(Cliente* cliente)
 		{
 			if (paqueteRecibido == NULL)
 			{
-				if(cliente->eventos.desconectado != NULL) (cliente->eventos.desconectado)();
+				if(cliente->eventos.desconectado != NULL) (cliente->eventos.desconectado)(cliente);
 				DestruirCliente(cliente);
 			}
 			else
@@ -33,7 +33,7 @@ static void EscucharMensajes(Cliente* cliente)
 		{
 			if(cliente->eventos.error != NULL)
 				(cliente->eventos.error)(ERROR_PROCESAR_PAQUETE, paqueteRecibido);
-			if(cliente->eventos.desconectado != NULL) (cliente->eventos.desconectado)();
+			if(cliente->eventos.desconectado != NULL) (cliente->eventos.desconectado)(cliente);
 			DestruirCliente(cliente);
 			break;
 		}
@@ -54,7 +54,7 @@ static void EscucharConexiones(Servidor* servidor)
 			break;
 
 		if(servidor->eventos->conectado != NULL)
-			servidor->eventos->conectado();
+			servidor->eventos->conectado(nuevoCliente);
 
 		nuevoCliente->thread = malloc(sizeof(pthread_t));
 		pthread_create(nuevoCliente->thread, NULL, (void*)EscucharMensajes, nuevoCliente);

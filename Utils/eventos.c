@@ -19,11 +19,11 @@ Eventos* Eventos_Crear0()
 {
 	return Eventos_Crear3(NULL, NULL, NULL);
 }
-Eventos* Eventos_Crear2(Evento conectado, Evento desconectado)
+Eventos* Eventos_Crear2(EventoGeneral conectado, EventoGeneral desconectado)
 {
 	return Eventos_Crear3(conectado, desconectado, NULL);
 }
-Eventos* Eventos_Crear3(Evento conectado, Evento desconectado, EventoError error)
+Eventos* Eventos_Crear3(EventoGeneral conectado, EventoGeneral desconectado, EventoError error)
 {
 	Eventos* eventos = malloc(sizeof(Eventos));
 	eventos->conectado = conectado;

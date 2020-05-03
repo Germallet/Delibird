@@ -90,7 +90,7 @@ void* Serializar_GET_POKEMON(DATOS_GET_POKEMON* datos, int* tamanioBuffer)
 	int desplazamiento = 0;
 	memcpy(paqueteSerializado, &(datos->largoPokemon), sizeof(uint32_t));
 	desplazamiento += sizeof(uint32_t);
-	memcpy(paqueteSerializado+desplazamiento, &(datos->pokemon), datos->largoPokemon);
+	memcpy(paqueteSerializado+desplazamiento, datos->pokemon, datos->largoPokemon);
 
 	return paqueteSerializado;
 }
@@ -211,7 +211,7 @@ bool Deserializar_CAUGHT_POKEMON(int socket,DATOS_CAUGHT_POKEMON* datos) {
 }
 
 //6
-bool Deserializar_GET_POKEMON(int socket,DATOS_GET_POKEMON* datos) {
+/*bool Deserializar_GET_POKEMON(int socket,DATOS_GET_POKEMON* datos) {
 
 	datos = malloc(sizeof(DATOS_GET_POKEMON));
 
@@ -221,6 +221,14 @@ bool Deserializar_GET_POKEMON(int socket,DATOS_GET_POKEMON* datos) {
 	verificador += recv(socket,datos->pokemon,datos->largoPokemon,0);
 
 	return verificador == sizeof(DATOS_GET_POKEMON);
+}*/
+bool Deserializar_GET_POKEMON(Paquete* paquete, DATOS_GET_POKEMON* datos)
+{
+	if (!Paquete_Deserializar(paquete, &(datos->largoPokemon), sizeof(uint32_t))) return false;
+	datos->pokemon = malloc(datos->largoPokemon+1);
+	if (!Paquete_Deserializar(paquete, datos->pokemon, datos->largoPokemon)) return false;
+	(datos->pokemon)[datos->largoPokemon] = '\0';
+	return true;
 }
 
 //7
@@ -259,3 +267,34 @@ uint32_t size_CAUGHT_POKEMON(DATOS_CAUGHT_POKEMON* datos) {
 	return sizeof(uint32_t)*2;
 }
 */
+
+void* Serializar_BROKER_RECONECTAR(Broker_DATOS_RECONECTAR* datos, int* tamanioBuffer)
+{
+	*tamanioBuffer = sizeof(Broker_DATOS_RECONECTAR);
+	void* stream = malloc(*tamanioBuffer);
+
+	int desplazamiento = 0;
+	memcpy(stream, &(datos->id), sizeof(datos->id));
+	desplazamiento += sizeof(datos->id);
+
+	return stream;
+}
+bool Deserializar_BROKER_RECONECTAR(int socket, Broker_DATOS_RECONECTAR* datos)
+{
+	datos = malloc(sizeof(Broker_DATOS_RECONECTAR));
+
+	uint32_t verificador = 0;
+
+	verificador += recv(socket, &(datos->id), sizeof(datos->id), 0);
+
+	return verificador == sizeof(Broker_DATOS_RECONECTAR);
+}
+
+void* Serializar_BROKER_CONECTADO(Broker_DATOS_RECONECTAR* datos, int* tamanioBuffer)
+{
+	return Serializar_BROKER_RECONECTAR(datos, tamanioBuffer);
+}
+bool Deserializar_BROKER_CONECTADO(int socket, Broker_DATOS_RECONECTAR* datos)
+{
+	return Deserializar_BROKER_RECONECTAR(socket, datos);
+}

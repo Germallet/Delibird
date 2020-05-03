@@ -4,7 +4,7 @@
 
 static size_t Paquete_Tamanio(Paquete* paquete)
 {
-	return sizeof(paquete->codigoOperacion) + paquete->tamanio + sizeof(paquete->tamanio);
+	return sizeof(paquete->codigoOperacion) + sizeof(paquete->tamanio) + paquete->tamanio;
 }
 
 void* Paquete_Serializar(Paquete* paquete, size_t* tamanioFinal)
@@ -39,4 +39,25 @@ void Paquete_Liberar(Paquete* paquete)
 		return;
 	free(paquete->stream);
 	free(paquete);
+}
+
+bool Paquete_Deserializar(Paquete* paquete, void* datos, int tamanio)
+{
+	if (paquete->tamanio < paquete->desplazamiento + tamanio)
+		return false;
+	memcpy(datos, paquete->stream + paquete->desplazamiento, tamanio);
+	paquete->desplazamiento += tamanio;
+	return true;
+}
+bool Paquete_DeserializarString(Paquete* paquete, char** string, int tamanio)
+{
+	*string = malloc(tamanio+1);
+	if (!Paquete_Deserializar(paquete, *string, tamanio))
+		return false;
+	(*string)[tamanio+1] = '\0';
+	return true;
+}
+bool Paquete_StreamLeido(Paquete* paquete)
+{
+	return paquete->tamanio == paquete->desplazamiento + 1;
 }
