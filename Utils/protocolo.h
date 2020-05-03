@@ -1,6 +1,8 @@
+#pragma once
+#include "paquete.h"
 #include <stdbool.h>
-#include "../Utils/net.h"
 #include <string.h>
+#include <netdb.h>
 
 typedef enum
 {

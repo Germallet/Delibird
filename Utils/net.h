@@ -1,5 +1,6 @@
 #pragma once
 #include "eventos.h"
+#include "protocolo.h"
 #include <netdb.h>
 #include <pthread.h>
 
