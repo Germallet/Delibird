@@ -29,27 +29,24 @@ Eventos* Eventos_Crear3(Evento conectado, Evento desconectado, EventoError error
 	eventos->conectado = conectado;
 	eventos->desconectado = desconectado;
 	eventos->error = error != NULL ? error : ClienteErrorDefault;
-	eventos->operaciones = dictionary_create();
+	eventos->operaciones = dictionaryInt_create();
 	return eventos;
 }
 
-void Eventos_AgregarOperacion(Eventos* eventos, CodigoDeOperacion codigoDeOperacion, EventoOperacion evento)
+void Eventos_AgregarOperacion(Eventos* eventos, uint32_t codigoDeOperacion, EventoOperacion evento)
 {
-	char stringCodigo[] = {codigoDeOperacion, '\0'};
-	dictionary_put(eventos->operaciones, stringCodigo, evento);
+	dictionaryInt_put(eventos->operaciones, codigoDeOperacion, evento);
 }
-bool Eventos_TieneOperacion(Eventos* eventos, CodigoDeOperacion codigoDeOperacion)
+bool Eventos_TieneOperacion(Eventos* eventos, uint32_t codigoDeOperacion)
 {
-	char stringCodigo[] = {codigoDeOperacion, '\0'};
-	return (EventoOperacion)dictionary_has_key(eventos->operaciones, stringCodigo);
+	return (EventoOperacion)dictionaryInt_has_key(eventos->operaciones, codigoDeOperacion);
 }
-EventoOperacion Eventos_ObtenerOperacion(Eventos* eventos, CodigoDeOperacion codigoDeOperacion)
+EventoOperacion Eventos_ObtenerOperacion(Eventos* eventos, uint32_t codigoDeOperacion)
 {
-	char stringCodigo[] = {codigoDeOperacion, '\0'};
-	return (EventoOperacion)dictionary_get(eventos->operaciones, stringCodigo);
+	return (EventoOperacion)dictionaryInt_get(eventos->operaciones, codigoDeOperacion);
 }
 void Eventos_Destruir(Eventos* eventos)
 {
-	dictionary_destroy(eventos->operaciones);
+	dictionaryInt_destroy(eventos->operaciones);
 	free(eventos);
 }

@@ -1,19 +1,6 @@
 #pragma once
-#include <commons/collections/dictionary.h>
+#include "dictionaryInt.h"
 #include "paquete.h"
-
-typedef enum
-{
-	MENSAJE = 1,
-	NEW_POKEMON = 2,
-	APPEARED_POKEMON = 3,
-	CATCH_POKEMON = 4,
-	CAUGHT_POKEMON = 5,
-	GET_POKEMON = 6,
-	LOCALIZED_POKEMON = 7,
-	SUSCRIPTOR = 8,
-	OK = 0
-} CodigoDeOperacion;
 
 typedef enum
 {
@@ -30,7 +17,7 @@ typedef struct
 	Evento conectado;
 	Evento desconectado;
 	EventoError error;
-	t_dictionary* operaciones;
+	t_dictionaryInt* operaciones;
 } Eventos;
 
 typedef struct
@@ -47,7 +34,7 @@ typedef void (*EventoOperacion)(Cliente*, Paquete*);
 extern Eventos* Eventos_Crear0();
 extern Eventos* Eventos_Crear2(Evento conectado, Evento desconectado);
 extern Eventos* Eventos_Crear3(Evento conectado, Evento desconectado, EventoError error);
-extern void Eventos_AgregarOperacion(Eventos* eventos, CodigoDeOperacion codigoDeOperacion, EventoOperacion evento);
-extern bool Eventos_TieneOperacion(Eventos* eventos, CodigoDeOperacion codigoDeOperacion);
-extern EventoOperacion Eventos_ObtenerOperacion(Eventos* eventos, CodigoDeOperacion codigoDeOperacion);
+extern void Eventos_AgregarOperacion(Eventos* eventos, uint32_t codigoDeOperacion, EventoOperacion evento);
+extern bool Eventos_TieneOperacion(Eventos* eventos, uint32_t codigoDeOperacion);
+extern EventoOperacion Eventos_ObtenerOperacion(Eventos* eventos, uint32_t codigoDeOperacion);
 extern void Eventos_Destruir(Eventos* eventos);

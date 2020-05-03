@@ -2,6 +2,19 @@
 #include "../Utils/net.h"
 #include <string.h>
 
+typedef enum
+{
+	MENSAJE = 1,
+	NEW_POKEMON = 2,
+	APPEARED_POKEMON = 3,
+	CATCH_POKEMON = 4,
+	CAUGHT_POKEMON = 5,
+	GET_POKEMON = 6,
+	LOCALIZED_POKEMON = 7,
+	SUSCRIPTOR = 8,
+	OK = 0
+} CodigoDeOperacion;
+
 typedef struct {
 	uint32_t posX;
 	uint32_t posY;
