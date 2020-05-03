@@ -55,6 +55,12 @@ void Operacion_CONECTAR(Cliente* cliente, Paquete* paqueteRecibido)
 		log_error(logger, "El cliente ya está conectado");
 		return;
 	}
+	if (!Paquete_StreamLeido(paqueteRecibido))
+	{
+		// TODO
+		log_error(logger, "Mensaje inválido");
+		return;
+	}
 
 	ClienteBroker* clienteBroker = CrearClienteBroker(cliente);
 	cliente->info = clienteBroker;
@@ -81,7 +87,7 @@ void Operacion_RECONECTAR(Cliente* cliente, Paquete* paqueteRecibido)
 	}
 
 	Broker_DATOS_RECONECTAR datos;
-	if (!Deserializar_BROKER_RECONECTAR(cliente->socket, &datos))
+	if (!Deserializar_BROKER_RECONECTAR(cliente->socket, &datos) || !Paquete_StreamLeido(paqueteRecibido))
 		log_error(logger, "Error Deserializar_BROKER_RECONECTAR");
 	else
 	{
