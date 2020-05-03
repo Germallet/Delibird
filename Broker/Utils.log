@@ -37,3 +37,4 @@
 [ERROR] 00:07:50:657 Utils/(17920:18097): Error al recibir paquete. (Cod. op.: -1)
 [ERROR] 00:07:51:657 Utils/(17920:18102): Error al recibir paquete. (Cod. op.: -1)
 [ERROR] 00:07:54:457 Utils/(17920:18107): Error al recibir paquete. (Cod. op.: -1)
+[ERROR] 12:17:39:966 Utils/(12410:12429): Recibido código de operación inválido. (Cod. op.: 6)

@@ -1,10 +1,14 @@
 #include "broker.h"
-#include "../Utils/net.h"
+#include "clienteBroker.h"
+#include "../Utils/socket.h"
 
-void ClienteConectado();
-void ClienteDesconectado();
-void ClienteError(ErrorDeEscucha error, Paquete* paqueteRecibido);
-void Operacion_SUSCRIPTOR(Cliente* cliente, Paquete* paqueteRecibido);
+void ClienteConectado(Cliente* cliente);
+void ClienteDesconectado(Cliente* cliente);
+
+void Operacion_CONECTAR(Cliente* cliente, Paquete* paqueteRecibido);
+void Operacion_RECONECTAR(Cliente* cliente, Paquete* paqueteRecibido);
+void Operacion_SUSCRIBIRSE(Cliente* cliente, Paquete* paqueteRecibido);
+
 void Operacion_NEW_POKEMON(Cliente* cliente, Paquete* paqueteRecibido);
 void Operacion_APPEARED_POKEMON(Cliente* cliente, Paquete* paqueteRecibido);
 void Operacion_CATCH_POKEMON(Cliente* cliente, Paquete* paqueteRecibido);
@@ -14,14 +18,17 @@ void Operacion_LOCALIZED_POKEMON(Cliente* cliente, Paquete* paqueteRecibido);
 
 void IniciarServidorBroker(char* ip, int puerto)
 {
-	Eventos* eventos = Eventos_Crear2(&ClienteConectado, &ClienteDesconectado);
-	Eventos_AgregarOperacion(eventos, SUSCRIPTOR, &Operacion_SUSCRIPTOR);
-	Eventos_AgregarOperacion(eventos, NEW_POKEMON, &Operacion_NEW_POKEMON);
-	Eventos_AgregarOperacion(eventos, APPEARED_POKEMON, &Operacion_APPEARED_POKEMON);
-	Eventos_AgregarOperacion(eventos, CATCH_POKEMON, &Operacion_CATCH_POKEMON);
-	Eventos_AgregarOperacion(eventos, CAUGHT_POKEMON, &Operacion_CAUGHT_POKEMON);
-	Eventos_AgregarOperacion(eventos, GET_POKEMON, &Operacion_GET_POKEMON);
-	Eventos_AgregarOperacion(eventos, LOCALIZED_POKEMON, &Operacion_LOCALIZED_POKEMON);
+	Eventos* eventos = Eventos_Crear2((EventoGeneral)&ClienteConectado, (EventoGeneral)&ClienteDesconectado);
+	Eventos_AgregarOperacion(eventos, BROKER_CONECTAR, (EventoOperacion)&Operacion_CONECTAR);
+	Eventos_AgregarOperacion(eventos, BROKER_RECONECTAR, (EventoOperacion)&Operacion_RECONECTAR);
+	Eventos_AgregarOperacion(eventos, BROKER_SUSCRIBIRSE, (EventoOperacion)&Operacion_SUSCRIBIRSE);
+
+	Eventos_AgregarOperacion(eventos, NEW_POKEMON, (EventoOperacion)&Operacion_NEW_POKEMON);
+	Eventos_AgregarOperacion(eventos, APPEARED_POKEMON, (EventoOperacion)&Operacion_APPEARED_POKEMON);
+	Eventos_AgregarOperacion(eventos, CATCH_POKEMON, (EventoOperacion)&Operacion_CATCH_POKEMON);
+	Eventos_AgregarOperacion(eventos, CAUGHT_POKEMON, (EventoOperacion)&Operacion_CAUGHT_POKEMON);
+	Eventos_AgregarOperacion(eventos, GET_POKEMON, (EventoOperacion)&Operacion_GET_POKEMON);
+	Eventos_AgregarOperacion(eventos, LOCALIZED_POKEMON, (EventoOperacion)&Operacion_LOCALIZED_POKEMON);
 
 	Servidor* servidor = CrearServidor(ip, puerto, eventos);
 
@@ -31,50 +38,91 @@ void IniciarServidorBroker(char* ip, int puerto)
 		log_error(logger, "Error al iniciar escucha (%s:%d)", ip, puerto);
 }
 
-void ClienteConectado()
+void ClienteConectado(Cliente* cliente)
 {
-	log_info(logger, "ClienteConectado");
+	log_info(logger, "Se conectó un cliente");
 }
-void ClienteDesconectado()
+void ClienteDesconectado(Cliente* cliente)
 {
-	log_info(logger, "ClienteDesconectado");
-}
-void ClienteError(ErrorDeEscucha error, Paquete* paqueteRecibido)
-{
-	if (error == ERROR_RECIBIR)
-		log_error(logger, "Error al recibir paquete. (Cod. op.: %d)", paqueteRecibido->codigoOperacion);
-	else if (error == ERROR_OPERACION_INVALIDA)
-		log_error(logger, "Recibido código de operación inválido. (Cod. op.: %d)", paqueteRecibido->codigoOperacion);
-	else if (error == ERROR_PROCESAR_PAQUETE)
-		log_error(logger, "Error al procesar paquete. (Cod. op.: %d)", paqueteRecibido->codigoOperacion);
+	log_info(logger, "Se desconectó un cliente");
 }
 
-void Operacion_SUSCRIPTOR(Cliente* cliente, Paquete* paqueteRecibido)
+void Operacion_CONECTAR(Cliente* cliente, Paquete* paqueteRecibido)
 {
-	log_info(logger, "SUSCRIPTOR");
+	if (cliente->info != NULL)
+	{
+		// TODO
+		log_error(logger, "El cliente ya está conectado");
+		return;
+	}
+
+	ClienteBroker* clienteBroker = CrearClienteBroker(cliente);
+	cliente->info = clienteBroker;
+
+	int tamanioBuffer;
+	Broker_DATOS_RECONECTAR datos;
+	datos.id = clienteBroker->id;
+	void* buffer = Serializar_BROKER_CONECTADO(&(datos), &tamanioBuffer);
+	int r = Socket_Enviar(BROKER_CONECTADO, buffer, tamanioBuffer, cliente->socket);
+
+	if (r > 0)
+		log_info(logger, "Se conectó un cliente correctamente (id: %d)", clienteBroker->id);
+	else
+		log_error(logger, "Error al conectar cliente");
 }
 
-void Operacion_NEW_POKEMON(Cliente* cliente, Paquete* paqueteRecibido)
+void Operacion_RECONECTAR(Cliente* cliente, Paquete* paqueteRecibido)
 {
-	log_info(logger, "NEW_POKEMON");
+	if (cliente->info != NULL)
+	{
+		// TODO
+		log_error(logger, "El cliente ya está conectado");
+		return;
+	}
+
+	Broker_DATOS_RECONECTAR datos;
+	if (!Deserializar_BROKER_RECONECTAR(cliente->socket, &datos))
+		log_error(logger, "Error Deserializar_BROKER_RECONECTAR");
+	else
+	{
+		ClienteBroker* clienteBroker = ObtenerClienteBroker(datos.id);
+		if (clienteBroker == NULL)
+		{
+			// TODO
+			log_error(logger, "El cliente no puede reconectar");
+			return;
+		}
+		else
+		{
+			int tamanioBuffer;
+			Broker_DATOS_RECONECTAR datos;
+			datos.id = clienteBroker->id;
+			void* buffer = Serializar_BROKER_CONECTADO(&(datos), &tamanioBuffer);
+			int r = Socket_Enviar(BROKER_CONECTADO, buffer, tamanioBuffer, cliente->socket);
+
+			if (r > 0)
+				log_info(logger, "Se conectó un cliente correctamente (id: %d)", clienteBroker->id);
+			else
+				log_error(logger, "Error al conectar cliente");
+		}
+	}
 }
-void Operacion_APPEARED_POKEMON(Cliente* cliente, Paquete* paqueteRecibido)
+
+void Operacion_SUSCRIBIRSE(Cliente* cliente, Paquete* paqueteRecibido)
 {
 	log_info(logger, "APPEARED_POKEMON");
 }
-void Operacion_CATCH_POKEMON(Cliente* cliente, Paquete* paqueteRecibido)
-{
-	log_info(logger, "CATCH_POKEMON");
-}
-void Operacion_CAUGHT_POKEMON(Cliente* cliente, Paquete* paqueteRecibido)
-{
-	log_info(logger, "CAUGHT_POKEMON");
-}
+
+void Operacion_NEW_POKEMON(Cliente* cliente, Paquete* paqueteRecibido) {}
+void Operacion_APPEARED_POKEMON(Cliente* cliente, Paquete* paqueteRecibido) {}
+void Operacion_CATCH_POKEMON(Cliente* cliente, Paquete* paqueteRecibido) {}
+void Operacion_CAUGHT_POKEMON(Cliente* cliente, Paquete* paqueteRecibido) {}
 void Operacion_GET_POKEMON(Cliente* cliente, Paquete* paqueteRecibido)
 {
-	log_info(logger, "GET_POKEMON");
+	DATOS_GET_POKEMON datos;
+	if (!Deserializar_GET_POKEMON(paqueteRecibido, &datos))
+		log_error(logger, "Error al deserializar GET_POKEMON");
+	else
+		log_info(logger, "GET_POKEMON: %s", datos.pokemon);
 }
-void Operacion_LOCALIZED_POKEMON(Cliente* cliente, Paquete* paqueteRecibido)
-{
-	log_info(logger, "LOCALIZED_POKEMON");
-}
+void Operacion_LOCALIZED_POKEMON(Cliente* cliente, Paquete* paqueteRecibido) {}
