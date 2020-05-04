@@ -22,6 +22,7 @@ int main(int argc, char* argv[])
 	// GESTION DE MENSAJES
 	if (argc <= 3) {
 		log_error(logger, "TE FALTAN PARAMETROS");
+		terminarPrograma(logger, config);
 		exit(-1);
 	}
 
@@ -40,6 +41,7 @@ int main(int argc, char* argv[])
 			send_APPEARED_POKEMON(argc, argv, clienteTeam->socket);
 		} else {
 			log_error(logger, "TEAM NO ENTIENDE TU OPERACION");
+			terminarPrograma(logger, config);
 			exit (-1);
 		}
 
@@ -51,6 +53,7 @@ int main(int argc, char* argv[])
 
 		if(clienteBroker == NULL) {
 			log_error(logger, "NO SE PUDO CONECTAR AL BROKER");
+			terminarPrograma(logger, config);
 			exit(-1);
 		}
 
@@ -79,6 +82,7 @@ int main(int argc, char* argv[])
 
 		if(clienteGameCard == NULL) {
 			log_error(logger, "NO SE PUDO CONECTAR A LA GAMECARD");
+			terminarPrograma(logger, config);
 			exit(-1);
 		}
 
@@ -97,8 +101,9 @@ int main(int argc, char* argv[])
 
 		DestruirCliente(clienteGameCard);
 
-	} else {
+	} else  {
 		log_error(logger, "TENEMOS LA SOSPECHA QUE ESCRIBISTE MAL EL PROCESO");
+		terminarPrograma(logger, config);
 		exit (-1);
 	}
 
@@ -118,6 +123,29 @@ void terminarPrograma(t_log* logger, t_config* config) {
 bool sonIguales(char* a, char* b) {
 	return strcmp(a,b) == 0;
 }
+
+//void* convertirANEW_POKEMON(int cantParametros, char*parametros[]) {
+//
+//	if (cantParametros != 7 && cantParametros != 8){
+//		log_error(logger, "Mandaste mal los parametros sabandija");
+//		exit(-1);
+//	}
+//
+//	DATOS_NEW_POKEMON* datos = malloc(sizeof(DATOS_NEW_POKEMON));
+//
+//	datos->largoPokemon = (uint32_t) strlen(parametros[3]);
+//	datos->pokemon = parametros[3];
+//	(datos->posicion).posX = strtol(parametros[4],NULL,10);
+//	(datos->posicion).posY = strtol(parametros[5],NULL,10);
+//	datos->cantidad = strtol(parametros[6],NULL,10);
+//
+//	if (cantParametros == 8) {
+//		DATOS_MENSAJE* datosMensaje = malloc(sizeof(DATOS_MENSAJE));
+//		uint32_t ID = strtol(parametros[7],NULL,10);
+//		return datosMensaje;
+//	} else
+//		return datos;
+//}
 
 //./GameBoy BROKER NEW_POKEMON pikachu 3 1 3 ID()
 //    1        2        3         4    5 6 7  8
@@ -147,14 +175,15 @@ void send_NEW_POKEMON(int cantParametros, char* parametros[], int numSocket) {
 
 	int r = Socket_Enviar(NEW_POKEMON, buffer, tamanioBuffer, numSocket);
 
-	free(datos);
-
 	if (r > 0)
 	    log_info(logger, "Se envio NEW_POKEMON correctamente");
 	else {
 		log_error(logger, "No se envio correctamente el mensaje");
 		exit(-1);
 	}
+
+	free(buffer);
+	free(datos);
 }
 
 //./GameBoy BROKER APPEARED_POKEMON pikachu 3 1 ID()
@@ -183,6 +212,7 @@ void send_APPEARED_POKEMON(int cantParametros, char* parametros[], int numSocket
 
 	int r = Socket_Enviar(APPEARED_POKEMON, buffer, tamanioBuffer, numSocket);
 
+	free(buffer);
 	free(datos);
 
 	if (r > 0)
@@ -221,6 +251,7 @@ void send_CATCH_POKEMON(int cantParametros, char* parametros[], int numSocket) {
 
 	int r = Socket_Enviar(CATCH_POKEMON, buffer, tamanioBuffer, numSocket);
 
+	free(buffer);
 	free(datos);
 
 	if (r > 0)
@@ -252,6 +283,7 @@ void send_CAUGHT_POKEMON(int cantParametros, char* parametros[], int numSocket) 
 	buffer = Serializar_ID_MENSAJE(&ID, buffer, &tamanioBuffer);
 	int r = Socket_Enviar(CAUGHT_POKEMON, buffer, tamanioBuffer, numSocket);
 
+	free(buffer);
 	free(datos);
 
 	if (r > 0)
@@ -282,6 +314,7 @@ void send_GET_POKEMON(int cantParametros, char* parametros[], int numSocket) {
 	void* buffer = Serializar_GET_POKEMON(datos, &tamanioBuffer);
 	int r = Socket_Enviar(GET_POKEMON, buffer, tamanioBuffer, numSocket);
 
+	free(buffer);
 	free(datos);
 
 	if (r > 0)
