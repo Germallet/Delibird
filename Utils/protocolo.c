@@ -48,7 +48,6 @@ void* Serializar_APPEARED_POKEMON(DATOS_APPEARED_POKEMON* datos, int* tamanioBuf
 	memcpy(buffer + desplazamiento, &((datos->posicion).posX), sizeof(uint32_t));
 	desplazamiento += sizeof(uint32_t);
 	memcpy(buffer + desplazamiento, &((datos->posicion).posY), sizeof(uint32_t));
-	desplazamiento += sizeof(uint32_t); //BORRE EL ID
 
 	return buffer;
 }
@@ -67,7 +66,6 @@ void* Serializar_CATCH_POKEMON(DATOS_CATCH_POKEMON* datos, int* tamanioBuffer)
 	memcpy(buffer + desplazamiento, &((datos->posicion).posX), sizeof(uint32_t));
 	desplazamiento += sizeof(uint32_t);
 	memcpy(buffer + desplazamiento, &((datos->posicion).posY), sizeof(uint32_t));
-	desplazamiento += sizeof(uint32_t);
 
 	return buffer;
 }
@@ -78,9 +76,8 @@ void* Serializar_CAUGHT_POKEMON(DATOS_CAUGHT_POKEMON* datos, int* tamanioBuffer)
 	*tamanioBuffer = sizeof(uint32_t);
 	void* buffer = malloc(*tamanioBuffer);
 
-	int desplazamiento = 0; //BORRE EL ID
+	int desplazamiento = 0;
 	memcpy(buffer + desplazamiento, &(datos->capturado), sizeof(uint32_t));
-	desplazamiento += sizeof(uint32_t);
 
 	return buffer;
 }
