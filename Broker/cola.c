@@ -41,7 +41,7 @@ void AgregarSuscriptor(Cola* cola, ClienteBroker* clienteBroker)
 void RemoverSuscriptor(ClienteBroker* clienteBroker)
 {
 	bool(SonIguales)(void* clienteBroker2) { return (ClienteBroker*)clienteBroker2 == clienteBroker; }
-	list_remove_by_condition(cola_NEW_POKEMON->lista, (bool(*)(void*))&SonIguales);
+	list_remove_by_condition(cola_NEW_POKEMON->lista, &SonIguales);
 	list_remove_by_condition(cola_APPEARED_POKEMON->lista, &SonIguales);
 	list_remove_by_condition(cola_CATCH_POKEMON->lista, &SonIguales);
 	list_remove_by_condition(cola_CAUGHT_POKEMON->lista, &SonIguales);
