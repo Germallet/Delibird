@@ -10,5 +10,6 @@ extern Cola *cola_NEW_POKEMON, *cola_APPEARED_POKEMON, *cola_CATCH_POKEMON, *col
 
 void CrearColas();
 void DestruirColas();
+Cola* ObtenerCola(CodigoDeCola codigo);
 void AgregarSuscriptor(Cola* cola, ClienteBroker* clienteBroker);
 void RemoverSuscriptor(ClienteBroker* clienteBroker);

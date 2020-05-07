@@ -1,36 +1,41 @@
 #include "cola.h"
+#include "../Utils/dictionaryInt.h"
 #include <stdlib.h>
 
+t_dictionaryInt* diccionarioColas;
 Cola *cola_NEW_POKEMON, *cola_APPEARED_POKEMON, *cola_CATCH_POKEMON, *cola_CAUGHT_POKEMON, *cola_GET_POKEMON, *cola_LOCALIZED_POKEMON;
 
-static void CrearCola(Cola* cola)
+static void CrearCola(CodigoDeCola codigo, Cola* cola)
 {
 	cola = malloc(sizeof(Cola));
 	cola->lista = list_create();
 }
 void CrearColas()
 {
-	CrearCola(cola_NEW_POKEMON);
-	CrearCola(cola_APPEARED_POKEMON);
-	CrearCola(cola_CATCH_POKEMON);
-	CrearCola(cola_CAUGHT_POKEMON);
-	CrearCola(cola_GET_POKEMON);
-	CrearCola(cola_LOCALIZED_POKEMON);
+	diccionarioColas = dictionaryInt_create();
+	dictionaryInt_put(diccionarioColas, COLA_NEW_POKEMON, cola_NEW_POKEMON);
+	dictionaryInt_put(diccionarioColas, COLA_APPEARED_POKEMON, cola_APPEARED_POKEMON);
+	dictionaryInt_put(diccionarioColas, COLA_CATCH_POKEMON, cola_CATCH_POKEMON);
+	dictionaryInt_put(diccionarioColas, COLA_CAUGHT_POKEMON, cola_CAUGHT_POKEMON);
+	dictionaryInt_put(diccionarioColas, COLA_GET_POKEMON, cola_GET_POKEMON);
+	dictionaryInt_put(diccionarioColas, COLA_LOCALIZED_POKEMON, cola_LOCALIZED_POKEMON);
+	dictionaryInt_iterator(diccionarioColas, (void(*)(uint32_t,void*))&CrearCola);
 }
 
-static void DestruirCola(Cola* cola)
+static void DestruirCola(CodigoDeCola codigo, Cola* cola)
 {
 	list_destroy(cola->lista);
 	free(cola);
+	dictionaryInt_destroy(diccionarioColas);
 }
 void DestruirColas()
 {
-	DestruirCola(cola_NEW_POKEMON);
-	DestruirCola(cola_APPEARED_POKEMON);
-	DestruirCola(cola_CATCH_POKEMON);
-	DestruirCola(cola_CAUGHT_POKEMON);
-	DestruirCola(cola_GET_POKEMON);
-	DestruirCola(cola_LOCALIZED_POKEMON);
+	dictionaryInt_iterator(diccionarioColas, (void(*)(uint32_t,void*))&DestruirCola);
+}
+
+Cola* ObtenerCola(CodigoDeCola codigo)
+{
+	return dictionaryInt_get(diccionarioColas, codigo);
 }
 
 void AgregarSuscriptor(Cola* cola, ClienteBroker* clienteBroker)

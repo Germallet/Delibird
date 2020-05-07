@@ -1,5 +1,6 @@
 #include "broker.h"
 #include "clienteBroker.h"
+#include "cola.h"
 #include "../Utils/socket.h"
 
 void ClienteConectado(Cliente* cliente);
@@ -87,7 +88,7 @@ void Operacion_RECONECTAR(Cliente* cliente, Paquete* paqueteRecibido)
 	}
 
 	Broker_DATOS_RECONECTAR datos;
-	if (!Deserializar_BROKER_RECONECTAR(cliente->socket, &datos) || !Paquete_StreamLeido(paqueteRecibido))
+	if (!Deserializar_BROKER_RECONECTAR(paqueteRecibido, &datos) || !Paquete_StreamLeido(paqueteRecibido))
 		log_error(logger, "Error Deserializar_BROKER_RECONECTAR");
 	else
 	{
@@ -116,7 +117,18 @@ void Operacion_RECONECTAR(Cliente* cliente, Paquete* paqueteRecibido)
 
 void Operacion_SUSCRIBIRSE(Cliente* cliente, Paquete* paqueteRecibido)
 {
-	log_info(logger, "APPEARED_POKEMON");
+	if (cliente->info == NULL)
+	{
+		// TODO
+		log_error(logger, "El cliente no está conectado!");
+		return;
+	}
+
+	BROKER_DATOS_SUSCRIBIRSE datosSuscripcion;
+	Deserializar_BROKER_SUSCRIBIRSE(paqueteRecibido, &datosSuscripcion);
+	Cola* cola = ObtenerCola(datosSuscripcion.cola);
+	AgregarSuscriptor(cola, (ClienteBroker*)cliente->info);
+	log_info(logger, "Nueva suscripción: %d", datosSuscripcion.cola);
 }
 
 void Operacion_NEW_POKEMON(Cliente* cliente, Paquete* paqueteRecibido) {}

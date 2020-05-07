@@ -198,22 +198,34 @@ void* Serializar_BROKER_RECONECTAR(Broker_DATOS_RECONECTAR* datos, int* tamanioB
 
 	return stream;
 }
-bool Deserializar_BROKER_RECONECTAR(int socket, Broker_DATOS_RECONECTAR* datos)
+bool Deserializar_BROKER_RECONECTAR(Paquete* paquete, Broker_DATOS_RECONECTAR* datos)
 {
-	datos = malloc(sizeof(Broker_DATOS_RECONECTAR));
-
-	uint32_t verificador = 0;
-
-	verificador += recv(socket, &(datos->id), sizeof(datos->id), 0);
-
-	return verificador == sizeof(Broker_DATOS_RECONECTAR);
+	if (!Paquete_Deserializar(paquete, &(datos->id), sizeof(uint32_t))) return false;
+	return true;
 }
 
 void* Serializar_BROKER_CONECTADO(Broker_DATOS_RECONECTAR* datos, int* tamanioBuffer)
 {
 	return Serializar_BROKER_RECONECTAR(datos, tamanioBuffer);
 }
-bool Deserializar_BROKER_CONECTADO(int socket, Broker_DATOS_RECONECTAR* datos)
+bool Deserializar_BROKER_CONECTADO(Paquete* paquete, Broker_DATOS_RECONECTAR* datos)
 {
-	return Deserializar_BROKER_RECONECTAR(socket, datos);
+	return Deserializar_BROKER_RECONECTAR(paquete, datos);
+}
+
+void* Serializar_BROKER_SUSCRIBIRSE(BROKER_DATOS_SUSCRIBIRSE* datos, int* tamanioBuffer)
+{
+	*tamanioBuffer = sizeof(uint32_t);
+	void* stream = malloc(*tamanioBuffer);
+
+	int desplazamiento = 0;
+	memcpy(stream, &(datos->cola), sizeof(uint32_t));
+	desplazamiento += sizeof(uint32_t);
+
+	return stream;
+}
+bool Deserializar_BROKER_SUSCRIBIRSE(Paquete* paquete, BROKER_DATOS_SUSCRIBIRSE* datos)
+{
+	if (!Paquete_Deserializar(paquete, &(datos->cola), sizeof(uint32_t))) return false;
+	return true;
 }
