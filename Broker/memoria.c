@@ -18,7 +18,7 @@ void IniciarMemoria()
 	log_info(logger, "Hola, soy la memoria y me inicié");
 }
 
-void CrearMensaje(CodigoDeCola tipoDeMensaje, void* contenido)
+uint32_t CrearMensaje(CodigoDeCola tipoDeMensaje, void* contenido)
 {
 	Mensaje* mensaje = malloc(sizeof(Mensaje));
 
@@ -33,4 +33,6 @@ void CrearMensaje(CodigoDeCola tipoDeMensaje, void* contenido)
 	pthread_mutex_lock(&mutexMensajes);
 	dictionaryInt_put(mensajes, mensaje->id, mensaje);
 	pthread_mutex_unlock(&mutexMensajes);
+
+	return mensaje->id;
 }

@@ -49,7 +49,7 @@ typedef struct {
 } Posicion;
 
 typedef struct {
-	uint32_t ID;
+	uint32_t id;
 } DATOS_ID_MENSAJE;
 
 typedef struct {
@@ -93,7 +93,7 @@ extern void* Serializar_CATCH_POKEMON(DATOS_CATCH_POKEMON* datos, int* tamanioBu
 extern void* Serializar_GET_POKEMON(DATOS_GET_POKEMON* datos, int* tamanioBuffer);
 extern void* Serializar_CAUGHT_POKEMON(DATOS_CAUGHT_POKEMON* datos, int* tamanioBuffer);
 extern void* Serializar_LOCALIZED_POKEMON(DATOS_LOCALIZED_POKEMON* datos, int* tamanioBuffer);
-extern void* Serializar_ID_MENSAJE(DATOS_ID_MENSAJE* ID, void* buffer, int* tamanioBuffer);
+extern void* Serializar_ID_MENSAJE(DATOS_ID_MENSAJE* datos, int* tamanioBuffer);
 
 extern bool Deserializar_APPEARED_POKEMON(Paquete* paquete, DATOS_APPEARED_POKEMON* datos);
 extern bool Deserializar_NEW_POKEMON(Paquete* paquete, DATOS_NEW_POKEMON* datos);

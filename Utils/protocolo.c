@@ -2,12 +2,13 @@
 #include <stdlib.h>
 
 
-void* Serializar_ID_MENSAJE(DATOS_ID_MENSAJE* datos, void* buffer, int* tamanioBuffer)
+void* Serializar_ID_MENSAJE(DATOS_ID_MENSAJE* datos, int* tamanioBuffer)
 {
-	int desplazamiento = sizeof(DATOS_ID_MENSAJE);
+	*tamanioBuffer = sizeof(DATOS_ID_MENSAJE);
+	void* buffer = malloc(*tamanioBuffer);
 
-	*tamanioBuffer += sizeof(uint32_t);
-	memcpy(buffer + desplazamiento, &(datos->ID), sizeof(uint32_t));
+	int desplazamiento = 0;
+	memcpy(buffer + desplazamiento, &(datos->id), sizeof(datos->id));
 
 	return buffer;
 }
@@ -121,7 +122,7 @@ void* Serializar_LOCALIZED_POKEMON(DATOS_LOCALIZED_POKEMON* datos, int* tamanioB
 
 bool Deserializar_ID_MENSAJE(Paquete* paquete, DATOS_ID_MENSAJE* datos)
 {
-	if (!Paquete_Deserializar(paquete, &(datos->ID), sizeof(uint32_t))) return false;
+	if (!Paquete_Deserializar(paquete, &(datos->id), sizeof(uint32_t))) return false;
 	return true;
 }
 

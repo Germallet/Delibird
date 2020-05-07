@@ -1,4 +1,4 @@
 #include "../Utils/protocolo.h"
 
 void IniciarMemoria();
-void CrearMensaje(CodigoDeCola tipoDeMensaje, void* contenido);
+uint32_t CrearMensaje(CodigoDeCola tipoDeMensaje, void* contenido);
