@@ -13,6 +13,7 @@ typedef enum
 	// BROKER -> CLIENTE
 	BROKER_CONECTADO,
 	BROKER_SUSCRITO,
+	BROKER_ID_MENSAJE,
 	// CUALQUIERA -> CUALQUIERA
 	NEW_POKEMON,
 	APPEARED_POKEMON,
@@ -48,15 +49,8 @@ typedef struct {
 } Posicion;
 
 typedef struct {
-	void* datos;
 	uint32_t ID;
-} DATOS_MENSAJE;
-
-typedef struct {
-	void* datos;
-	uint32_t ID;
-	uint32_t ID_CORRELATIVO;
-} DATOS_MENSAJE_RTA;
+} DATOS_ID_MENSAJE;
 
 typedef struct {
 	uint32_t largoPokemon;
@@ -99,7 +93,7 @@ extern void* Serializar_CATCH_POKEMON(DATOS_CATCH_POKEMON* datos, int* tamanioBu
 extern void* Serializar_GET_POKEMON(DATOS_GET_POKEMON* datos, int* tamanioBuffer);
 extern void* Serializar_CAUGHT_POKEMON(DATOS_CAUGHT_POKEMON* datos, int* tamanioBuffer);
 extern void* Serializar_LOCALIZED_POKEMON(DATOS_LOCALIZED_POKEMON* datos, int* tamanioBuffer);
-extern void* Serializar_ID_MENSAJE(uint32_t* ID, void* buffer, int* tamanioBuffer);
+extern void* Serializar_ID_MENSAJE(DATOS_ID_MENSAJE* ID, void* buffer, int* tamanioBuffer);
 
 extern bool Deserializar_APPEARED_POKEMON(Paquete* paquete, DATOS_APPEARED_POKEMON* datos);
 extern bool Deserializar_NEW_POKEMON(Paquete* paquete, DATOS_NEW_POKEMON* datos);
@@ -107,7 +101,7 @@ extern bool Deserializar_GET_POKEMON(Paquete* paquete, DATOS_GET_POKEMON* datos)
 extern bool Deserializar_CATCH_POKEMON(Paquete* paquete, DATOS_CATCH_POKEMON* datos);
 extern bool Deserializar_CAUGHT_POKEMON(Paquete* paquete, DATOS_CAUGHT_POKEMON* datos);
 extern bool Deserializar_LOCALIZED_POKEMON(Paquete* paquete, DATOS_LOCALIZED_POKEMON* datos);
-extern bool Deserializar_NEW_POKEMON(Paquete* paquete, DATOS_NEW_POKEMON* datos);
+extern bool Deserializar_ID_MENSAJE(Paquete* paquete, DATOS_ID_MENSAJE* datos);
 
 extern void* Serializar_BROKER_RECONECTAR(BROKER_DATOS_RECONECTAR* datos, int* tamanioBuffer);
 extern bool Deserializar_BROKER_RECONECTAR(Paquete* paquete, BROKER_DATOS_RECONECTAR* datos);
