@@ -1,11 +1,10 @@
-typedef struct
-{
-	int id;
-	int posicionEnMemoria;
-} Mensaje;
+#include "../Utils/protocolo.h"
 
 typedef struct
 {
 	int id;
 	int posicionEnMemoria;
-} Mensaje_;
+	// TODO: Variables temporales hasta verdadera implementación
+	CodigoDeCola tipoDeMensaje;
+	void* contenido;
+} Mensaje;

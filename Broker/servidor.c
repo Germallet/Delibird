@@ -1,6 +1,7 @@
 #include "broker.h"
 #include "clienteBroker.h"
 #include "cola.h"
+#include "memoria.h"
 #include "../Utils/socket.h"
 
 void ClienteConectado(Cliente* cliente);
@@ -67,7 +68,7 @@ void Operacion_CONECTAR(Cliente* cliente, Paquete* paqueteRecibido)
 	cliente->info = clienteBroker;
 
 	int tamanioBuffer;
-	Broker_DATOS_RECONECTAR datos;
+	BROKER_DATOS_RECONECTAR datos;
 	datos.id = clienteBroker->id;
 	void* buffer = Serializar_BROKER_CONECTADO(&(datos), &tamanioBuffer);
 	int r = Socket_Enviar(BROKER_CONECTADO, buffer, tamanioBuffer, cliente->socket);
@@ -87,7 +88,7 @@ void Operacion_RECONECTAR(Cliente* cliente, Paquete* paqueteRecibido)
 		return;
 	}
 
-	Broker_DATOS_RECONECTAR datos;
+	BROKER_DATOS_RECONECTAR datos;
 	if (!Deserializar_BROKER_RECONECTAR(paqueteRecibido, &datos) || !Paquete_StreamLeido(paqueteRecibido))
 		log_error(logger, "Error Deserializar_BROKER_RECONECTAR");
 	else
@@ -102,8 +103,6 @@ void Operacion_RECONECTAR(Cliente* cliente, Paquete* paqueteRecibido)
 		else
 		{
 			int tamanioBuffer;
-			Broker_DATOS_RECONECTAR datos;
-			datos.id = clienteBroker->id;
 			void* buffer = Serializar_BROKER_CONECTADO(&(datos), &tamanioBuffer);
 			int r = Socket_Enviar(BROKER_CONECTADO, buffer, tamanioBuffer, cliente->socket);
 
@@ -131,10 +130,50 @@ void Operacion_SUSCRIBIRSE(Cliente* cliente, Paquete* paqueteRecibido)
 	log_info(logger, "Nueva suscripción: %d", datosSuscripcion.cola);
 }
 
-void Operacion_NEW_POKEMON(Cliente* cliente, Paquete* paqueteRecibido) {}
-void Operacion_APPEARED_POKEMON(Cliente* cliente, Paquete* paqueteRecibido) {}
-void Operacion_CATCH_POKEMON(Cliente* cliente, Paquete* paqueteRecibido) {}
-void Operacion_CAUGHT_POKEMON(Cliente* cliente, Paquete* paqueteRecibido) {}
+void Operacion_NEW_POKEMON(Cliente* cliente, Paquete* paqueteRecibido)
+{
+	DATOS_NEW_POKEMON datos;
+	if (!Deserializar_NEW_POKEMON(paqueteRecibido, &datos))
+		log_error(logger, "Error al deserializar NEW_POKEMON");
+	else
+		log_info(logger, "NEW_POKEMON: %s", datos.pokemon);
+
+	CrearMensaje(COLA_NEW_POKEMON, &datos);
+}
+
+void Operacion_APPEARED_POKEMON(Cliente* cliente, Paquete* paqueteRecibido)
+{
+	DATOS_APPEARED_POKEMON datos;
+	if (!Deserializar_APPEARED_POKEMON(paqueteRecibido, &datos))
+		log_error(logger, "Error al deserializar APPEARED_POKEMON");
+	else
+		log_info(logger, "APPEARED_POKEMON: %s", datos.pokemon);
+
+	CrearMensaje(COLA_APPEARED_POKEMON, &datos);
+}
+
+void Operacion_CATCH_POKEMON(Cliente* cliente, Paquete* paqueteRecibido)
+{
+	DATOS_CATCH_POKEMON datos;
+	if (!Deserializar_CATCH_POKEMON(paqueteRecibido, &datos))
+		log_error(logger, "Error al deserializar CATCH_POKEMON");
+	else
+		log_info(logger, "CATCH_POKEMON: %s", datos.pokemon);
+
+	CrearMensaje(COLA_CATCH_POKEMON, &datos);
+}
+
+void Operacion_CAUGHT_POKEMON(Cliente* cliente, Paquete* paqueteRecibido)
+{
+	DATOS_CAUGHT_POKEMON datos;
+	if (!Deserializar_CAUGHT_POKEMON(paqueteRecibido, &datos))
+		log_error(logger, "Error al deserializar CAUGHT_POKEMON");
+	else
+		log_info(logger, "CAUGHT_POKEMON");
+
+	CrearMensaje(COLA_CAUGHT_POKEMON, &datos);
+}
+
 void Operacion_GET_POKEMON(Cliente* cliente, Paquete* paqueteRecibido)
 {
 	DATOS_GET_POKEMON datos;
@@ -142,5 +181,16 @@ void Operacion_GET_POKEMON(Cliente* cliente, Paquete* paqueteRecibido)
 		log_error(logger, "Error al deserializar GET_POKEMON");
 	else
 		log_info(logger, "GET_POKEMON: %s", datos.pokemon);
+
+	CrearMensaje(COLA_GET_POKEMON, &datos);
 }
-void Operacion_LOCALIZED_POKEMON(Cliente* cliente, Paquete* paqueteRecibido) {}
+void Operacion_LOCALIZED_POKEMON(Cliente* cliente, Paquete* paqueteRecibido)
+{
+	DATOS_LOCALIZED_POKEMON datos;
+	if (!Deserializar_LOCALIZED_POKEMON(paqueteRecibido, &datos))
+		log_error(logger, "Error al deserializar LOCALIZED_POKEMON");
+	else
+		log_info(logger, "LOCALIZED_POKEMON: %s", datos.pokemon);
+
+	CrearMensaje(COLA_LOCALIZED_POKEMON, &datos);
+}

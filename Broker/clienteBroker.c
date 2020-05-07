@@ -6,14 +6,14 @@
 t_dictionaryInt* clientes;
 pthread_mutex_t mutexClientes;
 
-uint32_t siguienteID = 0;
-pthread_mutex_t mutexID;
+uint32_t siguienteIDCliente = 0;
+pthread_mutex_t mutexIDCliente;
 
 void Inicializar()
 {
 	clientes = dictionaryInt_create();
 	pthread_mutex_init(&mutexClientes, NULL);
-	pthread_mutex_init(&mutexID, NULL);
+	pthread_mutex_init(&mutexIDCliente, NULL);
 }
 
 ClienteBroker* CrearClienteBroker(Cliente* cliente)
@@ -21,10 +21,10 @@ ClienteBroker* CrearClienteBroker(Cliente* cliente)
 	ClienteBroker* clienteBroker = malloc(sizeof(ClienteBroker));
 	clienteBroker->cliente = cliente;
 
-	pthread_mutex_lock(&mutexID);
-	clienteBroker->id = siguienteID;
-	siguienteID++;
-	pthread_mutex_unlock(&mutexID);
+	pthread_mutex_lock(&mutexIDCliente);
+	clienteBroker->id = siguienteIDCliente;
+	siguienteIDCliente++;
+	pthread_mutex_unlock(&mutexIDCliente);
 
 	return clienteBroker;
 }

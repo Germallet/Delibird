@@ -35,7 +35,7 @@ typedef enum
 typedef struct
 {
 	uint32_t id;
-} BROKER_DATOS_CONECTADO, Broker_DATOS_RECONECTAR;
+} BROKER_DATOS_CONECTADO, BROKER_DATOS_RECONECTAR;
 
 typedef struct
 {
@@ -109,9 +109,9 @@ extern bool Deserializar_CAUGHT_POKEMON(Paquete* paquete, DATOS_CAUGHT_POKEMON* 
 extern bool Deserializar_LOCALIZED_POKEMON(Paquete* paquete, DATOS_LOCALIZED_POKEMON* datos);
 extern bool Deserializar_NEW_POKEMON(Paquete* paquete, DATOS_NEW_POKEMON* datos);
 
-extern void* Serializar_BROKER_RECONECTAR(Broker_DATOS_RECONECTAR* datos, int* tamanioBuffer);
-extern bool Deserializar_BROKER_RECONECTAR(Paquete* paquete, Broker_DATOS_RECONECTAR* datos);
-extern void* Serializar_BROKER_CONECTADO(Broker_DATOS_RECONECTAR* datos, int* tamanioBuffer);
-extern bool Deserializar_BROKER_CONECTADO(Paquete* paquete, Broker_DATOS_RECONECTAR* datos);
+extern void* Serializar_BROKER_RECONECTAR(BROKER_DATOS_RECONECTAR* datos, int* tamanioBuffer);
+extern bool Deserializar_BROKER_RECONECTAR(Paquete* paquete, BROKER_DATOS_RECONECTAR* datos);
+extern void* Serializar_BROKER_CONECTADO(BROKER_DATOS_CONECTADO* datos, int* tamanioBuffer);
+extern bool Deserializar_BROKER_CONECTADO(Paquete* paquete, BROKER_DATOS_CONECTADO* datos);
 void* Serializar_BROKER_SUSCRIBIRSE(BROKER_DATOS_SUSCRIBIRSE* datos, int* tamanioBuffer);
 bool Deserializar_BROKER_SUSCRIBIRSE(Paquete* paquete, BROKER_DATOS_SUSCRIBIRSE* datos);

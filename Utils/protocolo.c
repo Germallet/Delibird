@@ -187,9 +187,9 @@ bool Deserializar_LOCALIZED_POKEMON(Paquete* paquete, DATOS_LOCALIZED_POKEMON* d
 	return true;
 }
 
-void* Serializar_BROKER_RECONECTAR(Broker_DATOS_RECONECTAR* datos, int* tamanioBuffer)
+void* Serializar_BROKER_RECONECTAR(BROKER_DATOS_RECONECTAR* datos, int* tamanioBuffer)
 {
-	*tamanioBuffer = sizeof(Broker_DATOS_RECONECTAR);
+	*tamanioBuffer = sizeof(BROKER_DATOS_RECONECTAR);
 	void* stream = malloc(*tamanioBuffer);
 
 	int desplazamiento = 0;
@@ -198,17 +198,17 @@ void* Serializar_BROKER_RECONECTAR(Broker_DATOS_RECONECTAR* datos, int* tamanioB
 
 	return stream;
 }
-bool Deserializar_BROKER_RECONECTAR(Paquete* paquete, Broker_DATOS_RECONECTAR* datos)
+bool Deserializar_BROKER_RECONECTAR(Paquete* paquete, BROKER_DATOS_RECONECTAR* datos)
 {
 	if (!Paquete_Deserializar(paquete, &(datos->id), sizeof(uint32_t))) return false;
 	return true;
 }
 
-void* Serializar_BROKER_CONECTADO(Broker_DATOS_RECONECTAR* datos, int* tamanioBuffer)
+void* Serializar_BROKER_CONECTADO(BROKER_DATOS_CONECTADO* datos, int* tamanioBuffer)
 {
 	return Serializar_BROKER_RECONECTAR(datos, tamanioBuffer);
 }
-bool Deserializar_BROKER_CONECTADO(Paquete* paquete, Broker_DATOS_RECONECTAR* datos)
+bool Deserializar_BROKER_CONECTADO(Paquete* paquete, BROKER_DATOS_CONECTADO* datos)
 {
 	return Deserializar_BROKER_RECONECTAR(paquete, datos);
 }
