@@ -54,7 +54,7 @@ bool Paquete_DeserializarString(Paquete* paquete, char** string, int tamanio)
 	*string = malloc(tamanio+1);
 	if (!Paquete_Deserializar(paquete, *string, tamanio))
 		return false;
-	(*string)[tamanio+1] = '\0';
+	(*string)[tamanio] = '\0';
 	return true;
 }
 bool Paquete_StreamLeido(Paquete* paquete)
