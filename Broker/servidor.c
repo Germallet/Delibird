@@ -4,6 +4,8 @@
 #include "memoria.h"
 #include "../Utils/socket.h"
 
+Servidor* servidor;
+
 void ClienteConectado(Cliente* cliente);
 void ClienteDesconectado(Cliente* cliente);
 
@@ -32,12 +34,16 @@ void IniciarServidorBroker(char* ip, int puerto)
 	Eventos_AgregarOperacion(eventos, GET_POKEMON, (EventoOperacion)&Operacion_GET_POKEMON);
 	Eventos_AgregarOperacion(eventos, LOCALIZED_POKEMON, (EventoOperacion)&Operacion_LOCALIZED_POKEMON);
 
-	Servidor* servidor = CrearServidor(ip, puerto, eventos);
+	servidor = CrearServidor(ip, puerto, eventos);
 
 	if (servidor != NULL)
 		log_info(logger, "Escucha iniciada (%s:%d)", ip, puerto);
 	else
 		log_error(logger, "Error al iniciar escucha (%s:%d)", ip, puerto);
+}
+void FinalizarServidorBroker()
+{
+	DestruirServidor(servidor);
 }
 
 void ClienteConectado(Cliente* cliente)

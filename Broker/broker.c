@@ -39,7 +39,9 @@ void EsperarHilos()
 
 void Finalizar()
 {
+	FinalizarServidorBroker();
 	DestruirColas();
 	config_destroy(config);
 	log_destroy(logger);
+	pthread_exit(0);
 }
