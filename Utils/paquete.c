@@ -28,8 +28,9 @@ int Paquete_Procesar(int numSocket, Paquete* paquete)
 	if (recv(numSocket, &(paquete->tamanio), sizeof(paquete->tamanio), MSG_WAITALL) == -1)
 		return -1;
 	paquete->stream = malloc(paquete->tamanio);
-	if (recv(numSocket, paquete->stream, paquete->tamanio, MSG_WAITALL) == -1)
-		return -1;
+	if (paquete->tamanio > 0)
+		if (recv(numSocket, paquete->stream, paquete->tamanio, MSG_WAITALL) == -1)
+			return -1;
 	return 0;
 }
 
@@ -59,5 +60,5 @@ bool Paquete_DeserializarString(Paquete* paquete, char** string, int tamanio)
 }
 bool Paquete_StreamLeido(Paquete* paquete)
 {
-	return paquete->tamanio == paquete->desplazamiento + 1;
+	return paquete->tamanio == paquete->desplazamiento;
 }

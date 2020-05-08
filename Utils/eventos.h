@@ -1,4 +1,6 @@
-#pragma once
+#ifndef UTILS_EVENTOS
+#define UTILS_EVENTOS
+
 #include "dictionaryInt.h"
 #include "paquete.h"
 
@@ -28,3 +30,5 @@ extern void Eventos_AgregarOperacion(Eventos* eventos, uint32_t codigoDeOperacio
 extern bool Eventos_TieneOperacion(Eventos* eventos, uint32_t codigoDeOperacion);
 extern EventoOperacion Eventos_ObtenerOperacion(Eventos* eventos, uint32_t codigoDeOperacion);
 extern void Eventos_Destruir(Eventos* eventos);
+
+#endif

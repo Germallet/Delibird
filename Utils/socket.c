@@ -93,6 +93,7 @@ Servidor* Socket_Escuchar(char* ip, int socket, uint16_t puerto, Eventos* evento
 	servidor->puerto = puerto;
 	servidor->eventos = eventos;
 	servidor->thread = NULL;
+	pthread_mutex_init(&servidor->mx_destruir, NULL);
 
 	free(direccionEscucha);
 	return servidor;
@@ -142,8 +143,9 @@ Cliente* Socket_AceptarConexion(Servidor* servidor)
 	Cliente* cliente = malloc(sizeof(Cliente));
 	cliente->socket = socketCliente;
 	cliente->direccion = direccionCliente;
-	cliente->eventos = *(servidor->eventos);
+	cliente->eventos = servidor->eventos;
 	cliente->thread = NULL;
+	cliente->info = NULL;
 	pthread_mutex_init(&cliente->mx_destruir, NULL);
 
 	return cliente;

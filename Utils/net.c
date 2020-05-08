@@ -14,30 +14,30 @@ static void EscucharMensajes(Cliente* cliente)
 		{
 			if (paqueteRecibido == NULL)
 			{
-				if(cliente->eventos.desconectado != NULL) (cliente->eventos.desconectado)(cliente);
+				if(cliente->eventos->desconectado != NULL) (cliente->eventos->desconectado)(cliente);
 				DestruirCliente(cliente);
 			}
 			else
-				if(cliente->eventos.error != NULL)
-					(cliente->eventos.error)(ERROR_RECIBIR, paqueteRecibido);
+				if(cliente->eventos->error != NULL)
+					(cliente->eventos->error)(ERROR_RECIBIR, paqueteRecibido);
 			Paquete_Liberar(paqueteRecibido);
 			break;
 		}
-		if (!Eventos_TieneOperacion(&(cliente->eventos), paqueteRecibido->codigoOperacion))
+		if (!Eventos_TieneOperacion(cliente->eventos, paqueteRecibido->codigoOperacion))
 		{
-			if(cliente->eventos.error != NULL)
-				(cliente->eventos.error)(ERROR_OPERACION_INVALIDA, paqueteRecibido);
+			if(cliente->eventos->error != NULL)
+				(cliente->eventos->error)(ERROR_OPERACION_INVALIDA, paqueteRecibido);
 			break;
 		}
 		if (Paquete_Procesar(cliente->socket, paqueteRecibido) == -1)
 		{
-			if(cliente->eventos.error != NULL)
-				(cliente->eventos.error)(ERROR_PROCESAR_PAQUETE, paqueteRecibido);
-			if(cliente->eventos.desconectado != NULL) (cliente->eventos.desconectado)(cliente);
+			if(cliente->eventos->error != NULL)
+				(cliente->eventos->error)(ERROR_PROCESAR_PAQUETE, paqueteRecibido);
+			if(cliente->eventos->desconectado != NULL) (cliente->eventos->desconectado)(cliente);
 			DestruirCliente(cliente);
 			break;
 		}
-		Eventos_ObtenerOperacion(&(cliente->eventos), paqueteRecibido->codigoOperacion)(cliente, paqueteRecibido);
+		Eventos_ObtenerOperacion(cliente->eventos, paqueteRecibido->codigoOperacion)(cliente, paqueteRecibido);
 
 		Paquete_Liberar(paqueteRecibido);
 	}
@@ -86,8 +86,9 @@ Cliente* CrearCliente(char *ip, uint16_t puerto, Eventos* eventos)
 	Cliente* cliente = malloc(sizeof(Cliente));
 	cliente->socket = socketCliente;
 	cliente->direccion = direccion;
-	cliente->eventos = *eventos;
+	cliente->eventos = eventos;
 	cliente->thread = malloc(sizeof(pthread_t));
+	cliente->info = NULL;
 	pthread_mutex_init(&cliente->mx_destruir, NULL);
 
 	pthread_attr_t attr;
@@ -96,7 +97,6 @@ Cliente* CrearCliente(char *ip, uint16_t puerto, Eventos* eventos)
 	pthread_create(cliente->thread, &attr, (void*)EscucharMensajes, cliente);
 	//pthread_detach(*(cliente->thread));
 
-	Eventos_Destruir(eventos);
 	return cliente;
 }
 
@@ -130,6 +130,7 @@ void DestruirCliente(Cliente* cliente)
 	{
 		Socket_Destruir(cliente->socket);
 		freeaddrinfo((struct addrinfo*)cliente->direccion);
+		Eventos_Destruir(cliente->eventos);
 		free(cliente);
 		cliente = NULL;
 	}
@@ -138,6 +139,8 @@ void DestruirCliente(Cliente* cliente)
 
 void DestruirServidor(Servidor* servidor)
 {
+	pthread_mutex_lock(&servidor->mx_destruir);
+	pthread_mutex_t copiaMutex = servidor->mx_destruir;
 	if (servidor->thread != NULL)
 	{
 		servidor->thread = NULL;
@@ -149,5 +152,6 @@ void DestruirServidor(Servidor* servidor)
 		Eventos_Destruir(servidor->eventos);
 		free(servidor);
 	}
+	pthread_mutex_unlock(&copiaMutex);
 }
 
