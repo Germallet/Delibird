@@ -60,10 +60,20 @@ typedef struct {
 } DATOS_NEW_POKEMON;
 
 typedef struct {
+	DATOS_NEW_POKEMON datos;
+	uint32_t id;
+} DATOS_NEW_POKEMON_ID;
+
+typedef struct {
 	uint32_t largoPokemon;
 	char* pokemon;
 	Posicion posicion; //TENIA ID
 } DATOS_APPEARED_POKEMON;
+
+typedef struct {
+	DATOS_APPEARED_POKEMON datos;
+	uint32_t id;
+} DATOS_APPEARED_POKEMON_ID;
 
 typedef struct {
 	uint32_t largoPokemon;
@@ -72,8 +82,18 @@ typedef struct {
 } DATOS_CATCH_POKEMON;
 
 typedef struct {
-	uint32_t capturado; //TENIA ID
+	DATOS_CATCH_POKEMON datos;
+	uint32_t id;
+} DATOS_CATCH_POKEMON_ID;
+
+typedef struct {
+	uint32_t capturado;
 } DATOS_CAUGHT_POKEMON;
+
+typedef struct {
+	DATOS_CAUGHT_POKEMON datos;
+	uint32_t id;
+} DATOS_CAUGHT_POKEMON_ID;
 
 typedef struct {
 	uint32_t largoPokemon;
@@ -87,11 +107,13 @@ typedef struct {
 	Posicion posiciones[];
 } DATOS_LOCALIZED_POKEMON; //TENIA ID
 
-extern void* Serializar_APPEARED_POKEMON(DATOS_APPEARED_POKEMON* datos, int* tamanioBuffer);
 extern void* Serializar_NEW_POKEMON(DATOS_NEW_POKEMON* datos, int* tamanioBuffer);
+extern void* Serializar_NEW_POKEMON_ID(DATOS_NEW_POKEMON_ID* datos, int* tamanioBuffer);
+extern void* Serializar_APPEARED_POKEMON_ID(DATOS_APPEARED_POKEMON_ID* datos, int* tamanioBuffer);
 extern void* Serializar_CATCH_POKEMON(DATOS_CATCH_POKEMON* datos, int* tamanioBuffer);
+extern void* Serializar_CATCH_POKEMON_ID(DATOS_CATCH_POKEMON_ID* datos, int* tamanioBuffer);
 extern void* Serializar_GET_POKEMON(DATOS_GET_POKEMON* datos, int* tamanioBuffer);
-extern void* Serializar_CAUGHT_POKEMON(DATOS_CAUGHT_POKEMON* datos, int* tamanioBuffer);
+extern void* Serializar_CAUGHT_POKEMON_ID(DATOS_CAUGHT_POKEMON_ID* datos, int* tamanioBuffer);
 extern void* Serializar_LOCALIZED_POKEMON(DATOS_LOCALIZED_POKEMON* datos, int* tamanioBuffer);
 extern void* Serializar_ID_MENSAJE(DATOS_ID_MENSAJE* datos, int* tamanioBuffer);
 
