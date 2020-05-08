@@ -172,7 +172,7 @@ DATOS_NEW_POKEMON* convertir_NEW_POKEMON(int cantParametros, char*parametros[]) 
 		exit(-1);
 	}
 
-	DATOS_NEW_POKEMON* datos = malloc(sizeof(DATOS_NEW_POKEMON));
+	DATOS_NEW_POKEMON* datos = malloc(strlen(parametros[3])+sizeof(uint32_t)*4);
 
 	datos->largoPokemon = (uint32_t) strlen(parametros[3]);
 	datos->pokemon = parametros[3];
@@ -185,14 +185,14 @@ DATOS_NEW_POKEMON* convertir_NEW_POKEMON(int cantParametros, char*parametros[]) 
 
 DATOS_NEW_POKEMON_ID* convertir_NEW_POKEMON_ID(int cantParametros, char*parametros[]) {
 
-	DATOS_NEW_POKEMON_ID* datosConID = malloc(sizeof(DATOS_NEW_POKEMON_ID));
-
-	datosConID->datos = *convertir_NEW_POKEMON(cantParametros, parametros);
-
 	if (cantParametros != 8){
 		log_error(logger, "Mandaste mal los parametros sabandija");
 		exit(-1);
 	}
+
+	DATOS_NEW_POKEMON_ID* datosConID = malloc(sizeof(DATOS_NEW_POKEMON_ID));
+
+	datosConID->datos = *convertir_NEW_POKEMON(cantParametros, parametros);
 
 	datosConID->id = strtol(parametros[7],NULL,10);
 
@@ -236,13 +236,13 @@ DATOS_CATCH_POKEMON* convertir_CATCH_POKEMON(int cantParametros, char*parametros
 
 DATOS_CATCH_POKEMON_ID* convertir_CATCH_POKEMON_ID(int cantParametros, char*parametros[]) {
 
-	DATOS_CATCH_POKEMON_ID* datosConID = malloc(sizeof(DATOS_CATCH_POKEMON_ID));
-	datosConID->datos = *convertir_CATCH_POKEMON(cantParametros, parametros);
-
 	if (cantParametros != 7){
 		log_error(logger, "Mandaste mal los parametros sabandija");
 		exit(-1);
 	}
+
+	DATOS_CATCH_POKEMON_ID* datosConID = malloc(sizeof(DATOS_CATCH_POKEMON_ID));
+	datosConID->datos = *convertir_CATCH_POKEMON(cantParametros, parametros);
 
 	datosConID->id = strtol(parametros[7],NULL,10);
 
@@ -266,7 +266,7 @@ DATOS_CAUGHT_POKEMON_ID* convertir_CAUGHT_POKEMON_ID(int cantParametros, char*pa
 
 DATOS_GET_POKEMON* convertir_GET_POKEMON(int cantParametros, char*parametros[]) {
 
-	if (cantParametros != 7){
+	if (cantParametros != 4){
 		log_error(logger, "Mandaste mal los parametros sabandija");
 		exit(-1);
 	}
