@@ -7,14 +7,7 @@ int main(int argc, char* argv[])
 	logger = log_create("gameBoy.log", "GameBoy", true, LOG_LEVEL_INFO);
 	log_info(logger,"Te damos la bienvenida a mundo GameBoy!");
 
-	// CREAR CONFIG Y OBTENER VALORES (IP=PUERTO)
 	t_config* config = config_create("gameBoy.config");
-	char* ipBroker = config_get_string_value(config, "IP_BROKER");
-	int puertoBroker = config_get_int_value(config, "PUERTO_BROKER");
-	char* ipTeam = config_get_string_value(config, "IP_TEAM");
-	int puertoTeam = config_get_int_value(config, "PUERTO_TEAM");
-	char* ipGameCard = config_get_string_value(config, "IP_GAMECARD");
-	int puertoGameCard = config_get_int_value(config, "PUERTO_GAMECARD");
 
 	// CREACION EVENTOS
 	Eventos* eventos = Eventos_Crear0();
@@ -27,6 +20,8 @@ int main(int argc, char* argv[])
 	}
 
 	if (sonIguales(argv[1],"TEAM")) {
+		char* ipTeam = config_get_string_value(config, "IP_TEAM");
+		int puertoTeam = config_get_int_value(config, "PUERTO_TEAM");
 
 		Cliente* clienteTeam = CrearCliente(ipTeam,puertoTeam,eventos);
 
@@ -49,7 +44,10 @@ int main(int argc, char* argv[])
 
 	} else if (sonIguales(argv[1],"BROKER")) {
 
-		Cliente* clienteBroker = CrearCliente(ipBroker, puertoBroker, eventos); //CREO ACA DEBERIA CONECTARSE A LAS COLAS DEL BROKER
+		char* ipBroker = config_get_string_value(config, "IP_BROKER");
+		int puertoBroker = config_get_int_value(config, "PUERTO_BROKER");
+
+		Cliente* clienteBroker = CrearCliente(ipBroker, puertoBroker, eventos);
 
 		if(clienteBroker == NULL) {
 			log_error(logger, "NO SE PUDO CONECTAR AL BROKER");
@@ -78,6 +76,9 @@ int main(int argc, char* argv[])
 
 	} else if (sonIguales(argv[1],"GAMECARD")) {
 
+		char* ipGameCard = config_get_string_value(config, "IP_GAMECARD");
+		int puertoGameCard = config_get_int_value(config, "PUERTO_GAMECARD");
+
 		Cliente* clienteGameCard = CrearCliente(ipGameCard, puertoGameCard, eventos);
 
 		if(clienteGameCard == NULL) {
@@ -101,12 +102,44 @@ int main(int argc, char* argv[])
 
 		DestruirCliente(clienteGameCard);
 
-	} else  {
+	} else if (sonIguales(argv[1],"SUSCRIPTOR")) {
+
+		if (argc != 4) {
+			log_error(logger,"No pusiste el tiempo sabandija");
+			exit(-1);
+		}
+
+		char* ipBroker = config_get_string_value(config, "IP_BROKER");
+		int puertoBroker = config_get_int_value(config, "PUERTO_BROKER");
+
+		Eventos_AgregarOperacion(eventos, BROKER_CONECTADO, (EventoOperacion) &conexionBroker);
+
+		Cliente* clienteBroker = CrearCliente(ipBroker, puertoBroker, eventos);
+
+		if(clienteBroker == NULL) {
+			log_error(logger, "NO SE PUDO CONECTAR AL BROKER");
+			terminarPrograma(logger, config);
+			exit(-1);
+		}
+
+		clienteBroker->info = (void*) convertirCodigo(argv[2]);
+		long tiempo = strtol(argv[3],10,NULL);
+
+		if (Socket_Enviar(BROKER_CONECTAR, NULL, 0, clienteBroker->socket) < 0) {
+			free(clienteBroker->info);
+			log_error(logger,"No me pude conectar al broker");
+			exit(-1);
+		}
+
+		sleep(tiempo);
+
+		DestruirCliente(clienteBroker);
+
+	} else {
 		log_error(logger, "TENEMOS LA SOSPECHA QUE ESCRIBISTE MAL EL PROCESO");
 		terminarPrograma(logger, config);
 		exit (-1);
 	}
-
 
 	// TERMINAR PROGRAMA
 	terminarPrograma(logger, config);
@@ -367,7 +400,81 @@ void send_LOCALIZED_POKEMON(DATOS_LOCALIZED_POKEMON* datos, int numSocket) {
 
 }
 
-void conectarseCola(void* colaMensaje, int tiempoDeterminado) {
+CodigoDeCola* convertirCodigo(char* codigo) {
+
+	CodigoDeCola* code = malloc(sizeof(CodigoDeCola));
+
+	if (sonIguales(codigo, "NEW_POKEMON"))
+		*code = COLA_NEW_POKEMON;
+	else if (sonIguales(codigo, "APPEARED_POKEMON"))
+		*code = COLA_APPEARED_POKEMON;
+	else if (sonIguales(codigo, "CATCH_POKEMON"))
+		*code = COLA_CATCH_POKEMON;
+	else if (sonIguales(codigo, "CAUGHT_POKEMON"))
+		*code = COLA_CAUGHT_POKEMON;
+	else if (sonIguales(codigo, "GET_POKEMON"))
+		*code = COLA_GET_POKEMON;
+	else if (sonIguales(codigo, "LOCALIZED_POKEMON"))
+		*code = COLA_LOCALIZED_POKEMON;
+	else
+		*code = NULL;
+
+	return code;
+}
+
+void conexionBroker(Cliente* cliente, Paquete* paquete) {
+
+	BROKER_DATOS_SUSCRIBIRSE datos;
+
+	datos.cola = (CodigoDeCola) *(cliente->info);
+
+	int tamanioBuffer;
+	void* buffer = Serializar_BROKER_SUSCRIBIRSE(&datos, &tamanioBuffer);
+
+	if(Socket_Enviar(BROKER_SUSCRIBIRSE, buffer, tamanioBuffer, cliente->socket) < 0)
+		log_error(logger, "No se pudo conectar a la cola");
+
+	free(buffer);
+	free(cliente->info);
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+void suscriptor_COLA(int cantParametros, char* parametros[], int numSocket) {
+
+	DATOS_ID_MENSAJE* mensaje = malloc(sizeof(DATOS_ID_MENSAJE));
+	mensaje->id = BROKER_CONECTAR;
+
+	int* tamanioBuffer;
+	void* buffer = Serializar_ID_MENSAJE(mensaje,&tamanioBuffer);
+
+	int envio = Socket_Enviar(BROKER_CONECTAR, buffer, tamanioBuffer, numSocket)
+
+
+	BROKER_DATOS_SUSCRIBIRSE* cola = malloc(sizeof(BROKER_DATOS_SUSCRIBIRSE));
+
+	cola->cola =
+
 	// TODO funcion para suscribirnos a una cola de mensajes y recbirlos por un tiempo determinado
 }
 

@@ -3,17 +3,20 @@
 #include <commons/config.h>
 #include <commons/collections/list.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include "../Utils/net.h"
 #include "../Utils/socket.h"
 
 // DECLARACIONES
 void ConectadoConProceso(char*);
 void DesconectadoProceso(char*);
+void conexionBroker(Cliente* cliente, Paquete* paquete);
 void terminarPrograma(t_log* logger, t_config* config);
 
 void verificarConexion(int conexion, t_log* logger);
 bool sonIguales(char* a, char* b);
 int cantidadParametros(char* parametros[]);
+CodigoDeCola* convertirCodigo(char* codigo);
 
 void send_NEW_POKEMON(int cantParametros, char* parametros[], int numSocket);
 void send_APPEARED_POKEMON(int cantParametros, char* parametros[], int numSocket);
