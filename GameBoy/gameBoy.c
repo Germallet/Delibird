@@ -32,9 +32,9 @@ int main(int argc, char* argv[])
 
 		ConectadoConProceso("TEAM");
 
-		if (sonIguales(argv[2],"APPEARED_POKEMON")) {
-			send_APPEARED_POKEMON(argc, argv, clienteTeam->socket);
-		} else {
+		if (sonIguales(argv[2],"APPEARED_POKEMON"))
+			send_MESSAGE(APPEARED_POKEMON, convertir_APPEARED_POKEMON_ID(argc, argv), (void*) &Serializar_APPEARED_POKEMON_ID, clienteTeam->socket);
+		  else {
 			log_error(logger, "TEAM NO ENTIENDE TU OPERACION");
 			terminarPrograma(logger, config);
 			exit (-1);
@@ -58,15 +58,15 @@ int main(int argc, char* argv[])
 		ConectadoConProceso("BROKER");
 
 		if (sonIguales(argv[2], "NEW_POKEMON"))
-			send_NEW_POKEMON(argc, argv, clienteBroker->socket);
+			send_MESSAGE(NEW_POKEMON, convertir_NEW_POKEMON(argc, argv), (void*) &Serializar_NEW_POKEMON, clienteBroker->socket);
 		  else if (sonIguales(argv[2], "APPEARED_POKEMON"))
-			send_APPEARED_POKEMON(argc, argv, clienteBroker->socket);
+			send_MESSAGE(APPEARED_POKEMON, convertir_APPEARED_POKEMON_ID(argc, argv), (void*) &Serializar_APPEARED_POKEMON_ID, clienteBroker->socket);
 		  else if (sonIguales(argv[2], "CATCH_POKEMON"))
-			send_CATCH_POKEMON(argc, argv, clienteBroker->socket);
+			send_MESSAGE(CATCH_POKEMON, convertir_CATCH_POKEMON(argc, argv), (void*) &Serializar_CATCH_POKEMON, clienteBroker->socket);
 		  else if (sonIguales(argv[2], "CAUGHT_POKEMON"))
-			send_CAUGHT_POKEMON(argc, argv, clienteBroker->socket);
+			send_MESSAGE(CAUGHT_POKEMON, convertir_CAUGHT_POKEMON_ID(argc, argv), (void*) &Serializar_CAUGHT_POKEMON_ID, clienteBroker->socket);
 		  else if (sonIguales(argv[2], "GET_POKEMON"))
-			send_GET_POKEMON(argc, argv, clienteBroker->socket);
+			send_MESSAGE(GET_POKEMON, convertir_GET_POKEMON(argc, argv), (void*) &Serializar_GET_POKEMON, clienteBroker->socket);
 		  else {
 		  	log_error(logger, "BROKER NO ENTIENDE TU MENSAJE");
 		  	exit (-1);
@@ -90,11 +90,11 @@ int main(int argc, char* argv[])
 		ConectadoConProceso("GAMECARD");
 
 		if (sonIguales(argv[2], "NEW_POKEMON"))
-			send_NEW_POKEMON(argc, argv, clienteGameCard->socket);
+			send_MESSAGE(NEW_POKEMON, convertir_NEW_POKEMON_ID(argc, argv), (void*) &Serializar_NEW_POKEMON_ID, clienteGameCard->socket);
 		  else if (sonIguales(argv[2], "CATCH_POKEMON"))
-			  send_CATCH_POKEMON(argc, argv, clienteGameCard->socket);
+			send_MESSAGE(CATCH_POKEMON, convertir_CATCH_POKEMON_ID(argc, argv), (void*) &Serializar_CATCH_POKEMON_ID, clienteGameCard->socket);
 		  else if (sonIguales(argv[2], "GET_POKEMON"))
-			  send_GET_POKEMON(argc, argv, clienteGameCard->socket);
+			send_MESSAGE(GET_POKEMON, convertir_GET_POKEMON(argc, argv), (void*) &Serializar_GET_POKEMON, clienteGameCard->socket);
 		  else {
 			  log_error(logger, "GAMECARD NO ENTIENDE TU MENSAJE");
 			  exit (-1);
@@ -137,6 +137,8 @@ int main(int argc, char* argv[])
 			exit(-1);
 		}
 
+		log_error(logger,"Me conecte bien!!!");
+
 		sleep(tiempo);
 
 		DestruirCliente(clienteBroker);
@@ -163,219 +165,240 @@ bool sonIguales(char* a, char* b) {
 	return strcmp(a,b) == 0;
 }
 
-//void* convertirANEW_POKEMON(int cantParametros, char*parametros[]) {
+DATOS_NEW_POKEMON* convertir_NEW_POKEMON(int cantParametros, char*parametros[]) {
+
+	if (cantParametros != 7){
+		log_error(logger, "Mandaste mal los parametros sabandija");
+		exit(-1);
+	}
+
+	DATOS_NEW_POKEMON* datos = malloc(sizeof(DATOS_NEW_POKEMON));
+
+	datos->largoPokemon = (uint32_t) strlen(parametros[3]);
+	datos->pokemon = parametros[3];
+	datos->posicion.posX = strtol(parametros[4],NULL,10);
+	datos->posicion.posY = strtol(parametros[5],NULL,10);
+	datos->cantidad = strtol(parametros[6],NULL,10);
+
+	return datos;
+}
+
+DATOS_NEW_POKEMON_ID* convertir_NEW_POKEMON_ID(int cantParametros, char*parametros[]) {
+
+	DATOS_NEW_POKEMON_ID* datosConID = malloc(sizeof(DATOS_NEW_POKEMON_ID));
+
+	datosConID->datos = *convertir_NEW_POKEMON(cantParametros, parametros);
+
+	if (cantParametros != 8){
+		log_error(logger, "Mandaste mal los parametros sabandija");
+		exit(-1);
+	}
+
+	datosConID->id = strtol(parametros[7],NULL,10);
+
+	return datosConID;
+}
+
+DATOS_APPEARED_POKEMON_ID* convertir_APPEARED_POKEMON_ID(int cantParametros, char*parametros[]) {
+
+	if (cantParametros != 7){
+		log_error(logger, "Mandaste mal los parametros sabandija");
+		exit(-1);
+	}
+
+	DATOS_APPEARED_POKEMON_ID* datos = malloc(sizeof(DATOS_APPEARED_POKEMON_ID));
+
+	datos->datos.largoPokemon = (uint32_t) strlen(parametros[3]);
+	datos->datos.pokemon = parametros[3];
+	datos->datos.posicion.posX = strtol(parametros[4],NULL,10);
+	datos->datos.posicion.posY = strtol(parametros[5],NULL,10);
+	datos->id = strtol(parametros[6],NULL,10);
+
+	return datos;
+}
+
+DATOS_CATCH_POKEMON* convertir_CATCH_POKEMON(int cantParametros, char*parametros[]) {
+
+	if (cantParametros != 6){
+		log_error(logger, "Mandaste mal los parametros sabandija");
+		exit(-1);
+	}
+
+	DATOS_CATCH_POKEMON* datos = malloc(sizeof(DATOS_CATCH_POKEMON));
+
+	datos->largoPokemon = (uint32_t) strlen(parametros[3]);
+	datos->pokemon = parametros[3];
+	datos->posicion.posX = strtol(parametros[4],NULL,10);
+	datos->posicion.posY = strtol(parametros[5],NULL,10);
+
+	return datos;
+}
+
+DATOS_CATCH_POKEMON_ID* convertir_CATCH_POKEMON_ID(int cantParametros, char*parametros[]) {
+
+	DATOS_CATCH_POKEMON_ID* datosConID = malloc(sizeof(DATOS_CATCH_POKEMON_ID));
+	datosConID->datos = *convertir_CATCH_POKEMON(cantParametros, parametros);
+
+	if (cantParametros != 7){
+		log_error(logger, "Mandaste mal los parametros sabandija");
+		exit(-1);
+	}
+
+	datosConID->id = strtol(parametros[7],NULL,10);
+
+	return datosConID;
+}
+
+DATOS_CAUGHT_POKEMON_ID* convertir_CAUGHT_POKEMON_ID(int cantParametros, char*parametros[]) {
+
+	if (cantParametros != 5){
+		log_error(logger, "Mandaste mal los parametros sabandija");
+		exit(-1);
+	}
+
+	DATOS_CAUGHT_POKEMON_ID* datos = malloc(sizeof(DATOS_CAUGHT_POKEMON_ID));
+
+	datos->id = strtol(parametros[3],NULL,10);
+	datos->datos.capturado = strtol(parametros[4],NULL,10);
+
+	return datos;
+}
+
+DATOS_GET_POKEMON* convertir_GET_POKEMON(int cantParametros, char*parametros[]) {
+
+	if (cantParametros != 7){
+		log_error(logger, "Mandaste mal los parametros sabandija");
+		exit(-1);
+	}
+
+	DATOS_GET_POKEMON* datos = malloc(sizeof(DATOS_GET_POKEMON));
+
+	datos->largoPokemon = (uint32_t) strlen(parametros[3]);
+	datos->pokemon = parametros[3];
+
+	return datos;
+}
+
+////./GameBoy BROKER NEW_POKEMON pikachu 3 1 3 ID()
+////    1        2        3         4    5 6 7  8
+////    0        1        2         3    4 5 6  7
+//void send_NEW_POKEMON(DATOS_NEW_POKEMON datos, int numSocket) {
 //
-//	if (cantParametros != 7 && cantParametros != 8){
-//		log_error(logger, "Mandaste mal los parametros sabandija");
+//	int tamanioBuffer;
+//	void* buffer = Serializar_NEW_POKEMON(&datos, &tamanioBuffer);
+//	if(Socket_Enviar(NEW_POKEMON, buffer, tamanioBuffer, numSocket) < 0) {
+//		log_error(logger, "No se envio correctamente el mensaje");
 //		exit(-1);
 //	}
 //
-//	DATOS_NEW_POKEMON* datos = malloc(sizeof(DATOS_NEW_POKEMON));
-//
-//	datos->largoPokemon = (uint32_t) strlen(parametros[3]);
-//	datos->pokemon = parametros[3];
-//	(datos->posicion).posX = strtol(parametros[4],NULL,10);
-//	(datos->posicion).posY = strtol(parametros[5],NULL,10);
-//	datos->cantidad = strtol(parametros[6],NULL,10);
-//
-//	if (cantParametros == 8) {
-//		DATOS_MENSAJE* datosMensaje = malloc(sizeof(DATOS_MENSAJE));
-//		uint32_t ID = strtol(parametros[7],NULL,10);
-//		return datosMensaje;
-//	} else
-//		return datos;
+//	free(buffer);
 //}
-
-//./GameBoy BROKER NEW_POKEMON pikachu 3 1 3 ID()
-//    1        2        3         4    5 6 7  8
-//    0        1        2         3    4 5 6  7
-void send_NEW_POKEMON(int cantParametros, char* parametros[], int numSocket) {
-
-	if (cantParametros != 7 && cantParametros != 8){
-	    log_error(logger, "Mandaste mal los parametros sabandija");
-	    exit(-1);
-	}
-
-	DATOS_NEW_POKEMON datos;
-
-	datos.largoPokemon = (uint32_t) strlen(parametros[3]);
-	datos.pokemon = parametros[3];
-	datos.posicion.posX = strtol(parametros[4],NULL,10);
-	datos.posicion.posY = strtol(parametros[5],NULL,10);
-	datos.cantidad = strtol(parametros[6],NULL,10);
-
-	if (cantParametros == 7) {
-		int tamanioBuffer;
-		void* buffer = Serializar_NEW_POKEMON(&datos, &tamanioBuffer);
-		if(Socket_Enviar(NEW_POKEMON, buffer, tamanioBuffer, numSocket) < 0) {
-			log_error(logger, "No se envio correctamente el mensaje");
-			exit(-1);
-		}
-
-		free(buffer);
-
-	} else {
-		DATOS_NEW_POKEMON_ID datosConID;
-		datosConID.datos = datos;
-		datosConID.id = strtol(parametros[7],NULL,10);
-
-		int tamanioBuffer;
-		void* buffer = Serializar_NEW_POKEMON_ID(&datosConID, &tamanioBuffer);
-		if(Socket_Enviar(NEW_POKEMON, buffer, tamanioBuffer, numSocket) < 0) {
-			log_error(logger, "No se envio correctamente el mensaje");
-			exit(-1);
-		}
-		free(buffer);
-	}
-
-
-}
-
-//./GameBoy BROKER APPEARED_POKEMON pikachu 3 1 ID()
-//    1        2        3             4     5 6  7
-//    0        1        2             3     4 5  6
-void send_APPEARED_POKEMON(int cantParametros, char* parametros[], int numSocket) {
-
-	if(cantParametros != 7) {
-		log_error(logger, "Mandaste mal los parametros sabandija");
-		exit(-1);
-	}
-
-	DATOS_APPEARED_POKEMON_ID datos;
-
-	datos.datos.largoPokemon = (uint32_t) strlen(parametros[3]);
-	datos.datos.pokemon = parametros[3];
-	datos.datos.posicion.posX = strtol(parametros[4],NULL,10);
-	datos.datos.posicion.posY = strtol(parametros[5],NULL,10);
-	datos.id = strtol(parametros[6],NULL,10);
-
-	int tamanioBuffer;
-	void* buffer = Serializar_APPEARED_POKEMON_ID(&datos, &tamanioBuffer);
-
-	if(Socket_Enviar(APPEARED_POKEMON, buffer, tamanioBuffer, numSocket) < 0) {
-		log_error(logger, "No se envio correctamente el mensaje");
-		exit(-1);
-	}
-
-	free(buffer);
-}
-
-//./GameBoy BROKER CATCH_POKEMON pikachu 3 1 ID()
-//    1        2        3          4     5 6  7
-//    0        1        2          3     4 5  6
-void send_CATCH_POKEMON(int cantParametros, char* parametros[], int numSocket) {
-
-	if(cantParametros != 6 && cantParametros != 7) {
-		log_error(logger, "Mandaste mal los parametros sabandija");
-		exit(-1);
-	}
-
-	DATOS_CATCH_POKEMON datos;
-
-	datos.largoPokemon = (uint32_t) strlen(parametros[3]);
-	datos.pokemon = parametros[3];
-	datos.posicion.posX = strtol(parametros[4],NULL,10);
-	datos.posicion.posY = strtol(parametros[5],NULL,10);
-
-	if (cantParametros == 7) {
-		int tamanioBuffer;
-		void* buffer = Serializar_CATCH_POKEMON(&datos, &tamanioBuffer);
-		if(Socket_Enviar(CATCH_POKEMON, buffer, tamanioBuffer, numSocket) < 0) {
-			log_error(logger, "No se envio correctamente el mensaje");
-			exit(-1);
-		}
-
-		free(buffer);
-
-	} else {
-		DATOS_CATCH_POKEMON_ID datosConID;
-		datosConID.datos = datos;
-		datosConID.id = strtol(parametros[7],NULL,10);
-
-		int tamanioBuffer;
-		void* buffer = Serializar_CATCH_POKEMON_ID(&datosConID, &tamanioBuffer);
-		if(Socket_Enviar(CATCH_POKEMON, buffer, tamanioBuffer, numSocket) < 0) {
-			log_error(logger, "No se envio correctamente el mensaje");
-			exit(-1);
-		}
-
-		free(buffer);
-	}
-}
-
-//./GameBoy BROKER CAUGHT_POKEMON bool ID
-//    1        2        3          4    5
-//    0        1        2          3    4
-void send_CAUGHT_POKEMON(int cantParametros, char* parametros[], int numSocket) {
-
-	if(cantParametros != 5) {
-		log_error(logger, "Mandaste mal los parametros sabandija");
-		exit(-1);
-	}
-
-	DATOS_CAUGHT_POKEMON_ID datos;
-
-	datos.id = strtol(parametros[3],NULL,10);
-	datos.datos.capturado = strtol(parametros[4],NULL,10);
-
-	int tamanioBuffer;
-
-	void* buffer = Serializar_CAUGHT_POKEMON_ID(&datos, &tamanioBuffer);
-
-	if(Socket_Enviar(CAUGHT_POKEMON, buffer, tamanioBuffer, numSocket) < 0) {
-		log_error(logger, "No se envio correctamente el mensaje");
-		exit(-1);
-	}
-
-	free(buffer);
-}
-
-//./GameBoy BROKER GET_POKEMON pokemon
-//    1        2        3         4
-//    0        1        2         3
-void send_GET_POKEMON(int cantParametros, char* parametros[], int numSocket) {
-
-	if(cantParametros != 4) {
-		log_error(logger, "Mandaste mal los parametros sabandija");
-		exit(-1);
-	}
-
-	DATOS_GET_POKEMON datos;
-
-	datos.largoPokemon = (uint32_t) strlen(parametros[3]);
-	datos.pokemon = parametros[3];
-
-	int tamanioBuffer;
-
-	void* buffer = Serializar_GET_POKEMON(&datos, &tamanioBuffer);
-	if(Socket_Enviar(GET_POKEMON, buffer, tamanioBuffer, numSocket) < 0) {
-		log_error(logger, "No se envio correctamente el mensaje");
-		exit(-1);
-	}
-
-	free(buffer);
-}
-
-//./GameBoy BROKER LOCALIZED_POKEMON pokemon cantidad coord*2     ALGUN ID POR ACA QUE NI IDEA
-//    1        2          3            4       5        6 7 ..
-//    0        1          2            3       4        5 6 ..
-//void send_LOCALIZED_POKEMON(DATOS_LOCALIZED_POKEMON* datos, int numSocket) {
+//
+//void send_NEW_POKEMON_ID(DATOS_NEW_POKEMON_ID datos, int numSocket) {
+//
+//	int tamanioBuffer;
+//	void* buffer = Serializar_NEW_POKEMON_ID(&datos, &tamanioBuffer);
+//	if(Socket_Enviar(NEW_POKEMON, buffer, tamanioBuffer, numSocket) < 0) {
+//		log_error(logger, "No se envio correctamente el mensaje");
+//		exit(-1);
+//	}
+//
+//	free(buffer);
+//}
+//
+////./GameBoy BROKER APPEARED_POKEMON pikachu 3 1 ID()
+////    1        2        3             4     5 6  7
+////    0        1        2             3     4 5  6
+//void send_APPEARED_POKEMON_ID(DATOS_APPEARED_POKEMON_ID datos, int numSocket) {
+//
+//	int tamanioBuffer;
+//	void* buffer = Serializar_APPEARED_POKEMON_ID(&datos, &tamanioBuffer);
+//
+//	if(Socket_Enviar(APPEARED_POKEMON, buffer, tamanioBuffer, numSocket) < 0) {
+//		log_error(logger, "No se envio correctamente el mensaje");
+//		exit(-1);
+//	}
+//
+//	free(buffer);
+//}
+//
+////./GameBoy BROKER CATCH_POKEMON pikachu 3 1 ID()
+////    1        2        3          4     5 6  7
+////    0        1        2          3     4 5  6
+//void send_CATCH_POKEMON(DATOS_CATCH_POKEMON datos, int numSocket) {
+//
+//	int tamanioBuffer;
+//	void* buffer = Serializar_CATCH_POKEMON(&datos, &tamanioBuffer);
+//
+//	if(Socket_Enviar(CATCH_POKEMON, buffer, tamanioBuffer, numSocket) < 0) {
+//		log_error(logger, "No se envio correctamente el mensaje");
+//		exit(-1);
+//	}
+//
+//	free(buffer);
+//}
+//
+//void send_CATCH_POKEMON_ID(DATOS_CATCH_POKEMON_ID datos, int numSocket) {
+//
+//	int tamanioBuffer;
+//	void* buffer = Serializar_CATCH_POKEMON_ID(&datos, &tamanioBuffer);
+//
+//	if(Socket_Enviar(CATCH_POKEMON, buffer, tamanioBuffer, numSocket) < 0) {
+//		log_error(logger, "No se envio correctamente el mensaje");
+//		exit(-1);
+//	}
+//
+//	free(buffer);
+//}
+//
+////./GameBoy BROKER CAUGHT_POKEMON bool ID
+////    1        2        3          4    5
+////    0        1        2          3    4
+//void send_CAUGHT_POKEMON_ID(DATOS_CAUGHT_POKEMON_ID datos, int numSocket) {
+//
+//	int tamanioBuffer;
+//
+//	void* buffer = Serializar_CAUGHT_POKEMON_ID(&datos, &tamanioBuffer);
+//
+//	if(Socket_Enviar(CAUGHT_POKEMON, buffer, tamanioBuffer, numSocket) < 0) {
+//		log_error(logger, "No se envio correctamente el mensaje");
+//		exit(-1);
+//	}
+//
+//	free(buffer);
+//}
+//
+////./GameBoy BROKER GET_POKEMON pokemon
+////    1        2        3         4
+////    0        1        2         3
+//void send_GET_POKEMON(DATOS_GET_POKEMON datos, int numSocket) {
+//
+//	int tamanioBuffer;
+//
+//	void* buffer = Serializar_GET_POKEMON(&datos, &tamanioBuffer);
+//	if(Socket_Enviar(GET_POKEMON, buffer, tamanioBuffer, numSocket) < 0) {
+//		log_error(logger, "No se envio correctamente el mensaje");
+//		exit(-1);
+//	}
+//
+//	free(buffer);
+//}
+//
+//
+////./GameBoy BROKER LOCALIZED_POKEMON pokemon cantidad coord*2     ALGUN ID POR ACA QUE NI IDEA
+////    1        2          3            4       5        6 7 ..
+////    0        1          2            3       4        5 6 ..
+//void send_LOCALIZED_POKEMON(DATOS_LOCALIZED_POKEMON datos, int numSocket) {
 //
 //	int tamanioBuffer;
 //
 //	void* buffer = Serializar_LOCALIZED_POKEMON(datos, &tamanioBuffer);
-//	int r = Socket_Enviar(LOCALIZED_POKEMON, buffer, tamanioBuffer, numSocket);
-//
-////	free(datos);
-//
-//
-//
-//	if (r > 0)
-//		log_info(logger, "Se envio LOCALIZED_POKEMON correctamente");
-//	else {
+//	if(Socket_Enviar(LOCALIZED_POKEMON, buffer, tamanioBuffer, numSocket) < 0) {
 //		log_error(logger, "No se envio correctamente el mensaje");
 //		exit(-1);
 //	}
+//
+//	free(buffer);
 //}
 
 CodigoDeCola* convertirCodigo(char* codigo) {
@@ -424,4 +447,19 @@ void ConectadoConProceso(char* proceso) {
 }
 void DesconectadoProceso(char* proceso) {
 	log_info(logger, "Se desconectó correctamente al proceso %s",proceso);
+}
+
+
+void send_MESSAGE(CodigoDeOperacion codOp, void* datos, Serializar funcion, int numSocket) {
+
+	int tamanioBuffer;
+	void* buffer = funcion(&datos, &tamanioBuffer);
+
+	if(Socket_Enviar(codOp, buffer, tamanioBuffer, numSocket) < 0) {
+		printf("No se envio correctamente el mensaje");
+		exit(-1);
+	}
+
+	free(buffer);
+	free(datos);
 }

@@ -1,7 +1,6 @@
 #include "protocolo.h"
 #include <stdlib.h>
 
-
 void* Serializar_ID_MENSAJE(DATOS_ID_MENSAJE* datos, int* tamanioBuffer)
 {
 	*tamanioBuffer = sizeof(DATOS_ID_MENSAJE);
@@ -273,3 +272,5 @@ bool Deserializar_BROKER_SUSCRIBIRSE(Paquete* paquete, BROKER_DATOS_SUSCRIBIRSE*
 	if (!Paquete_Deserializar(paquete, &(datos->cola), sizeof(uint32_t))) return false;
 	return true;
 }
+
+
