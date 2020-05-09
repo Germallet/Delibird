@@ -88,6 +88,7 @@ typedef struct {
 
 typedef struct {
 	uint32_t capturado;
+	uint32_t idCatch;
 } DATOS_CAUGHT_POKEMON;
 
 typedef struct {
