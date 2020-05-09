@@ -271,12 +271,77 @@ DATOS_GET_POKEMON* convertir_GET_POKEMON(int cantParametros, char*parametros[]) 
 		exit(-1);
 	}
 
-	DATOS_GET_POKEMON* datos = malloc(sizeof(DATOS_GET_POKEMON));
+	DATOS_GET_POKEMON* datos = malloc(sizeof(uint32_t)+strlen(parametros[3]));
 
 	datos->largoPokemon = (uint32_t) strlen(parametros[3]);
 	datos->pokemon = parametros[3];
 
 	return datos;
+}
+
+
+
+CodigoDeCola* convertirCodigo(char* codigo) {
+
+	CodigoDeCola* code = malloc(sizeof(CodigoDeCola));
+
+	if (sonIguales(codigo, "NEW_POKEMON"))
+		*code = COLA_NEW_POKEMON;
+	else if (sonIguales(codigo, "APPEARED_POKEMON"))
+		*code = COLA_APPEARED_POKEMON;
+	else if (sonIguales(codigo, "CATCH_POKEMON"))
+		*code = COLA_CATCH_POKEMON;
+	else if (sonIguales(codigo, "CAUGHT_POKEMON"))
+		*code = COLA_CAUGHT_POKEMON;
+	else if (sonIguales(codigo, "GET_POKEMON"))
+		*code = COLA_GET_POKEMON;
+	else if (sonIguales(codigo, "LOCALIZED_POKEMON"))
+		*code = COLA_LOCALIZED_POKEMON;
+	else {
+		free(code);
+		return NULL;
+	}
+
+	return code;
+}
+
+void conexionBroker(Cliente* cliente, Paquete* paquete) {
+
+	BROKER_DATOS_SUSCRIBIRSE datos;
+
+	datos.cola = *((CodigoDeCola*) (cliente->info));
+
+	int tamanioBuffer;
+	void* buffer = Serializar_BROKER_SUSCRIBIRSE(&datos, &tamanioBuffer);
+
+	if(Socket_Enviar(BROKER_SUSCRIBIRSE, buffer, tamanioBuffer, cliente->socket) < 0)
+		log_error(logger, "No se pudo conectar a la cola");
+
+	free(buffer);
+	free(cliente->info);
+
+}
+
+void ConectadoConProceso(char* proceso) {
+	log_info(logger, "Se conectó correctamente al proceso %s",proceso);
+}
+void DesconectadoProceso(char* proceso) {
+	log_info(logger, "Se desconectó correctamente al proceso %s",proceso);
+}
+
+
+void send_MESSAGE(CodigoDeOperacion codOp, void* datos, Serializar funcion, int numSocket) {
+
+	int tamanioBuffer;
+	void* buffer = funcion(datos, &tamanioBuffer);
+
+	if(Socket_Enviar(codOp, buffer, tamanioBuffer, numSocket) < 0) {
+		printf("No se envio correctamente el mensaje");
+		exit(-1);
+	}
+
+	free(buffer);
+	free(datos);
 }
 
 ////./GameBoy BROKER NEW_POKEMON pikachu 3 1 3 ID()
@@ -400,66 +465,3 @@ DATOS_GET_POKEMON* convertir_GET_POKEMON(int cantParametros, char*parametros[]) 
 //
 //	free(buffer);
 //}
-
-CodigoDeCola* convertirCodigo(char* codigo) {
-
-	CodigoDeCola* code = malloc(sizeof(CodigoDeCola));
-
-	if (sonIguales(codigo, "NEW_POKEMON"))
-		*code = COLA_NEW_POKEMON;
-	else if (sonIguales(codigo, "APPEARED_POKEMON"))
-		*code = COLA_APPEARED_POKEMON;
-	else if (sonIguales(codigo, "CATCH_POKEMON"))
-		*code = COLA_CATCH_POKEMON;
-	else if (sonIguales(codigo, "CAUGHT_POKEMON"))
-		*code = COLA_CAUGHT_POKEMON;
-	else if (sonIguales(codigo, "GET_POKEMON"))
-		*code = COLA_GET_POKEMON;
-	else if (sonIguales(codigo, "LOCALIZED_POKEMON"))
-		*code = COLA_LOCALIZED_POKEMON;
-	else {
-		free(code);
-		return NULL;
-	}
-
-	return code;
-}
-
-void conexionBroker(Cliente* cliente, Paquete* paquete) {
-
-	BROKER_DATOS_SUSCRIBIRSE datos;
-
-	datos.cola = *((CodigoDeCola*) (cliente->info));
-
-	int tamanioBuffer;
-	void* buffer = Serializar_BROKER_SUSCRIBIRSE(&datos, &tamanioBuffer);
-
-	if(Socket_Enviar(BROKER_SUSCRIBIRSE, buffer, tamanioBuffer, cliente->socket) < 0)
-		log_error(logger, "No se pudo conectar a la cola");
-
-	free(buffer);
-	free(cliente->info);
-
-}
-
-void ConectadoConProceso(char* proceso) {
-	log_info(logger, "Se conectó correctamente al proceso %s",proceso);
-}
-void DesconectadoProceso(char* proceso) {
-	log_info(logger, "Se desconectó correctamente al proceso %s",proceso);
-}
-
-
-void send_MESSAGE(CodigoDeOperacion codOp, void* datos, Serializar funcion, int numSocket) {
-
-	int tamanioBuffer;
-	void* buffer = funcion(&datos, &tamanioBuffer);
-
-	if(Socket_Enviar(codOp, buffer, tamanioBuffer, numSocket) < 0) {
-		printf("No se envio correctamente el mensaje");
-		exit(-1);
-	}
-
-	free(buffer);
-	free(datos);
-}
