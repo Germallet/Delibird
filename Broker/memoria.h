@@ -1,4 +1,7 @@
+#pragma once
+#include "mensaje.h"
 #include "../Utils/protocolo.h"
 
 void IniciarMemoria();
-uint32_t CrearMensaje(CodigoDeCola tipoDeMensaje, void* contenido);
+Mensaje* CrearMensaje(CodigoDeCola tipoDeMensaje, void* contenido);
+void GuardarMensaje(Mensaje* mensaje);

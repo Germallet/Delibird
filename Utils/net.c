@@ -158,6 +158,12 @@ void DestruirServidor(Servidor* servidor)
 
 int EnviarMensaje(Cliente* cliente, CodigoDeOperacion codigoDeOperacion, void* datos, Serializador serializador)
 {
+	int respuesta = EnviarMensajeSinFree(cliente, codigoDeOperacion, datos, serializador);
+	free(datos);
+	return respuesta;
+}
+int EnviarMensajeSinFree(Cliente* cliente, CodigoDeOperacion codigoDeOperacion, void* datos, Serializador serializador)
+{
 	int tamanioBuffer = 0;
 	void* buffer = serializador(datos, &tamanioBuffer);
 
@@ -170,7 +176,6 @@ int EnviarMensaje(Cliente* cliente, CodigoDeOperacion codigoDeOperacion, void* d
 	}
 
 	free(buffer);
-	free(datos);
 
 	return respuesta;
 }
