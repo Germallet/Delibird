@@ -1,5 +1,6 @@
 #include "hiloTimer.h"
 #include <stdlib.h>
+#include <unistd.h>
 
 static void EjecucionTimer(HiloTimer* hiloTimer)
 {
@@ -18,12 +19,14 @@ static void EjecucionTimer(HiloTimer* hiloTimer)
 		pthread_exit(0);
 	}
 	pthread_mutex_unlock(&(hiloTimer->mxHiloTimer));
+	sleep(hiloTimer->tiempo);
 }
 
-HiloTimer* CrearHiloTimer(int repeticiones, void* info, void (*evento)(void*))
+HiloTimer* CrearHiloTimer(int repeticiones, int tiempo, void* info, void (*evento)(void*))
 {
 	HiloTimer* nuevoHilo = malloc(sizeof(HiloTimer));
 	nuevoHilo->repeticiones = repeticiones;
+	nuevoHilo->tiempo = tiempo;
 	nuevoHilo->info = info;
 	nuevoHilo->evento = evento;
 	pthread_create(nuevoHilo->thread, NULL, (void*)EjecucionTimer, nuevoHilo);
