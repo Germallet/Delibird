@@ -2,6 +2,17 @@
 
 // FUNCIONES INDIVIDUALES PARA CADA SERIALIZAR
 
+void* Serializar_ID_MENSAJE(DATOS_ID_MENSAJE* datos, int* tamanioBuffer)
+{
+	*tamanioBuffer = sizeof(DATOS_ID_MENSAJE);
+	void* buffer = malloc(*tamanioBuffer);
+
+	int desplazamiento = 0;
+	memcpy(buffer + desplazamiento, &(datos->id), sizeof(datos->id));
+
+	return buffer;
+}
+
 void* Serializar_NEW_POKEMON(DATOS_NEW_POKEMON* datos, int* tamanioBuffer)
 {
 	*tamanioBuffer = datos->largoPokemon + sizeof(uint32_t)*4;
@@ -179,6 +190,12 @@ void* Serializar_LOCALIZED_POKEMON(DATOS_LOCALIZED_POKEMON* datos, int* tamanioB
 }
 
 // FUNCIONES INDIVIDUALES PARA CADA DESERIALIZAR
+
+bool Deserializar_ID_MENSAJE(Paquete* paquete, DATOS_ID_MENSAJE* datos)
+{
+	if (!Paquete_Deserializar(paquete, &(datos->id), sizeof(uint32_t))) return false;
+	return true;
+}
 
 bool Deserializar_NEW_POKEMON(Paquete* paquete, DATOS_NEW_POKEMON* datos)
 {
