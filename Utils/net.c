@@ -123,7 +123,7 @@ void DestruirCliente(Cliente* cliente)
 	pthread_mutex_t copiaMutex = cliente->mx_destruir;
 	if (cliente->thread != NULL)
 	{
-		cliente->thread = NULL;
+		free(cliente->thread);
 		Socket_Cerrar(cliente->socket);
 	}
 	else

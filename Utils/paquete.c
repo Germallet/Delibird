@@ -50,6 +50,7 @@ bool Paquete_Deserializar(Paquete* paquete, void* datos, int tamanio)
 	paquete->desplazamiento += tamanio;
 	return true;
 }
+
 bool Paquete_DeserializarString(Paquete* paquete, char** string, int tamanio)
 {
 	*string = malloc(tamanio+1);
@@ -58,6 +59,7 @@ bool Paquete_DeserializarString(Paquete* paquete, char** string, int tamanio)
 	(*string)[tamanio] = '\0';
 	return true;
 }
+
 bool Paquete_StreamLeido(Paquete* paquete)
 {
 	return paquete->tamanio == paquete->desplazamiento;

@@ -127,6 +127,7 @@ static void EnviarIDMensaje(uint32_t idMensaje, Cliente* cliente)
 	int tamanioBuffer = 0;
 	void* buffer = Serializar_ID_MENSAJE(&respuesta, &tamanioBuffer);
 	Socket_Enviar(BROKER_ID_MENSAJE, buffer, tamanioBuffer, cliente->socket);
+	free(buffer);
 }
 
 void Operacion_SUSCRIBIRSE(Cliente* cliente, Paquete* paqueteRecibido)
@@ -174,7 +175,7 @@ void Operacion_CATCH_POKEMON(Cliente* cliente, Paquete* paqueteRecibido)
 	if (!Deserializar_CATCH_POKEMON(paqueteRecibido, &datos))
 		log_error(logger, "Error al deserializar CATCH_POKEMON");
 	else
-		log_info(logger, "CATCH_POKEMON: %s", datos.pokemon);
+		log_info(logger, "CATCH_POKEMON: %d ; %s ; (%d, %d)", datos.largoPokemon, datos.pokemon, datos.posicion.posX, datos.posicion.posY);
 
 	CrearMensaje(COLA_CATCH_POKEMON, &datos);
 	EnviarIDMensaje(CrearMensaje(COLA_CATCH_POKEMON, &datos), cliente);
@@ -186,7 +187,7 @@ void Operacion_CAUGHT_POKEMON(Cliente* cliente, Paquete* paqueteRecibido)
 	if (!Deserializar_CAUGHT_POKEMON(paqueteRecibido, &datos))
 		log_error(logger, "Error al deserializar CAUGHT_POKEMON");
 	else
-		log_info(logger, "CAUGHT_POKEMON");
+		log_info(logger, "CAUGHT_POKEMON: %d ; %d", datos.capturado, datos.idCatch);
 
 	CrearMensaje(COLA_CAUGHT_POKEMON, &datos);
 }
@@ -197,10 +198,12 @@ void Operacion_GET_POKEMON(Cliente* cliente, Paquete* paqueteRecibido)
 	if (!Deserializar_GET_POKEMON(paqueteRecibido, &datos))
 		log_error(logger, "Error al deserializar GET_POKEMON");
 	else
-		log_info(logger, "GET_POKEMON: %s", datos.pokemon);
+		log_info(logger, "GET_POKEMON: %d ; %s", datos.largoPokemon, datos.pokemon);
 
 	CrearMensaje(COLA_GET_POKEMON, &datos);
 	EnviarIDMensaje(CrearMensaje(COLA_GET_POKEMON, &datos), cliente);
+
+	free(datos.pokemon);
 }
 void Operacion_LOCALIZED_POKEMON(Cliente* cliente, Paquete* paqueteRecibido)
 {
