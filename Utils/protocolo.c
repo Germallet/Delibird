@@ -1,6 +1,4 @@
 #include "protocolo.h"
-#include <stdlib.h>
-
 
 void* Serializar_ID_MENSAJE(DATOS_ID_MENSAJE* datos, int* tamanioBuffer)
 {

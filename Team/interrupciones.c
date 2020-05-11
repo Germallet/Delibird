@@ -1,8 +1,10 @@
 #include "team.h"
 #include "pokemon.h"
 #include "entrenador.h"
+#include "planificacion.h"
 #include "interrupciones.h"
 #include <stdlib.h>
+#include <pthread.h>
 
 t_dictionaryInt* diccionario_interrupciones;
 t_list* cola_INTERRUPCIONES;
@@ -11,8 +13,17 @@ pthread_mutex_t mutex_interrupciones;
 void inicializar_diccionario_interrupciones();
 
 //-----------COLA DE INTERRUPCIONES-----------//
-void agregar_interrupcion(Datos_Interrupcion* interrupcion) { list_add(cola_INTERRUPCIONES, interrupcion); };
-void destruir_interrupcion(void* interrupcion) { free((Datos_Interrupcion*) interrupcion); };
+void agregar_interrupcion(Datos_Interrupcion* interrupcion)
+{
+	pthread_mutex_lock(&mutex_interrupciones);
+	list_add(cola_INTERRUPCIONES, interrupcion);
+	pthread_mutex_unlock(&mutex_interrupciones);
+}
+void destruir_interrupcion(void* interrupcion)
+{
+	free(((Datos_Interrupcion*) interrupcion)->info);
+	free(interrupcion);
+}
 
 void inicializar_interrupciones()
 {
@@ -27,6 +38,7 @@ void inicializar_interrupciones()
 
 	pthread_mutex_init(&(mutex_interrupciones), NULL);
 }
+
 //-----------OTRAS FUNCIONES-----------//
 void ejecutar_interrupcion()
 {
@@ -35,14 +47,21 @@ void ejecutar_interrupcion()
 	list_remove_and_destroy_element(cola_INTERRUPCIONES, 0, &destruir_interrupcion);
 }
 
-bool hay_interrupciones() { return !list_is_empty(cola_INTERRUPCIONES); }
+bool hay_interrupciones_para_ejecutar() { return !list_is_empty(cola_INTERRUPCIONES); }
 
 //-----------INTERRUPCIONES-----------//
 void interrupcion_PLANIFICAR(void* dato)
 {
-	if(entrenador_EXEC == NULL)
+	if(!hay_entrenador_en_ejecucion())
 	{
-		//if(!list_is_empty(cola_READY)) entrenador_EXEC = tomar_entrenador(cola_READY);
+		//if(!list_is_empty(cola_READY)) entrenador_EXEC = tomar_entrenador(cola_READY); //
+	}
+	if(hay_pokemons_para_atrapar())
+	{
+		if(hay_entrenadores_disponibles()) //Hay entrenadores disponibles
+		{
+			//planificar_entrenador(); asignar_pokemon_a_atrapar(char* especie = tomar_pokemons_necesario_que_este_en_mapa()) )
+		}
 	}
 }
 void interrupcion_CAUGHT_POKEMON(void* dato) {}
@@ -57,7 +76,7 @@ void interrupcion_TERMINAR(void* dato)
 	if(entrenador_EXEC!=NULL) destruir_entrenador(entrenador_EXEC);
 	list_destroy_and_destroy_elements(cola_NEW, &destruir_entrenador);
 	list_destroy_and_destroy_elements(cola_READY, &destruir_entrenador);
-	list_destroy_and_destroy_elements(cola_BLOCK, &destruir_entrenador);
+	list_destroy_and_destroy_elements(cola_BLOCKED, &destruir_entrenador);
 	list_destroy_and_destroy_elements(cola_EXIT, &destruir_entrenador);
 
 	list_destroy_and_destroy_elements(cola_INTERRUPCIONES, &destruir_interrupcion);

@@ -9,17 +9,22 @@
 
 typedef void* (*Serializar)(void*,int*);
 
+//MANDAR MENSAJES
+void send_MESSAGE(CodigoDeOperacion codOp, void* datos, Serializar funcion, int numSocket);
+
 // DECLARACIONES
 void ConectadoConProceso(char*);
 void DesconectadoProceso(char*);
 void conexionBroker(Cliente* cliente, Paquete* paquete);
 void terminarPrograma(t_log* logger, t_config* config);
 
+//VERIFICAR DATOS
 void verificarConexion(int conexion, t_log* logger);
 bool sonIguales(char* a, char* b);
 int cantidadParametros(char* parametros[]);
-CodigoDeCola* convertirCodigo(char* codigo);
 
+//CONVERTIR MENSAJES INGRESADOS POR CONSOLA
+CodigoDeCola* convertirCodigo(char* codigo);
 DATOS_NEW_POKEMON* convertir_NEW_POKEMON(int cantParametros, char*parametros[]);
 DATOS_NEW_POKEMON_ID* convertir_NEW_POKEMON_ID(int cantParametros, char*parametros[]);
 DATOS_APPEARED_POKEMON* convertir_APPEARED_POKEMON(int cantParametros, char*parametros[]);
@@ -28,16 +33,3 @@ DATOS_CATCH_POKEMON_ID* convertir_CATCH_POKEMON_ID(int cantParametros, char*para
 DATOS_CAUGHT_POKEMON* convertir_CAUGHT_POKEMON(int cantParametros, char*parametros[]);
 DATOS_GET_POKEMON* convertir_GET_POKEMON(int cantParametros, char*parametros[]);
 DATOS_GET_POKEMON_ID* convertir_GET_POKEMON_ID(int cantParametros, char*parametros[]);
-
-void send_MESSAGE(CodigoDeOperacion codOp, void* datos, Serializar funcion, int numSocket);
-void send_NEW_POKEMON(DATOS_NEW_POKEMON, int numSocket);
-void send_NEW_POKEMON_ID(DATOS_NEW_POKEMON_ID, int numSocket);
-void send_APPEARED_POKEMON_ID(DATOS_APPEARED_POKEMON_ID datos, int numSocket);
-void send_CATCH_POKEMON(DATOS_CATCH_POKEMON datos, int numSocket);
-void send_CATCH_POKEMON_ID(DATOS_CATCH_POKEMON_ID, int numSocket);
-void send_CAUGHT_POKEMON_ID(DATOS_CAUGHT_POKEMON_ID datos, int numSocket);
-void send_GET_POKEMON(DATOS_GET_POKEMON datos, int numSocket);
-
-
-
-
