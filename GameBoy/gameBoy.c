@@ -36,7 +36,7 @@ int main(int argc, char* argv[])
 		ConectadoConProceso("TEAM");
 
 		if (sonIguales(argv[2],"APPEARED_POKEMON"))
-			send_MESSAGE(APPEARED_POKEMON, convertir_APPEARED_POKEMON(argc, argv), (void*) &Serializar_APPEARED_POKEMON, clienteTeam->socket);
+			EnviarMensaje(clienteTeam, APPEARED_POKEMON, convertir_APPEARED_POKEMON(argc, argv), (void*) &Serializar_APPEARED_POKEMON);
 		  else {
 			log_error(logger, "TEAM NO ENTIENDE TU OPERACION");
 			terminarPrograma(logger, config);
@@ -61,15 +61,15 @@ int main(int argc, char* argv[])
 		ConectadoConProceso("BROKER");
 
 		if (sonIguales(argv[2], "NEW_POKEMON"))
-			send_MESSAGE(NEW_POKEMON, convertir_NEW_POKEMON(argc, argv), (void*) &Serializar_NEW_POKEMON, clienteBroker->socket);
+			EnviarMensaje(clienteBroker, NEW_POKEMON, convertir_NEW_POKEMON(argc, argv), (void*) &Serializar_NEW_POKEMON);
 		  else if (sonIguales(argv[2], "APPEARED_POKEMON"))
-			send_MESSAGE(APPEARED_POKEMON, convertir_APPEARED_POKEMON_ID(argc, argv), (void*) &Serializar_APPEARED_POKEMON, clienteBroker->socket);
+			  EnviarMensaje(clienteBroker, APPEARED_POKEMON, convertir_APPEARED_POKEMON_ID(argc, argv), (void*) &Serializar_APPEARED_POKEMON_ID);
 		  else if (sonIguales(argv[2], "CATCH_POKEMON"))
-			send_MESSAGE(CATCH_POKEMON, convertir_CATCH_POKEMON(argc, argv), (void*) &Serializar_CATCH_POKEMON, clienteBroker->socket);
+			  EnviarMensaje(clienteBroker, CATCH_POKEMON, convertir_CATCH_POKEMON(argc, argv), (void*) &Serializar_CATCH_POKEMON);
 		  else if (sonIguales(argv[2], "CAUGHT_POKEMON"))
-			send_MESSAGE(CAUGHT_POKEMON, convertir_CAUGHT_POKEMON_ID(argc, argv), (void*) &Serializar_CAUGHT_POKEMON_ID, clienteBroker->socket);
+			  EnviarMensaje(clienteBroker, CAUGHT_POKEMON, convertir_CAUGHT_POKEMON_ID(argc, argv), (void*) &Serializar_CAUGHT_POKEMON_ID);
 		  else if (sonIguales(argv[2], "GET_POKEMON"))
-			send_MESSAGE(GET_POKEMON, convertir_GET_POKEMON(argc, argv), (void*) &Serializar_GET_POKEMON, clienteBroker->socket);
+			  EnviarMensaje(clienteBroker, GET_POKEMON, convertir_GET_POKEMON(argc, argv), (void*) &Serializar_GET_POKEMON);
 		  else {
 		  	log_error(logger, "BROKER NO ENTIENDE TU MENSAJE");
 		  	terminarPrograma(logger, config);
@@ -94,11 +94,11 @@ int main(int argc, char* argv[])
 		ConectadoConProceso("GAMECARD");
 
 		if (sonIguales(argv[2], "NEW_POKEMON"))
-			send_MESSAGE(NEW_POKEMON, convertir_NEW_POKEMON_ID(argc, argv), (void*) &Serializar_NEW_POKEMON_ID, clienteGameCard->socket);
+			EnviarMensaje(clienteGameCard, NEW_POKEMON, convertir_NEW_POKEMON_ID(argc, argv), (void*) &Serializar_NEW_POKEMON_ID);
 		  else if (sonIguales(argv[2], "CATCH_POKEMON"))
-			send_MESSAGE(CATCH_POKEMON, convertir_CATCH_POKEMON_ID(argc, argv), (void*) &Serializar_CATCH_POKEMON_ID, clienteGameCard->socket);
+			  EnviarMensaje(clienteGameCard, CATCH_POKEMON, convertir_CATCH_POKEMON_ID(argc, argv), (void*) &Serializar_CATCH_POKEMON_ID);
 		  else if (sonIguales(argv[2], "GET_POKEMON"))
-			send_MESSAGE(GET_POKEMON, convertir_GET_POKEMON_ID(argc, argv), (void*) &Serializar_GET_POKEMON_ID, clienteGameCard->socket);
+			  EnviarMensaje(clienteGameCard, GET_POKEMON, convertir_GET_POKEMON_ID(argc, argv), (void*) &Serializar_GET_POKEMON_ID);
 		  else {
 			  log_error(logger, "GAMECARD NO ENTIENDE TU MENSAJE");
 			  terminarPrograma(logger, config);
@@ -171,21 +171,6 @@ void terminarPrograma(t_log* logger, t_config* config) {
 
 bool sonIguales(char* a, char* b) {
 	return strcmp(a, b) == 0;
-}
-
-void send_MESSAGE(CodigoDeOperacion codOp, void* datos, Serializar funcion, int numSocket) {
-
-	int tamanioBuffer;
-	void* buffer = funcion(datos, &tamanioBuffer);
-
-	if(Socket_Enviar(codOp, buffer, tamanioBuffer, numSocket) < 0) {
-		printf("No se envio correctamente el mensaje");
-		terminarPrograma(logger, config);
-		exit(-1);
-	}
-
-	free(buffer);
-	free(datos);
 }
 
 //./GameBoy BROKER NEW_POKEMON pikachu 3 1 3

@@ -9,9 +9,6 @@
 
 typedef void* (*Serializar)(void*,int*);
 
-//MANDAR MENSAJES
-void send_MESSAGE(CodigoDeOperacion codOp, void* datos, Serializar funcion, int numSocket);
-
 // DECLARACIONES
 void ConectadoConProceso(char*);
 void DesconectadoProceso(char*);
