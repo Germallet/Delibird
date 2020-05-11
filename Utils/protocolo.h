@@ -3,6 +3,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include <netdb.h>
+#include <stdlib.h>
 
 typedef enum
 {
