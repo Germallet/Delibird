@@ -25,6 +25,7 @@ void* Paquete_Serializar(Paquete* paquete, size_t* tamanioFinal)
 
 int Paquete_Procesar(int numSocket, Paquete* paquete)
 {
+	paquete->desplazamiento = 0;
 	if (recv(numSocket, &(paquete->tamanio), sizeof(paquete->tamanio), MSG_WAITALL) == -1)
 		return -1;
 	paquete->stream = malloc(paquete->tamanio);
