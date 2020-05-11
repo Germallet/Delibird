@@ -22,7 +22,7 @@ static void EjecucionTimer(HiloTimer* hiloTimer)
 	sleep(hiloTimer->tiempo);
 }
 
-HiloTimer* CrearHiloTimer(int repeticiones, int tiempo, void* info, void (*evento)(void*))
+HiloTimer* CrearHiloTimer(int repeticiones, unsigned int tiempo, void* info, void (*evento)(void*))
 {
 	HiloTimer* nuevoHilo = malloc(sizeof(HiloTimer));
 	nuevoHilo->repeticiones = repeticiones;

@@ -11,5 +11,5 @@ typedef struct
 	pthread_mutex_t mxHiloTimer;
 } HiloTimer;
 
-extern HiloTimer* CrearHiloTimer(int repeticiones, int tiempo, void* info, void (*evento)(void*));
+extern HiloTimer* CrearHiloTimer(int repeticiones, unsigned int tiempo, void* info, void (*evento)(void*));
 extern void DetenerHiloTimer(HiloTimer* hiloTimer);
