@@ -23,6 +23,6 @@ extern t_list* cola_INTERRUPCIONES;
 
 void inicializar_interrupciones();
 void ejecutar_interrupcion();
-bool hay_interrupciones();
+bool hay_interrupciones_para_ejecutar();
 
 void interrupcion_TERMINAR(void* dato); //TODO Sacar

@@ -33,7 +33,7 @@ void operacion_APPEARED_POKEMON(Cliente* cliente, Paquete* paquete)
 	DATOS_APPEARED_POKEMON datos;
 	if(!Deserializar_APPEARED_POKEMON(paquete, &datos)) log_error(logger, "Error al intentar deserializar el mensaje.");
 
-	if(necesito_pokemon(datos.pokemon))
+	if(necesito_especie_pokemon(datos.pokemon))
 		agregar_pokemon_a_mapa(datos.pokemon, &datos.posicion);
 	//TODO Agregar activacion interrupcion planificar
 }
@@ -42,7 +42,7 @@ void operacion_LOCALIZED_POKEMON(Cliente* cliente, Paquete* paquete)
 	DATOS_LOCALIZED_POKEMON datos;
 	if(!Deserializar_LOCALIZED_POKEMON(paquete, &datos)) log_error(logger, "Error al intentar deserializar el mensaje.");
 
-	if(necesito_pokemon(datos.pokemon) && !esta_localizada(datos.pokemon))
+	if(necesito_especie_pokemon(datos.pokemon) && !esta_localizada(datos.pokemon))
 	{
 		for(int i=0;i<datos.cantidad;i++)
 			agregar_pokemon_a_mapa(datos.pokemon, &datos.posiciones[i]);
@@ -50,7 +50,14 @@ void operacion_LOCALIZED_POKEMON(Cliente* cliente, Paquete* paquete)
 		//TODO Agregar activacion interrupcion planificar
 	}
 }
+void operacion_ASIGNACION_ID(Cliente* cliente, Paquete* paquete)
+{
+	DATOS_ID_MENSAJE datos;
+	if(!Deserializar_ID_MENSAJE(paquete, &datos)) log_error(logger, "Error al intentar deserializar el mensaje.");
 
+	list_add(id_mensajes_esperados, &datos.id); //TODO check this
+	((Entrenador*) cliente->info)->id_mensaje_espera = datos.id ;
+}
 void operacion_CONECTADO(Cliente* cliente, Paquete* paquete)
 {
 	Deserializar_BROKER_CONECTADO(paquete, &datos_conexion);
@@ -73,7 +80,7 @@ void suscribirse_a_cola(Datos_Suscripcion* datos_suscripcion)
 	Eventos_AgregarOperacion(evento, datos_suscripcion->codigo_operacion, (EventoOperacion) (datos_suscripcion->operacion));
 
 	CodigoDeCola* codigo_cola = malloc(sizeof(CodigoDeCola));
-	codigo_cola = &datos_suscripcion->cola; // TODO
+	*codigo_cola = datos_suscripcion->cola; // TODO
 
 	datos_suscripcion->cliente->info = codigo_cola;
 
@@ -88,10 +95,26 @@ void suscribirse_a_cola(Datos_Suscripcion* datos_suscripcion)
 	free(datos_suscripcion);
 }
 
-
-void suscribirse_a_colas()
+void conectarse_y_suscribirse_a_colas()
 {
+	Datos_Suscripcion* datos_suscripcion_CAUGHT_POKEMON = malloc(sizeof(Datos_Suscripcion));
+	datos_suscripcion_CAUGHT_POKEMON->codigo_operacion = CAUGHT_POKEMON;
+	datos_suscripcion_CAUGHT_POKEMON->cola = COLA_CAUGHT_POKEMON;
+	datos_suscripcion_CAUGHT_POKEMON->operacion = &operacion_CAUGHT_POKEMON;
 
+	Datos_Suscripcion* datos_suscripcion_APPEARED_POKEMON = malloc(sizeof(Datos_Suscripcion));
+	datos_suscripcion_APPEARED_POKEMON->codigo_operacion = APPEARED_POKEMON;
+	datos_suscripcion_APPEARED_POKEMON->cola = COLA_APPEARED_POKEMON;
+	datos_suscripcion_APPEARED_POKEMON->operacion = &operacion_APPEARED_POKEMON;
+
+	Datos_Suscripcion* datos_suscripcion_LOCALIZED_POKEMON = malloc(sizeof(Datos_Suscripcion));
+	datos_suscripcion_LOCALIZED_POKEMON->codigo_operacion = LOCALIZED_POKEMON;
+	datos_suscripcion_LOCALIZED_POKEMON->cola = COLA_LOCALIZED_POKEMON;
+	datos_suscripcion_LOCALIZED_POKEMON->operacion = &operacion_LOCALIZED_POKEMON;
+
+	suscribirse_a_cola(datos_suscripcion_CAUGHT_POKEMON);
+	suscribirse_a_cola(datos_suscripcion_APPEARED_POKEMON);
+	suscribirse_a_cola(datos_suscripcion_LOCALIZED_POKEMON);
 }
 //-----------OTRAS FUNCIONES-----------//
 bool espero_mensaje(uint32_t id_mensaje)

@@ -9,3 +9,5 @@ typedef struct
 	CodigoDeOperacion codigo_operacion;
 	CodigoDeCola cola;
 }Datos_Suscripcion;
+
+void conectarse_y_suscribirse_a_colas();

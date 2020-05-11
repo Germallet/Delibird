@@ -1,6 +1,7 @@
 #include "team.h"
 #include "pokemon.h"
 #include "entrenador.h"
+#include "suscripcion.h"
 #include "interrupciones.h"
 #include <stdlib.h>
 #include <commons/log.h>
@@ -35,13 +36,13 @@ static void inicializar_datos()
 	entrenador_EXEC = NULL;
 	cola_NEW = list_create();
 	cola_READY = list_create();
-	cola_BLOCK = list_create();
+	cola_BLOCKED = list_create();
 	cola_EXIT = list_create();
 
 	//POKEMONS
 	pokemons_necesarios = list_create();
 	pokemons_mapa = list_create();
-	pokemons_localizados = list_create();
+	especies_localizadas = list_create();
 
 	//INTERRUPCIONES
 	inicializar_interrupciones();
@@ -51,16 +52,30 @@ static void inicializar_datos()
 	pthread_mutex_lock(&(mutex_team));
 }
 
+static void esperar_fin_de_ciclo() { pthread_mutex_lock(&mutex_team); }
+
 //-----------HILO PRINCIPAL-----------//
 int main()
 {
 	inicializar_datos();
-	inicializar_entrenadores();
-	identificar_pokemons_necesarios();
+	obtener_entrenadores();
+	identificar_objetivo_global();
+	//TODO: pedir_pokemons_necesarior()
+	conectarse_y_suscribirse_a_colas();
+	//TODO: conectarse_con_gameboy();
 
-	//TODO: suscribirse_a_colas();
+	interrupcion_TERMINAR(NULL);
 
-	////////////////////////////////////////////////////
+	while(true)
+	{
+		while(hay_interrupciones_para_ejecutar()) ejecutar_interrupcion();
+		ejecutar_entrenador_actual();
+		esperar_fin_de_ciclo();
+	}
+}
+
+/*
+ 	////////////////////////////////////////////////////
 
 	log_info(logger,"Los pokemon objetivo del team son (%d especies):", pokemons_necesarios->elements_count);
 	for(int i =0; i<pokemons_necesarios->elements_count;i++)
@@ -82,13 +97,10 @@ int main()
 	log_info(logger, "el entrenador mas cercano a la posicion %d,%d es el entrenador %d", posicion->posX, posicion->posY, id_mas_cercano);
 
 	////////////////////////////////////////////////////
+*/
 
-	interrupcion_TERMINAR(NULL);
 
-	while(true)
-	{
-		while(hay_interrupciones()) ejecutar_interrupcion();
-		ejecutar_entrenador_actual();
-		pthread_mutex_lock(&mutex_team);
-	}
-}
+
+
+
+
