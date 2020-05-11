@@ -2,6 +2,7 @@
 #include "socket.h"
 #include <pthread.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 // ===== Escuchar nuevos mensajes =====
 
@@ -155,3 +156,21 @@ void DestruirServidor(Servidor* servidor)
 	pthread_mutex_unlock(&copiaMutex);
 }
 
+int EnviarMensaje(Cliente* cliente, CodigoDeOperacion codigoDeOperacion, void* datos, Serializador serializador)
+{
+	int tamanioBuffer = 0;
+	void* buffer = serializador(datos, &tamanioBuffer);
+
+	int respuesta = Socket_Enviar(codigoDeOperacion, buffer, tamanioBuffer, cliente->socket);
+	if (respuesta < 0)
+	{
+		// TODO Borrar
+		printf("No se envio correctamente el mensaje");
+		exit(-1);
+	}
+
+	free(buffer);
+	free(datos);
+
+	return respuesta;
+}
