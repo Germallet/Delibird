@@ -33,7 +33,7 @@ int main(int argc, char* argv[])
 		ConectadoConProceso("TEAM");
 
 		if (sonIguales(argv[2],"APPEARED_POKEMON"))
-			send_MESSAGE(APPEARED_POKEMON, convertir_APPEARED_POKEMON_ID(argc, argv), (void*) &Serializar_APPEARED_POKEMON_ID, clienteTeam->socket);
+			send_MESSAGE(APPEARED_POKEMON, convertir_APPEARED_POKEMON(argc, argv), (void*) &Serializar_APPEARED_POKEMON, clienteTeam->socket);
 		  else {
 			log_error(logger, "TEAM NO ENTIENDE TU OPERACION");
 			terminarPrograma(logger, config);
@@ -60,11 +60,11 @@ int main(int argc, char* argv[])
 		if (sonIguales(argv[2], "NEW_POKEMON"))
 			send_MESSAGE(NEW_POKEMON, convertir_NEW_POKEMON(argc, argv), (void*) &Serializar_NEW_POKEMON, clienteBroker->socket);
 		  else if (sonIguales(argv[2], "APPEARED_POKEMON"))
-			send_MESSAGE(APPEARED_POKEMON, convertir_APPEARED_POKEMON_ID(argc, argv), (void*) &Serializar_APPEARED_POKEMON_ID, clienteBroker->socket);
+			send_MESSAGE(APPEARED_POKEMON, convertir_APPEARED_POKEMON(argc, argv), (void*) &Serializar_APPEARED_POKEMON, clienteBroker->socket);
 		  else if (sonIguales(argv[2], "CATCH_POKEMON"))
 			send_MESSAGE(CATCH_POKEMON, convertir_CATCH_POKEMON(argc, argv), (void*) &Serializar_CATCH_POKEMON, clienteBroker->socket);
 		  else if (sonIguales(argv[2], "CAUGHT_POKEMON"))
-			send_MESSAGE(CAUGHT_POKEMON, convertir_CAUGHT_POKEMON_ID(argc, argv), (void*) &Serializar_CAUGHT_POKEMON_ID, clienteBroker->socket);
+			send_MESSAGE(CAUGHT_POKEMON, convertir_CAUGHT_POKEMON(argc, argv), (void*) &Serializar_CAUGHT_POKEMON, clienteBroker->socket);
 		  else if (sonIguales(argv[2], "GET_POKEMON"))
 			send_MESSAGE(GET_POKEMON, convertir_GET_POKEMON(argc, argv), (void*) &Serializar_GET_POKEMON, clienteBroker->socket);
 		  else {
@@ -94,7 +94,7 @@ int main(int argc, char* argv[])
 		  else if (sonIguales(argv[2], "CATCH_POKEMON"))
 			send_MESSAGE(CATCH_POKEMON, convertir_CATCH_POKEMON_ID(argc, argv), (void*) &Serializar_CATCH_POKEMON_ID, clienteGameCard->socket);
 		  else if (sonIguales(argv[2], "GET_POKEMON"))
-			send_MESSAGE(GET_POKEMON, convertir_GET_POKEMON(argc, argv), (void*) &Serializar_GET_POKEMON, clienteGameCard->socket);
+			send_MESSAGE(GET_POKEMON, convertir_GET_POKEMON_ID(argc, argv), (void*) &Serializar_GET_POKEMON_ID, clienteGameCard->socket);
 		  else {
 			  log_error(logger, "GAMECARD NO ENTIENDE TU MENSAJE");
 			  exit (-1);
@@ -199,20 +199,20 @@ DATOS_NEW_POKEMON_ID* convertir_NEW_POKEMON_ID(int cantParametros, char*parametr
 	return datosConID;
 }
 
-DATOS_APPEARED_POKEMON_ID* convertir_APPEARED_POKEMON_ID(int cantParametros, char*parametros[]) {
+DATOS_APPEARED_POKEMON* convertir_APPEARED_POKEMON(int cantParametros, char*parametros[]) {
 
 	if (cantParametros != 7){
 		log_error(logger, "Mandaste mal los parametros sabandija");
 		exit(-1);
 	}
 
-	DATOS_APPEARED_POKEMON_ID* datos = malloc(sizeof(DATOS_APPEARED_POKEMON_ID));
+	DATOS_APPEARED_POKEMON* datos = malloc(sizeof(DATOS_APPEARED_POKEMON_ID));
 
-	datos->datos.largoPokemon = (uint32_t) strlen(parametros[3]);
-	datos->datos.pokemon = parametros[3];
-	datos->datos.posicion.posX = strtol(parametros[4],NULL,10);
-	datos->datos.posicion.posY = strtol(parametros[5],NULL,10);
-	datos->id = strtol(parametros[6],NULL,10);
+	datos->largoPokemon = (uint32_t) strlen(parametros[3]);
+	datos->pokemon = parametros[3];
+	datos->posicion.posX = strtol(parametros[4],NULL,10);
+	datos->posicion.posY = strtol(parametros[5],NULL,10);
+	datos->idNew = strtol(parametros[6],NULL,10);
 
 	return datos;
 }
@@ -249,17 +249,17 @@ DATOS_CATCH_POKEMON_ID* convertir_CATCH_POKEMON_ID(int cantParametros, char*para
 	return datosConID;
 }
 
-DATOS_CAUGHT_POKEMON_ID* convertir_CAUGHT_POKEMON_ID(int cantParametros, char*parametros[]) {
+DATOS_CAUGHT_POKEMON* convertir_CAUGHT_POKEMON(int cantParametros, char*parametros[]) {
 
 	if (cantParametros != 5){
 		log_error(logger, "Mandaste mal los parametros sabandija");
 		exit(-1);
 	}
 
-	DATOS_CAUGHT_POKEMON_ID* datos = malloc(sizeof(DATOS_CAUGHT_POKEMON_ID));
+	DATOS_CAUGHT_POKEMON* datos = malloc(sizeof(DATOS_CAUGHT_POKEMON_ID));
 
-	datos->id = strtol(parametros[3],NULL,10);
-	datos->datos.capturado = strtol(parametros[4],NULL,10);
+	datos->idCatch = strtol(parametros[3],NULL,10);
+	datos->capturado = strtol(parametros[4],NULL,10);
 
 	return datos;
 }
@@ -279,7 +279,20 @@ DATOS_GET_POKEMON* convertir_GET_POKEMON(int cantParametros, char*parametros[]) 
 	return datos;
 }
 
+DATOS_GET_POKEMON_ID* convertir_GET_POKEMON_ID(int cantParametros, char*parametros[]) {
 
+	if (cantParametros != 5){
+		log_error(logger, "Mandaste mal los parametros sabandija");
+		exit(-1);
+	}
+
+	DATOS_GET_POKEMON_ID* datosConID = malloc(sizeof(DATOS_GET_POKEMON_ID));
+	datosConID->datos = *convertir_GET_POKEMON(cantParametros, parametros);
+
+	datosConID->id = strtol(parametros[7],NULL,10);
+
+	return datosConID;
+}
 
 CodigoDeCola* convertirCodigo(char* codigo) {
 
