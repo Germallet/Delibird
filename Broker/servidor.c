@@ -117,6 +117,8 @@ void Operacion_RECONECTAR(Cliente* cliente, Paquete* paqueteRecibido)
 				log_info(logger, "Se conectó un cliente correctamente (id: %d)", clienteBroker->id);
 			else
 				log_error(logger, "Error al conectar cliente");
+
+			Colas_EnviarMensajesRestantesSiCorrespondeA(clienteBroker);
 		}
 	}
 }
@@ -132,6 +134,7 @@ static void RecibirMensaje(Cliente* cliente, CodigoDeCola tipoDeMensaje, void* c
 	Mensaje* nuevoMensaje = CrearMensaje(COLA_NEW_POKEMON, contenido);
 	EnviarIDMensaje(nuevoMensaje->id, cliente);
 	GuardarMensaje(nuevoMensaje);
+	Cola_ProcesarNuevoMensaje(tipoDeMensaje, nuevoMensaje);
 }
 
 void Operacion_SUSCRIBIRSE(Cliente* cliente, Paquete* paqueteRecibido)
@@ -148,6 +151,8 @@ void Operacion_SUSCRIBIRSE(Cliente* cliente, Paquete* paqueteRecibido)
 	Cola* cola = ObtenerCola(datosSuscripcion.cola);
 	AgregarSuscriptor(cola, (ClienteBroker*)cliente->info);
 	log_info(logger, "Nueva suscripción: %d", datosSuscripcion.cola);
+
+	Cola_EnviarMensajesRestantesSiCorrespondeA(cola, cliente->info);
 }
 
 void Operacion_NEW_POKEMON(Cliente* cliente, Paquete* paqueteRecibido)
@@ -208,11 +213,11 @@ void Operacion_GET_POKEMON(Cliente* cliente, Paquete* paqueteRecibido)
 }
 void Operacion_LOCALIZED_POKEMON(Cliente* cliente, Paquete* paqueteRecibido)
 {
-	DATOS_LOCALIZED_POKEMON datos;
-	if (!Deserializar_LOCALIZED_POKEMON(paqueteRecibido, &datos))
-		log_error(logger, "Error al deserializar LOCALIZED_POKEMON");
+	DATOS_LOCALIZED_POKEMON_ID datos;
+	if (!Deserializar_LOCALIZED_POKEMON_ID(paqueteRecibido, &datos))
+		log_error(logger, "Error al deserializar LOCALIZED_POKEMON_ID");
 	else
-		log_info(logger, "LOCALIZED_POKEMON: %s", datos.pokemon);
+		log_info(logger, "LOCALIZED_POKEMON_ID: %s", datos.pokemon);
 
 	RecibirMensaje(cliente, COLA_LOCALIZED_POKEMON, &datos);
 }

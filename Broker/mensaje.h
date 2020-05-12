@@ -1,5 +1,6 @@
 #pragma once
 #include "../Utils/protocolo.h"
+#include "../Utils/net.h"
 #include <commons/collections/list.h>
 
 typedef struct
@@ -15,3 +16,5 @@ typedef struct
 
 void IniciarMensajes();
 Mensaje* CrearMensaje(CodigoDeCola tipoDeMensaje, void* contenido);
+bool Mensaje_SeLeEnvioA(Mensaje* mensaje, void* cliente);
+void Mensaje_EnviarA(Mensaje* mensaje, void* contenido, Cliente* cliente);

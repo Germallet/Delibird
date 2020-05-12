@@ -1,4 +1,5 @@
 #include "cola.h"
+#include "memoria.h"
 #include "../Utils/dictionaryInt.h"
 #include <stdlib.h>
 
@@ -8,7 +9,10 @@ Cola *cola_NEW_POKEMON, *cola_APPEARED_POKEMON, *cola_CATCH_POKEMON, *cola_CAUGH
 static void CrearCola(CodigoDeCola codigo, Cola** cola)
 {
 	*cola = malloc(sizeof(Cola));
-	(*cola)->lista = list_create();
+	(*cola)->suscriptores = list_create();
+	(*cola)->mensajes = list_create();
+	pthread_mutex_init(&((*cola)->mutexSuscriptores), NULL);
+	pthread_mutex_init(&((*cola)->mutexMensajes), NULL);
 }
 void CrearColas()
 {
@@ -31,7 +35,8 @@ void CrearColas()
 
 static void DestruirCola(CodigoDeCola codigo, Cola* cola)
 {
-	list_destroy(cola->lista);
+	list_destroy(cola->suscriptores);
+	list_destroy(cola->mensajes);
 	free(cola);
 	dictionaryInt_destroy(diccionarioColas);
 }
@@ -47,16 +52,91 @@ Cola* ObtenerCola(CodigoDeCola codigo)
 
 void AgregarSuscriptor(Cola* cola, ClienteBroker* clienteBroker)
 {
-	list_add(cola->lista, clienteBroker);
+	pthread_mutex_lock(&(cola->mutexSuscriptores));
+	list_add(cola->suscriptores, clienteBroker);
+	pthread_mutex_unlock(&(cola->mutexSuscriptores));
 }
 
-void RemoverSuscriptor(ClienteBroker* clienteBroker)
+void RemoverSuscriptor(Cola* cola, ClienteBroker* clienteBroker)
 {
-	bool(SonIguales)(void* clienteBroker2) { return (ClienteBroker*)clienteBroker2 == clienteBroker; }
-	list_remove_by_condition(cola_NEW_POKEMON->lista, &SonIguales);
-	list_remove_by_condition(cola_APPEARED_POKEMON->lista, &SonIguales);
-	list_remove_by_condition(cola_CATCH_POKEMON->lista, &SonIguales);
-	list_remove_by_condition(cola_CAUGHT_POKEMON->lista, &SonIguales);
-	list_remove_by_condition(cola_GET_POKEMON->lista, &SonIguales);
-	list_remove_by_condition(cola_LOCALIZED_POKEMON->lista, &SonIguales);
+	bool SonIguales(void* clienteBroker2) { return (ClienteBroker*)clienteBroker2 == clienteBroker; }
+
+	pthread_mutex_lock(&(cola->mutexSuscriptores));
+	list_remove_by_condition(cola->suscriptores, &SonIguales);
+	pthread_mutex_unlock(&(cola->mutexSuscriptores));
+}
+
+void RemoverSuscriptorTotal(ClienteBroker* clienteBroker)
+{
+	RemoverSuscriptor(cola_NEW_POKEMON, clienteBroker);
+	RemoverSuscriptor(cola_APPEARED_POKEMON, clienteBroker);
+	RemoverSuscriptor(cola_CATCH_POKEMON, clienteBroker);
+	RemoverSuscriptor(cola_CAUGHT_POKEMON, clienteBroker);
+	RemoverSuscriptor(cola_GET_POKEMON, clienteBroker);
+	RemoverSuscriptor(cola_LOCALIZED_POKEMON, clienteBroker);
+}
+
+bool TieneSuscriptor(Cola* cola, ClienteBroker* clienteBroker)
+{
+	bool SonIguales(void* clienteBroker2) { return (ClienteBroker*)clienteBroker2 == clienteBroker; }
+
+	pthread_mutex_lock(&(cola->mutexSuscriptores));
+	bool existe = list_any_satisfy(cola->suscriptores, &SonIguales);
+	pthread_mutex_unlock(&(cola->mutexSuscriptores));
+
+	return existe;
+}
+
+static void BroadcastMensajeSinChequeo(Cola* cola, Mensaje* mensaje)
+{
+	void* contenido = ObtenerContenidoMensaje(mensaje);
+	void EnviarMensajeA(void* cliente) { Mensaje_EnviarA(mensaje, contenido, ((ClienteBroker*)cliente)->cliente); }
+
+	pthread_mutex_lock(&(cola->mutexSuscriptores));
+	list_iterate(cola->suscriptores, &EnviarMensajeA);
+	pthread_mutex_unlock(&(cola->mutexSuscriptores));
+
+	//TODO free(contenido);
+}
+void Cola_ProcesarNuevoMensaje(CodigoDeCola codigoDeCola, Mensaje* mensaje)
+{
+	Cola* cola = ObtenerCola(codigoDeCola);
+
+	void* contenido = ObtenerContenidoMensaje(mensaje);
+	void EnviarMensajeA(void* cliente) { Mensaje_EnviarA(mensaje, contenido, ((ClienteBroker*)cliente)->cliente); }
+
+	pthread_mutex_lock(&(cola->mutexMensajes));
+	list_add(cola->mensajes, mensaje);
+	pthread_mutex_unlock(&(cola->mutexMensajes));
+
+	BroadcastMensajeSinChequeo(cola, mensaje);
+}
+
+void Cola_EnviarMensajesRestantesSiCorrespondeA(Cola* cola, ClienteBroker* cliente)
+{
+	void EnviarMensajeSiCorresponde(void* mensaje)
+	{
+		if (Mensaje_SeLeEnvioA(mensaje, cliente))
+			return;
+		void* contenido = ObtenerContenidoMensaje(mensaje);
+		Mensaje_EnviarA(mensaje, contenido, cliente->cliente);
+		// TODO free(contenido);
+	}
+
+	if (!TieneSuscriptor(cola, cliente))
+		return;
+
+	pthread_mutex_lock(&(cola->mutexMensajes));
+	list_iterate(cola->mensajes, &EnviarMensajeSiCorresponde);
+	pthread_mutex_unlock(&(cola->mutexMensajes));
+}
+
+void Colas_EnviarMensajesRestantesSiCorrespondeA(ClienteBroker* cliente)
+{
+	Cola_EnviarMensajesRestantesSiCorrespondeA(cola_NEW_POKEMON, cliente);
+	Cola_EnviarMensajesRestantesSiCorrespondeA(cola_APPEARED_POKEMON, cliente);
+	Cola_EnviarMensajesRestantesSiCorrespondeA(cola_CATCH_POKEMON, cliente);
+	Cola_EnviarMensajesRestantesSiCorrespondeA(cola_CAUGHT_POKEMON, cliente);
+	Cola_EnviarMensajesRestantesSiCorrespondeA(cola_GET_POKEMON, cliente);
+	Cola_EnviarMensajesRestantesSiCorrespondeA(cola_LOCALIZED_POKEMON, cliente);
 }

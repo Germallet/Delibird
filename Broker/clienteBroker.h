@@ -1,5 +1,7 @@
 #pragma once
+#include "mensaje.h"
 #include "../Utils/net.h"
+#include <commons/collections/list.h>
 
 typedef struct
 {

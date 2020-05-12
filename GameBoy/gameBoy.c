@@ -85,15 +85,14 @@ int main(int argc, char* argv[])
 		char* ipBroker = config_get_string_value(config, "IP_BROKER");
 		int puertoBroker = config_get_int_value(config, "PUERTO_BROKER");
 
-		Eventos_AgregarOperacion(eventos, BROKER_CONECTADO, (EventoOperacion) &ConexionBroker);
+		CodigoDeCola* cola = convertirCodigo(argv[2]);
 
+		Eventos_AgregarOperacion(eventos, BROKER_CONECTADO, (EventoOperacion) &ConexionBroker);
+		loggearMensajesRecibidos(eventos, *cola);
 		Cliente* clienteBroker = CrearCliente(ipBroker, puertoBroker, eventos);
 
 		if (clienteBroker == NULL) TerminarProgramaConError("NO ME PUDE CONECTAR AL BROKER");
-
-		CodigoDeCola cola = *convertirCodigo(argv[2]);
-
-		clienteBroker->info = (void*) cola;
+		clienteBroker->info = cola;
 
 		if (clienteBroker->info == NULL) TerminarProgramaConError("ESCRIBIME BIEN LA OPERACION, DALE");
 
@@ -107,8 +106,6 @@ int main(int argc, char* argv[])
 		}
 
 		ConectadoConCola(argv[2]);
-
-		loggearMensajesRecibidos(eventos,cola);
 
 		sleep(tiempo);
 
@@ -322,7 +319,7 @@ void ConexionBroker(Cliente* cliente, Paquete* paquete) {
 
 	datos.cola = *((CodigoDeCola*) (cliente->info));
 
-	EnviarMensaje(cliente, BROKER_SUSCRIBIRSE, &datos, (void*) &Serializar_BROKER_SUSCRIBIRSE);
+	EnviarMensajeSinFree(cliente, BROKER_SUSCRIBIRSE, &datos, (void*) &Serializar_BROKER_SUSCRIBIRSE);
 
 	free(cliente->info);
 }

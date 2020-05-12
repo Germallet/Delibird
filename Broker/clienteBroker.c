@@ -1,4 +1,5 @@
 #include "clienteBroker.h"
+#include "memoria.h"
 #include "../Utils/dictionaryInt.h"
 #include <commons/config.h>
 #include <stdlib.h>

@@ -90,3 +90,21 @@ void dictionaryInt_destroy_and_destroy_elements(t_dictionaryInt* diccionario, vo
 {
 	dictionary_destroy_and_destroy_elements(diccionario->dictionary, data_destroyer);
 }
+
+
+t_list* dictionaryInt_toList(t_dictionaryInt* diccionario)
+{
+	t_list* lista = list_create();
+
+	int table_index;
+	for (table_index = 0; table_index < diccionario->dictionary->table_max_size; table_index++) {
+		t_hash_element *element = diccionario->dictionary->elements[table_index];
+
+		while (element != NULL) {
+			list_add(lista, element->data);
+			element = element->next;
+		}
+	}
+
+	return lista;
+}

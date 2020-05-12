@@ -1,5 +1,6 @@
 #pragma once
 #include <commons/collections/dictionary.h>
+#include <commons/collections/list.h>
 #include <netdb.h>
 
 typedef struct
@@ -20,3 +21,5 @@ extern bool dictionaryInt_is_empty(t_dictionaryInt* diccionario);
 extern int dictionaryInt_size(t_dictionaryInt* diccionario);
 extern void dictionaryInt_destroy(t_dictionaryInt* diccionario);
 extern void dictionaryInt_destroy_and_destroy_elements(t_dictionaryInt* diccionario, void(*data_destroyer)(void*));
+
+extern t_list* dictionaryInt_toList(t_dictionaryInt* diccionario);

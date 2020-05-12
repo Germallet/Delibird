@@ -1,5 +1,6 @@
 #include "broker.h"
 #include "mensaje.h"
+#include "clienteBroker.h"
 #include "../Utils/dictionaryInt.h"
 #include <stdlib.h>
 #include <pthread.h>
@@ -18,4 +19,9 @@ void GuardarMensaje(Mensaje* mensaje)
 	pthread_mutex_lock(&mutexMensajes);
 	dictionaryInt_put(mensajes, mensaje->id, mensaje);
 	pthread_mutex_unlock(&mutexMensajes);
+}
+
+void* ObtenerContenidoMensaje(Mensaje* mensaje)
+{
+	return mensaje->contenido;
 }

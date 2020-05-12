@@ -5,3 +5,4 @@
 void IniciarMemoria();
 Mensaje* CrearMensaje(CodigoDeCola tipoDeMensaje, void* contenido);
 void GuardarMensaje(Mensaje* mensaje);
+void* ObtenerContenidoMensaje(Mensaje* mensaje);
