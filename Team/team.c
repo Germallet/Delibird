@@ -2,7 +2,9 @@
 #include "pokemon.h"
 #include "entrenador.h"
 #include "suscripcion.h"
+#include "planificacion.h"
 #include "interrupciones.h"
+#include "../Utils/hiloTimer.h"
 #include <stdlib.h>
 #include <commons/log.h>
 #include <commons/config.h>
@@ -44,6 +46,9 @@ static void inicializar_datos()
 	pokemons_mapa = list_create();
 	especies_localizadas = list_create();
 
+	//HILO TIMER
+	//inicializar_hilo_reconexion();
+
 	//INTERRUPCIONES
 	inicializar_interrupciones();
 
@@ -60,7 +65,7 @@ int main()
 	inicializar_datos();
 	obtener_entrenadores();
 	identificar_objetivo_global();
-	//TODO: pedir_pokemons_necesarior()
+	//TODO: pedir_pokemons_necesarior();
 	conectarse_y_suscribirse_a_colas();
 	//TODO: conectarse_con_gameboy();
 
@@ -69,6 +74,7 @@ int main()
 	while(true)
 	{
 		while(hay_interrupciones_para_ejecutar()) ejecutar_interrupcion();
+		planificar_entrenador_si_es_necesario();
 		ejecutar_entrenador_actual();
 		esperar_fin_de_ciclo();
 	}

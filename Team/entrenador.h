@@ -41,8 +41,9 @@ typedef struct
 
 	pthread_t hilo;
 	pthread_mutex_t mutex;
-	uint32_t id_mensaje_espera;
+	uint32_t* id_mensaje_espera;
 
+	void* info;
 	int indice_accion_actual;
 	t_list* datos_acciones;
 }Entrenador;
@@ -53,8 +54,13 @@ typedef void (*Accion)(Entrenador*);
 
 Entrenador* crear_entrenador(char* posicion, char* pokemons_atrapados, char* pokemons_objetivo, int ID);
 void destruir_entrenador(void* entrenador_void);
+Entrenador* tomar_entrenador(t_list* lista_entrenadores);
 Entrenador* entrenador_mas_cercano(t_list* lista_entrenadores, Posicion* posicion_llegada);
+bool tienen_pokemons_para_intercambiar(Entrenador* entrenador_1, Entrenador* entrenador_2);
+bool hay_entrenadores_que_pueden_intercambiar();
+void obtener_entrenadores_que_pueden_intercambiar(Entrenador* entrenador_1, Entrenador* entrenador_2);
 void cargar_accion(Entrenador* entrenador, Tipo_Accion tipo ,void* info);
+void asignar_id_mensaje_espera(Entrenador* entrenador, uint* nuevo_id);
 void capturo_pokemon(Entrenador* entrenador);
 void obtener_entrenadores();
 void ejecutar_entrenador_actual();

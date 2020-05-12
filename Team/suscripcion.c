@@ -5,58 +5,55 @@
 #include "interrupciones.h"
 #include <stdlib.h>
 #include "../Utils/socket.h"
+#include "../Utils/hiloTimer.h"
 #include "../Utils/protocolo.h"
 
 BROKER_DATOS_CONECTADO datos_conexion;
 t_list* id_mensajes_esperados;
+HiloTimer hilo_reconexion;
 
 bool espero_mensaje(uint32_t id_mensaje);
 //-----------OPERACIONES-----------//
 void operacion_CAUGHT_POKEMON(Cliente* cliente, Paquete* paquete)
 {
-	DATOS_CAUGHT_POKEMON datos;
-	if(!Deserializar_CAUGHT_POKEMON(paquete, &datos)) log_error(logger, "Error al intentar deserializar el mensaje.");
+	DATOS_CAUGHT_POKEMON* datos = malloc(sizeof(DATOS_CAUGHT_POKEMON));
+	if(!Deserializar_CAUGHT_POKEMON(paquete, datos)) log_error(logger, "Error al intentar deserializar el mensaje.");
 
-	if(espero_mensaje(datos.idCatch))
+	if(espero_mensaje(datos->idCatch))
 	{
-		Entrenador* entrenador = ((Entrenador*) (cliente->info));
-		if(datos.capturado)
-			capturo_pokemon(entrenador);
-		else
-			fallo_captura_pokemon(entrenador);
+		datos_interrupcion_CAUGHT_POKEMON* datos_interrupcion = malloc(sizeof(datos_interrupcion_CAUGHT_POKEMON));
+		datos_interrupcion->entrenador = cliente->info;
+		datos_interrupcion->recibidos = datos;
+		agregar_interrupcion(CAUGHT_POKEMON, datos_interrupcion);
 	}
-
-	//TODO Agregar activacion interrupcion planificar
 }
 void operacion_APPEARED_POKEMON(Cliente* cliente, Paquete* paquete)
 {
-	DATOS_APPEARED_POKEMON datos;
-	if(!Deserializar_APPEARED_POKEMON(paquete, &datos)) log_error(logger, "Error al intentar deserializar el mensaje.");
+	DATOS_APPEARED_POKEMON* datos = malloc(sizeof(DATOS_APPEARED_POKEMON));
+	if(!Deserializar_APPEARED_POKEMON(paquete, datos)) log_error(logger, "Error al intentar deserializar el mensaje.");
 
-	if(necesito_especie_pokemon(datos.pokemon))
-		agregar_pokemon_a_mapa(datos.pokemon, &datos.posicion);
-	//TODO Agregar activacion interrupcion planificar
+	if(necesito_especie_pokemon(datos->pokemon))
+		agregar_interrupcion(APPEARED_POKEMON, datos);
 }
 void operacion_LOCALIZED_POKEMON(Cliente* cliente, Paquete* paquete)
 {
-	DATOS_LOCALIZED_POKEMON datos;
-	if(!Deserializar_LOCALIZED_POKEMON(paquete, &datos)) log_error(logger, "Error al intentar deserializar el mensaje.");
+	DATOS_LOCALIZED_POKEMON* datos = malloc(sizeof(DATOS_LOCALIZED_POKEMON));
+	if(!Deserializar_LOCALIZED_POKEMON(paquete, datos)) log_error(logger, "Error al intentar deserializar el mensaje.");
 
-	if(necesito_especie_pokemon(datos.pokemon) && !esta_localizada(datos.pokemon))
-	{
-		for(int i=0;i<datos.cantidad;i++)
-			agregar_pokemon_a_mapa(datos.pokemon, &datos.posiciones[i]);
-		se_localizo(datos.pokemon);
-		//TODO Agregar activacion interrupcion planificar
-	}
+	if(necesito_especie_pokemon(datos->pokemon) && !esta_localizada(datos->pokemon))
+		agregar_interrupcion(LOCALIZED_POKEMON, datos);
 }
 void operacion_ASIGNACION_ID(Cliente* cliente, Paquete* paquete)
 {
 	DATOS_ID_MENSAJE datos;
 	if(!Deserializar_ID_MENSAJE(paquete, &datos)) log_error(logger, "Error al intentar deserializar el mensaje.");
 
-	list_add(id_mensajes_esperados, &datos.id); //TODO check this
-	((Entrenador*) cliente->info)->id_mensaje_espera = datos.id ;
+	uint32_t* id_mensaje = malloc(sizeof(uint32_t));
+	*id_mensaje = datos.id;
+
+	list_add(id_mensajes_esperados, &(datos.id));
+	Entrenador* entrenador = cliente->info;
+	asignar_id_mensaje_espera(entrenador, id_mensaje);
 }
 void operacion_CONECTADO(Cliente* cliente, Paquete* paquete)
 {
@@ -67,7 +64,6 @@ void operacion_CONECTADO(Cliente* cliente, Paquete* paquete)
 	int tamanio_datos_broker = 0;
 	void* buffer = Serializar_BROKER_SUSCRIBIRSE(&datos_broker, &tamanio_datos_broker);
 	Socket_Enviar(BROKER_SUSCRIBIRSE, buffer, tamanio_datos_broker, cliente->socket);
-
 	free(cliente->info);
 }
 
@@ -88,12 +84,21 @@ void suscribirse_a_cola(Datos_Suscripcion* datos_suscripcion)
 	datos_suscripcion->cliente = CrearCliente(config_get_string_value(config, "IP_BROKER"), config_get_int_value(config, "PUERTO_BROKER"),  evento);
 
 	if(datos_suscripcion->cliente == NULL)
-		;//Reconectar
+	{
+		//INTENTAR CONEXION NUEVAMENTE
+	}
 
 	Socket_Enviar(BROKER_CONECTAR, NULL, 0, datos_suscripcion->cliente->socket);
 
 	free(datos_suscripcion);
 }
+
+void reconectar_si_es_necesario(void* dato)
+{
+
+}
+
+//void inicializar_hilo_reconexion() { hilo_reconexion = CrearHiloTimer(-1, config_get_int_value(config, "TIEMPO_RECONEXION"), reconectar_si_es_necesario, NULL); }
 
 void conectarse_y_suscribirse_a_colas()
 {
