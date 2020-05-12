@@ -96,7 +96,7 @@ Cliente* CrearCliente(char *ip, uint16_t puerto, Eventos* eventos)
 	pthread_attr_init(&attr);
 	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
 	pthread_create(cliente->thread, &attr, (void*)EscucharMensajes, cliente);
-	//pthread_detach(*(cliente->thread));
+	pthread_detach(*(cliente->thread));
 
 	return cliente;
 }

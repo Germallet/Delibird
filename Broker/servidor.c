@@ -207,7 +207,7 @@ void Operacion_GET_POKEMON(Cliente* cliente, Paquete* paqueteRecibido)
 	else
 		log_info(logger, "GET_POKEMON: %d ; %s", datos.largoPokemon, datos.pokemon);
 
-	RecibirMensaje(cliente, COLA_GET_POKEMON, &datos);
+	RecibirMensaje(cliente, COLA_GET_POKEMON, paqueteRecibido->stream);
 
 	free(datos.pokemon);
 }
