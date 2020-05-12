@@ -13,12 +13,12 @@ void ConectadoConCola(char* cola);
 
 //EVENTOS
 void ConexionBroker(Cliente* cliente, Paquete* paquete);
-void RecibirMensaje_NEW_POKEMON(Cliente* cliente, Paquete* paqueteRecibido);
-void RecibirMensaje_APPEARED_POKEMON(Cliente* cliente, Paquete* paqueteRecibido);
-void RecibirMensaje_CATCH_POKEMON(Cliente* cliente, Paquete* paqueteRecibido);
-void RecibirMensaje_CAUGHT_POKEMON(Cliente* cliente, Paquete* paqueteRecibido);
-void RecibirMensaje_GET_POKEMON(Cliente* cliente, Paquete* paqueteRecibido);
-void RecibirMensaje_LOCALIZED_POKEMON(Cliente* cliente, Paquete* paqueteRecibido);
+void RecibirMensaje_NEW_POKEMON_ID(Cliente* cliente, Paquete* paqueteRecibido);
+void RecibirMensaje_APPEARED_POKEMON_IDx2(Cliente* cliente, Paquete* paqueteRecibido);
+void RecibirMensaje_CATCH_POKEMON_ID(Cliente* cliente, Paquete* paqueteRecibido);
+void RecibirMensaje_CAUGHT_POKEMON_IDx2(Cliente* cliente, Paquete* paqueteRecibido);
+void RecibirMensaje_GET_POKEMON_ID(Cliente* cliente, Paquete* paqueteRecibido);
+void RecibirMensaje_LOCALIZED_POKEMON_IDx2(Cliente* cliente, Paquete* paqueteRecibido);
 void loggearMensajesRecibidos(Eventos* eventos, CodigoDeCola cola);
 
 //TERMINAR PROGRAMA
