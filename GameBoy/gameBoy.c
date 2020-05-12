@@ -419,7 +419,7 @@ void RecibirMensaje_LOCALIZED_POKEMON(Cliente* cliente, Paquete* paqueteRecibido
 	if (!Deserializar_LOCALIZED_POKEMON_IDx2(paqueteRecibido, &datos))
 		log_error(logger, "Error al deserializar LOCALIZED_POKEMON");
 	else
-		log_info(logger, "LOCALIZED_POKEMON: %d", datos.largoPokemon, datos.pokemon, datos.cantidad, datos.id); //TODO AGREGAR LA LISTA
+		log_info(logger, "LOCALIZED_POKEMON: %d %s %d %d", datos.largoPokemon, datos.pokemon, datos.cantidad, datos.id); //TODO AGREGAR LA LISTA
 
 	EnviarID(cliente,datos.id);
 }

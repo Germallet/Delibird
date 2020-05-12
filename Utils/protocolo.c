@@ -1,5 +1,7 @@
 #include "protocolo.h"
 
+//TODO MEJORARLOS
+
 // FUNCIONES INDIVIDUALES PARA CADA SERIALIZAR
 
 void* Serializar_ID_MENSAJE(DATOS_ID_MENSAJE* datos, int* tamanioBuffer)
