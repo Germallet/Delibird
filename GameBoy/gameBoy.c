@@ -91,7 +91,9 @@ int main(int argc, char* argv[])
 
 		if (clienteBroker == NULL) TerminarProgramaConError("NO ME PUDE CONECTAR AL BROKER");
 
-		clienteBroker->info = (void*) convertirCodigo(argv[2]);
+		CodigoDeCola cola = *convertirCodigo(argv[2]);
+
+		clienteBroker->info = (void*) cola;
 
 		if (clienteBroker->info == NULL) TerminarProgramaConError("ESCRIBIME BIEN LA OPERACION, DALE");
 
@@ -105,6 +107,8 @@ int main(int argc, char* argv[])
 		}
 
 		ConectadoConCola(argv[2]);
+
+		loggearMensajesRecibidos(eventos,cola);
 
 		sleep(tiempo);
 
@@ -313,27 +317,120 @@ CodigoDeCola* convertirCodigo(char* codigo)
 	return code;
 }
 
-void ConexionBroker(Cliente* cliente, Paquete* paquete)
-{
+void ConexionBroker(Cliente* cliente, Paquete* paquete) {
 	BROKER_DATOS_SUSCRIBIRSE datos;
 
 	datos.cola = *((CodigoDeCola*) (cliente->info));
 
-	int tamanioBuffer;
-
-	EnviarMensaje(cliente, BROKER_SUSCRIBIRSE, datos, (void*) &Serializar_BROKER_SUSCRIBIRSE(&datos, &tamanioBuffer));
+	EnviarMensaje(cliente, BROKER_SUSCRIBIRSE, &datos, (void*) &Serializar_BROKER_SUSCRIBIRSE);
 
 	free(cliente->info);
 }
 
-void ConectadoConProceso(char* proceso)
-{
+void ConectadoConProceso(char* proceso) {
 	log_info(logger, "Me conecte correctamente al proceso %s", proceso);
 }
 
-void ConectadoConCola(char* cola)
-{
+void ConectadoConCola(char* cola) {
 	log_info(logger, "Me suscribi correctamente a la cola: %s", cola);
 }
 
+void loggearMensajesRecibidos(Eventos* eventos, CodigoDeCola cola) {
 
+	if(cola == COLA_NEW_POKEMON)
+		Eventos_AgregarOperacion(eventos, NEW_POKEMON, (EventoOperacion) &RecibirMensaje_NEW_POKEMON);
+	  else if(cola == COLA_APPEARED_POKEMON)
+		Eventos_AgregarOperacion(eventos, APPEARED_POKEMON, (EventoOperacion) &RecibirMensaje_APPEARED_POKEMON);
+	  else if(cola == COLA_CATCH_POKEMON)
+		Eventos_AgregarOperacion(eventos, CATCH_POKEMON, (EventoOperacion) &RecibirMensaje_CATCH_POKEMON);
+	  else if(cola == COLA_CAUGHT_POKEMON)
+		Eventos_AgregarOperacion(eventos, CAUGHT_POKEMON, (EventoOperacion) &RecibirMensaje_CAUGHT_POKEMON);
+	  else if(cola == COLA_GET_POKEMON)
+		Eventos_AgregarOperacion(eventos, GET_POKEMON, (EventoOperacion) &RecibirMensaje_GET_POKEMON);
+	  else if(cola == COLA_LOCALIZED_POKEMON)
+		Eventos_AgregarOperacion(eventos, LOCALIZED_POKEMON, (EventoOperacion) &RecibirMensaje_LOCALIZED_POKEMON);
+
+}
+
+void RecibirMensaje_NEW_POKEMON(Cliente* cliente, Paquete* paqueteRecibido) {
+
+	DATOS_NEW_POKEMON_ID datos;
+
+	if (!Deserializar_NEW_POKEMON_ID(paqueteRecibido, &datos))
+		log_error(logger, "Error al deserializar NEW_POKEMON");
+	else
+		log_info(logger, "NEW_POKEMON: %d %s %d (%d,%d) %d", datos.largoPokemon, datos.pokemon, datos.posicion.posX, datos.posicion.posY, datos.cantidad);
+
+	EnviarID(cliente,datos.id);
+}
+
+void RecibirMensaje_APPEARED_POKEMON(Cliente* cliente, Paquete* paqueteRecibido) {
+
+	DATOS_APPEARED_POKEMON_IDx2 datos;
+
+	if (!Deserializar_APPEARED_POKEMON_IDx2(paqueteRecibido, &datos))
+		log_error(logger, "Error al deserializar APPEARED_POKEMON");
+	else
+		log_info(logger, "APPEARED_POKEMON: %d %s (%d,%d) %d", datos.datos.largoPokemon, datos.datos.pokemon, datos.datos.posicion.posX, datos.datos.posicion.posY, datos.datos.idCorrelativo_NEW);
+
+	EnviarID(cliente,datos.id);
+}
+
+void RecibirMensaje_CATCH_POKEMON(Cliente* cliente, Paquete* paqueteRecibido) {
+
+	DATOS_CATCH_POKEMON_ID datos;
+
+	if (!Deserializar_CATCH_POKEMON_ID(paqueteRecibido, &datos))
+		log_error(logger, "Error al deserializar CATCH_POKEMON");
+	else
+		log_info(logger, "CATCH_POKEMON: %d %s (%d,%d)",datos.largoPokemon, datos.pokemon, datos.posicion.posX, datos.posicion.posY);
+
+	EnviarID(cliente,datos.id);
+}
+
+void RecibirMensaje_CAUGHT_POKEMON(Cliente* cliente, Paquete* paqueteRecibido) {
+
+	DATOS_CAUGHT_POKEMON_IDx2 datos;
+
+	if (!Deserializar_CAUGHT_POKEMON_IDx2(paqueteRecibido, &datos))
+		log_error(logger, "Error al deserializar CAUGHT_POKEMON");
+	else
+		log_info(logger, "CAUGHT_POKEMON: %d %d", datos.datos.idCorrelativo_CATCH, datos.datos.capturado);
+
+	EnviarID(cliente,datos.id);
+}
+
+void RecibirMensaje_GET_POKEMON(Cliente* cliente, Paquete* paqueteRecibido) {
+
+	DATOS_GET_POKEMON_ID datos;
+
+	if (!Deserializar_GET_POKEMON_ID(paqueteRecibido, &datos))
+		log_error(logger, "Error al deserializar GET_POKEMON");
+	else
+		log_info(logger, "GET_POKEMON: %d %s", datos.largoPokemon, datos.pokemon);
+
+	EnviarID(cliente,datos.id);
+}
+
+void RecibirMensaje_LOCALIZED_POKEMON(Cliente* cliente, Paquete* paqueteRecibido) {
+
+	DATOS_LOCALIZED_POKEMON_IDx2 datos;
+
+	if (!Deserializar_LOCALIZED_POKEMON_IDx2(paqueteRecibido, &datos))
+		log_error(logger, "Error al deserializar LOCALIZED_POKEMON");
+	else
+		log_info(logger, "LOCALIZED_POKEMON: %d", datos.largoPokemon, datos.pokemon, datos.cantidad, datos.id); //TODO AGREGAR LA LISTA
+
+	EnviarID(cliente,datos.id);
+}
+
+void EnviarID(Cliente* cliente, int identificador) {
+	DATOS_ID_MENSAJE* id_mensaje = malloc(sizeof(DATOS_ID_MENSAJE));
+
+	id_mensaje->id = identificador;
+
+	EnviarMensaje(cliente, BROKER_ACK, id_mensaje, (void*) &Serializar_ID_MENSAJE);
+
+	free(id_mensaje);
+
+}

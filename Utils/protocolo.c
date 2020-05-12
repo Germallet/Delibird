@@ -166,7 +166,7 @@ void* Serializar_GET_POKEMON_ID(DATOS_GET_POKEMON_ID* datos, int* tamanioBuffer)
 	return buffer;
 }
 
-void* Serializar_LOCALIZED_POKEMON(DATOS_LOCALIZED_POKEMON* datos, int* tamanioBuffer)
+void* Serializar_LOCALIZED_POKEMON_ID(DATOS_LOCALIZED_POKEMON_ID* datos, int* tamanioBuffer)
 {
 	*tamanioBuffer = datos->largoPokemon + sizeof(uint32_t) + (datos->cantidad)*(sizeof(uint32_t)*2);
 	void* buffer = malloc(*tamanioBuffer);
@@ -185,6 +185,8 @@ void* Serializar_LOCALIZED_POKEMON(DATOS_LOCALIZED_POKEMON* datos, int* tamanioB
 		memcpy(buffer + desplazamiento, &((datos->posiciones[i]).posY), sizeof(uint32_t));
 		desplazamiento += sizeof(uint32_t);
 	}
+
+	memcpy(buffer+desplazamiento, &(datos->idCorrelativo_GET), sizeof(uint32_t));
 
 	return buffer;
 }
@@ -237,6 +239,17 @@ bool Deserializar_APPEARED_POKEMON_ID(Paquete* paquete, DATOS_APPEARED_POKEMON_I
 	return true;
 }
 
+bool Deserializar_APPEARED_POKEMON_IDx2(Paquete* paquete, DATOS_APPEARED_POKEMON_IDx2* datos)
+{
+	if (!Paquete_Deserializar(paquete, &(datos->datos.largoPokemon), sizeof(uint32_t))) return false;
+	if (!Paquete_DeserializarString(paquete, &(datos->datos.pokemon), datos->datos.largoPokemon)) return false;
+	if (!Paquete_Deserializar(paquete, &(datos->datos.posicion.posX), sizeof(uint32_t))) return false;
+	if (!Paquete_Deserializar(paquete, &(datos->datos.posicion.posY), sizeof(uint32_t))) return false;
+	if (!Paquete_Deserializar(paquete, &(datos->datos.idCorrelativo_NEW), sizeof(uint32_t))) return false;
+	if (!Paquete_Deserializar(paquete, &(datos->id), sizeof(uint32_t))) return false;
+	return true;
+}
+
 bool Deserializar_CATCH_POKEMON(Paquete* paquete, DATOS_CATCH_POKEMON* datos)
 {
 	if (!Paquete_Deserializar(paquete, &(datos->largoPokemon), sizeof(uint32_t))) return false;
@@ -263,6 +276,14 @@ bool Deserializar_CAUGHT_POKEMON_ID(Paquete* paquete, DATOS_CAUGHT_POKEMON_ID* d
 	return true;
 }
 
+bool Deserializar_CAUGHT_POKEMON_IDx2(Paquete* paquete, DATOS_CAUGHT_POKEMON_IDx2* datos)
+{
+	if (!Paquete_Deserializar(paquete, &(datos->datos.capturado), sizeof(uint32_t))) return false;
+	if (!Paquete_Deserializar(paquete, &(datos->datos.idCorrelativo_CATCH), sizeof(uint32_t))) return false;
+	if (!Paquete_Deserializar(paquete, &(datos->id), sizeof(uint32_t))) return false;
+	return true;
+}
+
 bool Deserializar_GET_POKEMON(Paquete* paquete, DATOS_GET_POKEMON* datos)
 {
 	if (!Paquete_Deserializar(paquete, &(datos->largoPokemon), sizeof(uint32_t))) return false;
@@ -278,7 +299,7 @@ bool Deserializar_GET_POKEMON_ID(Paquete* paquete, DATOS_GET_POKEMON_ID* datos)
 	return true;
 }
 
-bool Deserializar_LOCALIZED_POKEMON(Paquete* paquete, DATOS_LOCALIZED_POKEMON* datos)
+bool Deserializar_LOCALIZED_POKEMON_ID(Paquete* paquete, DATOS_LOCALIZED_POKEMON_ID* datos)
 {
 	if (!Paquete_Deserializar(paquete, &(datos->largoPokemon), sizeof(uint32_t))) return false;
 	if (!Paquete_DeserializarString(paquete, &(datos->pokemon), datos->largoPokemon)) return false;
@@ -288,6 +309,24 @@ bool Deserializar_LOCALIZED_POKEMON(Paquete* paquete, DATOS_LOCALIZED_POKEMON* d
 		if (!Paquete_Deserializar(paquete, &((datos->posiciones[i]).posX), sizeof(uint32_t))) return false;
 		if (!Paquete_Deserializar(paquete, &((datos->posiciones[i]).posY), sizeof(uint32_t))) return false;
 	}
+
+	if (!Paquete_Deserializar(paquete, &(datos->idCorrelativo_GET), sizeof(uint32_t))) return false;
+	return true;
+}
+
+bool Deserializar_LOCALIZED_POKEMON_IDx2(Paquete* paquete, DATOS_LOCALIZED_POKEMON_IDx2* datos)
+{
+	if (!Paquete_Deserializar(paquete, &(datos->largoPokemon), sizeof(uint32_t))) return false;
+	if (!Paquete_DeserializarString(paquete, &(datos->pokemon), datos->largoPokemon)) return false;
+	if (!Paquete_Deserializar(paquete, &(datos->cantidad), sizeof(uint32_t))) return false;
+
+	for (int i = 0; i < datos->cantidad; i++) {
+		if (!Paquete_Deserializar(paquete, &((datos->posiciones[i]).posX), sizeof(uint32_t))) return false;
+		if (!Paquete_Deserializar(paquete, &((datos->posiciones[i]).posY), sizeof(uint32_t))) return false;
+	}
+
+	if (!Paquete_Deserializar(paquete, &(datos->idCorrelativo_GET), sizeof(uint32_t))) return false;
+	if (!Paquete_Deserializar(paquete, &(datos->id), sizeof(uint32_t))) return false;
 	return true;
 }
 
