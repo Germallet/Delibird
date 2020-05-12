@@ -65,7 +65,7 @@ int main()
 	inicializar_datos();
 	obtener_entrenadores();
 	identificar_objetivo_global();
-	//TODO: pedir_pokemons_necesarior();
+	solicitar_pokemons_para_objetivo_global();
 	conectarse_y_suscribirse_a_colas();
 	//TODO: conectarse_con_gameboy();
 

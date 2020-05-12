@@ -66,7 +66,7 @@ void interrupcion_APPEARED_POKEMON(void* dato)
 }
 void interrupcion_LOCALIZED_POKEMON(void* dato)
 {
-	DATOS_LOCALIZED_POKEMON* datos = dato;
+	DATOS_LOCALIZED_POKEMON_ID* datos = dato;
 	for(int i=0;i<datos->cantidad;i++)
 			agregar_pokemon_a_mapa(datos->pokemon, &datos->posiciones[i]);
 	se_localizo(datos->pokemon);

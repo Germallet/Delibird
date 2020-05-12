@@ -223,7 +223,7 @@ void fallo_captura_pokemon(Entrenador* entrenador)
 	agregar_pokemon(pokemons_necesarios, (char*) (datos_accion_actual(entrenador)->info));
 	habilitar_entrenador(entrenador);
 }
-void ejecutar_entrenador_actual() { pthread_mutex_unlock(&(entrenador_EXEC->mutex)); }
+void ejecutar_entrenador_actual() { if(entrenador_EXEC!=NULL) pthread_mutex_unlock(&(entrenador_EXEC->mutex)); }
 
 t_list* pokemons_que_tiene_y_no_necesita(Entrenador* entrenador)
 {
@@ -304,7 +304,7 @@ void obtener_entrenadores_que_pueden_intercambiar(Entrenador* entrenador_1, Entr
 		entrenador_2 = NULL;
 	}
 
-	//list_destroy_and_destroy_elements(entrenadores_en_deadlock, &destruir_entrenador); TODO CHECK
+	list_destroy_and_destroy_elements(entrenadores_en_deadlock, &destruir_entrenador);
 }
 
 //-----------ACCIONES-----------//

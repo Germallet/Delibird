@@ -20,7 +20,7 @@ typedef void (*Interrupcion)(void*);
 
 typedef struct
 {
-	DATOS_CAUGHT_POKEMON* recibidos;
+	DATOS_CAUGHT_POKEMON_ID* recibidos;
 	Entrenador* entrenador;
 }datos_interrupcion_CAUGHT_POKEMON;
 

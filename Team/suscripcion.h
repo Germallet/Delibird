@@ -11,3 +11,4 @@ typedef struct
 }Datos_Suscripcion;
 
 void conectarse_y_suscribirse_a_colas();
+void solicitar_pokemons_para_objetivo_global();
