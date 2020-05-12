@@ -333,11 +333,27 @@ static void mover_una_casilla_hacia(Entrenador* entrenador)
 	else if(y_actual != y_objetivo) // Si no esta en y se acerca una pos a y
 		entrenador->posicion->posY = y_actual + (y_objetivo-y_actual/abs(y_objetivo-y_actual));
 
+	log_info(logger, "El entrenador %d se movio a la posicion (%d,%d)", entrenador->ID, entrenador->posicion->posX, entrenador->posicion->posY);
+
 	if(entrenador->posicion->posX==x_objetivo && entrenador->posicion->posY==y_objetivo)
 		siguiente_accion(entrenador);
 }
 
-static void capturar_pokemon(Entrenador* entrenador) {}
+static void capturar_pokemon(Entrenador* entrenador)
+{
+	char* especie_pokemon_a_atrapar = datos_accion_actual(entrenador)->info;
+	uint32_t* largo = malloc(sizeof(uint32_t));
+	*largo = strlen(especie_pokemon_a_atrapar);
+
+	DATOS_CATCH_POKEMON* datos = malloc(sizeof(DATOS_GET_POKEMON));
+	datos->largoPokemon = *largo;
+	datos->pokemon = especie_pokemon_a_atrapar;
+	datos->posicion = entrenador->posicion;
+
+	EnviarMensaje(crear_cliente_de_broker(Eventos_Crear0()), GET_POKEMON, datos, (Serializador) &Serializar_CATCH_POKEMON);
+
+	log_info(logger, "El entrenador %d intenta atrapar un %s en la posicion (%d,%d)", entrenador->ID, especie_pokemon_a_atrapar, entrenador->posicion->posX, entrenador->posicion->posY);
+}
 static void intercambiar_pokemon(Entrenador* entrenador) {}
 static void terminar(Entrenador* entrenador) { pthread_exit(NULL); }
 

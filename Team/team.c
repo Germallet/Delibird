@@ -47,7 +47,7 @@ static void inicializar_datos()
 	especies_localizadas = list_create();
 
 	//HILO TIMER
-	//inicializar_hilo_reconexion();
+	//inicializar_hilo_reconexion(); TODO reconexion
 
 	//INTERRUPCIONES
 	inicializar_interrupciones();
