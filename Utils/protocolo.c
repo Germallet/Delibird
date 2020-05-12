@@ -229,7 +229,7 @@ bool Deserializar_APPEARED_POKEMON(Paquete* paquete, DATOS_APPEARED_POKEMON* dat
 
 bool Deserializar_APPEARED_POKEMON_ID(Paquete* paquete, DATOS_APPEARED_POKEMON_ID* datos)
 {
-	if (Deserializar_APPEARED_POKEMON(paquete, &(datos->datos))) return false;
+	if (!Deserializar_APPEARED_POKEMON(paquete, &(datos->datos))) return false;
 	if (!Paquete_Deserializar(paquete, &(datos->idCorrelativo_NEW), sizeof(uint32_t))) return false;
 	return true;
 }
