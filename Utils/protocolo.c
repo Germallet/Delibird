@@ -36,19 +36,19 @@ void* Serializar_NEW_POKEMON(DATOS_NEW_POKEMON* datos, int* tamanioBuffer)
 
 void* Serializar_NEW_POKEMON_ID(DATOS_NEW_POKEMON_ID* datos, int* tamanioBuffer)
 {
-	*tamanioBuffer = datos->largoPokemon + sizeof(uint32_t)*5;
+	*tamanioBuffer = datos->datos.largoPokemon + sizeof(uint32_t)*5;
 	void* buffer = malloc(*tamanioBuffer);
 
 	int desplazamiento = 0;
-	memcpy(buffer, &(datos->largoPokemon), sizeof(uint32_t));
+	memcpy(buffer, &(datos->datos.largoPokemon), sizeof(uint32_t));
 	desplazamiento += sizeof(uint32_t);
-	memcpy(buffer + desplazamiento, datos->pokemon, datos->largoPokemon);
-	desplazamiento += datos->largoPokemon;
-	memcpy(buffer + desplazamiento, &((datos->posicion).posX), sizeof(uint32_t));
+	memcpy(buffer + desplazamiento, datos->datos.pokemon, datos->datos.largoPokemon);
+	desplazamiento += datos->datos.largoPokemon;
+	memcpy(buffer + desplazamiento, &(datos->datos.posicion.posX), sizeof(uint32_t));
 	desplazamiento += sizeof(uint32_t);
-	memcpy(buffer + desplazamiento, &((datos->posicion).posY), sizeof(uint32_t));
+	memcpy(buffer + desplazamiento, &(datos->datos.posicion.posY), sizeof(uint32_t));
 	desplazamiento += sizeof(uint32_t);
-	memcpy(buffer + desplazamiento, &(datos->cantidad), sizeof(uint32_t));
+	memcpy(buffer + desplazamiento, &(datos->datos.cantidad), sizeof(uint32_t));
 	desplazamiento += sizeof(uint32_t);
 	memcpy(buffer + desplazamiento, &(datos->id), sizeof(uint32_t));
 
@@ -74,17 +74,17 @@ void* Serializar_APPEARED_POKEMON(DATOS_APPEARED_POKEMON* datos, int* tamanioBuf
 
 void* Serializar_APPEARED_POKEMON_ID(DATOS_APPEARED_POKEMON_ID* datos, int* tamanioBuffer)
 {
-	*tamanioBuffer = datos->largoPokemon + sizeof(uint32_t)*4;
+	*tamanioBuffer = datos->datos.largoPokemon + sizeof(uint32_t)*4;
 	void* buffer = malloc(*tamanioBuffer);
 
 	int desplazamiento = 0;
-	memcpy(buffer, &(datos->largoPokemon), sizeof(uint32_t));
+	memcpy(buffer, &(datos->datos.largoPokemon), sizeof(uint32_t));
 	desplazamiento += sizeof(uint32_t);
-	memcpy(buffer + desplazamiento, datos->pokemon, datos->largoPokemon);
-	desplazamiento += datos->largoPokemon;
-	memcpy(buffer + desplazamiento, &(datos->posicion.posX), sizeof(uint32_t));
+	memcpy(buffer + desplazamiento, datos->datos.pokemon, datos->datos.largoPokemon);
+	desplazamiento += datos->datos.largoPokemon;
+	memcpy(buffer + desplazamiento, &(datos->datos.posicion.posX), sizeof(uint32_t));
 	desplazamiento += sizeof(uint32_t);
-	memcpy(buffer + desplazamiento, &(datos->posicion.posY), sizeof(uint32_t));
+	memcpy(buffer + desplazamiento, &(datos->datos.posicion.posY), sizeof(uint32_t));
 	desplazamiento += sizeof(uint32_t);
 	memcpy(buffer + desplazamiento, &(datos->idCorrelativo_NEW), sizeof(uint32_t));
 
@@ -110,17 +110,17 @@ void* Serializar_CATCH_POKEMON(DATOS_CATCH_POKEMON* datos, int* tamanioBuffer)
 
 void* Serializar_CATCH_POKEMON_ID(DATOS_CATCH_POKEMON_ID* datos, int* tamanioBuffer)
 {
-	*tamanioBuffer = datos->largoPokemon + sizeof(uint32_t)*4;
+	*tamanioBuffer = datos->datos.largoPokemon + sizeof(uint32_t)*4;
 	void* buffer = malloc(*tamanioBuffer);
 
 	int desplazamiento = 0;
-	memcpy(buffer, &(datos->largoPokemon), sizeof(uint32_t));
+	memcpy(buffer, &(datos->datos.largoPokemon), sizeof(uint32_t));
 	desplazamiento += sizeof(uint32_t);
-	memcpy(buffer + desplazamiento, datos->pokemon, datos->largoPokemon);
-	desplazamiento += datos->largoPokemon;
-	memcpy(buffer + desplazamiento, &((datos->posicion).posX), sizeof(uint32_t));
+	memcpy(buffer + desplazamiento, datos->datos.pokemon, datos->datos.largoPokemon);
+	desplazamiento += datos->datos.largoPokemon;
+	memcpy(buffer + desplazamiento, &(datos->datos.posicion.posX), sizeof(uint32_t));
 	desplazamiento += sizeof(uint32_t);
-	memcpy(buffer + desplazamiento, &((datos->posicion).posY), sizeof(uint32_t));
+	memcpy(buffer + desplazamiento, &((datos->datos.posicion).posY), sizeof(uint32_t));
 	desplazamiento += sizeof(uint32_t);
 	memcpy(buffer + desplazamiento, &(datos->id), sizeof(uint32_t));
 
@@ -155,13 +155,13 @@ void* Serializar_GET_POKEMON(DATOS_GET_POKEMON* datos, int* tamanioBuffer)
 
 void* Serializar_GET_POKEMON_ID(DATOS_GET_POKEMON_ID* datos, int* tamanioBuffer)
 {
-	*tamanioBuffer = datos->largoPokemon + sizeof(uint32_t)*2;
+	*tamanioBuffer = datos->datos.largoPokemon + sizeof(uint32_t)*2;
 	void* buffer = malloc(*tamanioBuffer);
 
 	int desplazamiento = 0;
-	memcpy(buffer, &(datos->largoPokemon), sizeof(uint32_t));
+	memcpy(buffer, &(datos->datos.largoPokemon), sizeof(uint32_t));
 	desplazamiento += sizeof(uint32_t);
-	memcpy(buffer+desplazamiento, datos->pokemon, datos->largoPokemon);
+	memcpy(buffer+desplazamiento, datos->datos.pokemon, datos->datos.largoPokemon);
 	desplazamiento += sizeof(uint32_t);
 	memcpy(buffer+desplazamiento, &(datos->id), sizeof(uint32_t));
 
@@ -213,11 +213,7 @@ bool Deserializar_NEW_POKEMON(Paquete* paquete, DATOS_NEW_POKEMON* datos)
 
 bool Deserializar_NEW_POKEMON_ID(Paquete* paquete, DATOS_NEW_POKEMON_ID* datos)
 {
-	if (!Paquete_Deserializar(paquete, &(datos->largoPokemon), sizeof(uint32_t))) return false;
-	if (!Paquete_DeserializarString(paquete, &(datos->pokemon), datos->largoPokemon)) return false;
-	if (!Paquete_Deserializar(paquete, &((datos->posicion).posX), sizeof(uint32_t))) return false;
-	if (!Paquete_Deserializar(paquete, &((datos->posicion).posY), sizeof(uint32_t))) return false;
-	if (!Paquete_Deserializar(paquete, &(datos->cantidad), sizeof(uint32_t))) return false;
+	if (!Deserializar_NEW_POKEMON(paquete, &(datos->datos))) return false;
 	if (!Paquete_Deserializar(paquete, &(datos->id), sizeof(uint32_t))) return false;
 	return true;
 }
@@ -233,21 +229,14 @@ bool Deserializar_APPEARED_POKEMON(Paquete* paquete, DATOS_APPEARED_POKEMON* dat
 
 bool Deserializar_APPEARED_POKEMON_ID(Paquete* paquete, DATOS_APPEARED_POKEMON_ID* datos)
 {
-	if (!Paquete_Deserializar(paquete, &(datos->largoPokemon), sizeof(uint32_t))) return false;
-	if (!Paquete_DeserializarString(paquete, &(datos->pokemon), datos->largoPokemon)) return false;
-	if (!Paquete_Deserializar(paquete, &((datos->posicion).posX), sizeof(uint32_t))) return false;
-	if (!Paquete_Deserializar(paquete, &((datos->posicion).posY), sizeof(uint32_t))) return false;
+	if (Deserializar_APPEARED_POKEMON(paquete, &(datos->datos))) return false;
 	if (!Paquete_Deserializar(paquete, &(datos->idCorrelativo_NEW), sizeof(uint32_t))) return false;
 	return true;
 }
 
 bool Deserializar_APPEARED_POKEMON_IDx2(Paquete* paquete, DATOS_APPEARED_POKEMON_IDx2* datos)
 {
-	if (!Paquete_Deserializar(paquete, &(datos->datos.largoPokemon), sizeof(uint32_t))) return false;
-	if (!Paquete_DeserializarString(paquete, &(datos->datos.pokemon), datos->datos.largoPokemon)) return false;
-	if (!Paquete_Deserializar(paquete, &(datos->datos.posicion.posX), sizeof(uint32_t))) return false;
-	if (!Paquete_Deserializar(paquete, &(datos->datos.posicion.posY), sizeof(uint32_t))) return false;
-	if (!Paquete_Deserializar(paquete, &(datos->datos.idCorrelativo_NEW), sizeof(uint32_t))) return false;
+	if (!Deserializar_APPEARED_POKEMON_ID(paquete, &(datos->datos))) return false;
 	if (!Paquete_Deserializar(paquete, &(datos->id), sizeof(uint32_t))) return false;
 	return true;
 }
@@ -263,10 +252,7 @@ bool Deserializar_CATCH_POKEMON(Paquete* paquete, DATOS_CATCH_POKEMON* datos)
 
 bool Deserializar_CATCH_POKEMON_ID(Paquete* paquete, DATOS_CATCH_POKEMON_ID* datos)
 {
-	if (!Paquete_Deserializar(paquete, &(datos->largoPokemon), sizeof(uint32_t))) return false;
-	if (!Paquete_DeserializarString(paquete, &(datos->pokemon), datos->largoPokemon)) return false;
-	if (!Paquete_Deserializar(paquete, &((datos->posicion).posX), sizeof(uint32_t))) return false;
-	if (!Paquete_Deserializar(paquete, &((datos->posicion).posY), sizeof(uint32_t))) return false;
+	if (!Deserializar_CATCH_POKEMON_ID(paquete, &(datos->datos))) return false;
 	if (!Paquete_Deserializar(paquete, &(datos->id), sizeof(uint32_t))) return false;
 	return true;
 }
@@ -280,8 +266,7 @@ bool Deserializar_CAUGHT_POKEMON_ID(Paquete* paquete, DATOS_CAUGHT_POKEMON_ID* d
 
 bool Deserializar_CAUGHT_POKEMON_IDx2(Paquete* paquete, DATOS_CAUGHT_POKEMON_IDx2* datos)
 {
-	if (!Paquete_Deserializar(paquete, &(datos->datos.capturado), sizeof(uint32_t))) return false;
-	if (!Paquete_Deserializar(paquete, &(datos->datos.idCorrelativo_CATCH), sizeof(uint32_t))) return false;
+	if (!Deserializar_CAUGHT_POKEMON_ID(paquete, &(datos->datos))) return false;
 	if (!Paquete_Deserializar(paquete, &(datos->id), sizeof(uint32_t))) return false;
 	return true;
 }
@@ -295,8 +280,7 @@ bool Deserializar_GET_POKEMON(Paquete* paquete, DATOS_GET_POKEMON* datos)
 
 bool Deserializar_GET_POKEMON_ID(Paquete* paquete, DATOS_GET_POKEMON_ID* datos)
 {
-	if (!Paquete_Deserializar(paquete, &(datos->largoPokemon), sizeof(uint32_t))) return false;
-	if (!Paquete_DeserializarString(paquete, &(datos->pokemon), datos->largoPokemon)) return false;
+	if (!Deserializar_GET_POKEMON(paquete, &(datos->datos))) return false;
 	if (!Paquete_Deserializar(paquete, &(datos->id), sizeof(uint32_t))) return false;
 	return true;
 }
@@ -318,16 +302,7 @@ bool Deserializar_LOCALIZED_POKEMON_ID(Paquete* paquete, DATOS_LOCALIZED_POKEMON
 
 bool Deserializar_LOCALIZED_POKEMON_IDx2(Paquete* paquete, DATOS_LOCALIZED_POKEMON_IDx2* datos)
 {
-	if (!Paquete_Deserializar(paquete, &(datos->largoPokemon), sizeof(uint32_t))) return false;
-	if (!Paquete_DeserializarString(paquete, &(datos->pokemon), datos->largoPokemon)) return false;
-	if (!Paquete_Deserializar(paquete, &(datos->cantidad), sizeof(uint32_t))) return false;
-
-	for (int i = 0; i < datos->cantidad; i++) {
-		if (!Paquete_Deserializar(paquete, &((datos->posiciones[i]).posX), sizeof(uint32_t))) return false;
-		if (!Paquete_Deserializar(paquete, &((datos->posiciones[i]).posY), sizeof(uint32_t))) return false;
-	}
-
-	if (!Paquete_Deserializar(paquete, &(datos->idCorrelativo_GET), sizeof(uint32_t))) return false;
+	if (!Deserializar_LOCALIZED_POKEMON_ID(paquete, &(datos->datos))) return false;
 	if (!Paquete_Deserializar(paquete, &(datos->id), sizeof(uint32_t))) return false;
 	return true;
 }

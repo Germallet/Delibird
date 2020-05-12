@@ -8,31 +8,31 @@
 typedef enum
 {
 	// CLIENTE -> BROKER
-	BROKER_CONECTAR,
-	BROKER_RECONECTAR,
-	BROKER_SUSCRIBIRSE,
-	BROKER_ACK,
+	BROKER_CONECTAR, 	//0
+	BROKER_RECONECTAR, 	//1
+	BROKER_SUSCRIBIRSE, //2
+	BROKER_ACK,			//3
 	// BROKER -> CLIENTE
-	BROKER_CONECTADO,
-	BROKER_SUSCRITO,
-	BROKER_ID_MENSAJE,
+	BROKER_CONECTADO,	//4
+	BROKER_SUSCRITO,	//5
+	BROKER_ID_MENSAJE,	//6
 	// CUALQUIERA -> CUALQUIERA
-	NEW_POKEMON,
-	APPEARED_POKEMON,
-	CATCH_POKEMON,
-	CAUGHT_POKEMON,
-	GET_POKEMON,
-	LOCALIZED_POKEMON
+	NEW_POKEMON,		//7
+	APPEARED_POKEMON,	//8
+	CATCH_POKEMON,		//9
+	CAUGHT_POKEMON,		//10
+	GET_POKEMON,		//11
+	LOCALIZED_POKEMON	//12
 } CodigoDeOperacion;
 
 typedef enum
 {
-	COLA_NEW_POKEMON,
-	COLA_APPEARED_POKEMON,
-	COLA_CATCH_POKEMON,
-	COLA_CAUGHT_POKEMON,
-	COLA_GET_POKEMON,
-	COLA_LOCALIZED_POKEMON
+	COLA_NEW_POKEMON,		//0
+	COLA_APPEARED_POKEMON,	//1
+	COLA_CATCH_POKEMON,		//2
+	COLA_CAUGHT_POKEMON,	//3
+	COLA_GET_POKEMON,		//4
+	COLA_LOCALIZED_POKEMON	//5
 } CodigoDeCola;
 
 typedef struct
@@ -62,10 +62,7 @@ typedef struct {
 } DATOS_NEW_POKEMON;
 
 typedef struct {
-	uint32_t largoPokemon;
-	char* pokemon;
-	Posicion posicion;
-	uint32_t cantidad;
+	DATOS_NEW_POKEMON datos;
 	uint32_t id;
 } DATOS_NEW_POKEMON_ID;
 
@@ -76,9 +73,7 @@ typedef struct {
 } DATOS_APPEARED_POKEMON;
 
 typedef struct {
-	uint32_t largoPokemon;
-	char* pokemon;
-	Posicion posicion;
+	DATOS_APPEARED_POKEMON datos;
 	uint32_t idCorrelativo_NEW;
 } DATOS_APPEARED_POKEMON_ID;
 
@@ -94,9 +89,7 @@ typedef struct {
 } DATOS_CATCH_POKEMON;
 
 typedef struct {
-	uint32_t largoPokemon;
-	char* pokemon;
-	Posicion posicion;
+	DATOS_CATCH_POKEMON datos;
 	uint32_t id;
 } DATOS_CATCH_POKEMON_ID;
 
@@ -116,8 +109,7 @@ typedef struct {
 } DATOS_GET_POKEMON;
 
 typedef struct {
-	uint32_t largoPokemon;
-	char* pokemon;
+	DATOS_GET_POKEMON datos;
 	uint32_t id;
 } DATOS_GET_POKEMON_ID;
 
@@ -130,11 +122,7 @@ typedef struct {
 } DATOS_LOCALIZED_POKEMON_ID;
 
 typedef struct {
-	uint32_t largoPokemon;
-	char* pokemon;
-	uint32_t cantidad;
-	Posicion* posiciones;
-	uint32_t idCorrelativo_GET;
+	DATOS_LOCALIZED_POKEMON_ID datos;
 	uint32_t id;
 } DATOS_LOCALIZED_POKEMON_IDx2;
 
