@@ -6,7 +6,7 @@ t_config* config;
 int main(int argc, char* argv[])
 {
 	logger = log_create("gameBoy.log", "GameBoy", true, LOG_LEVEL_INFO);
-	log_info(logger,"Te damos la bienvenida a mundo GameBoy!");
+	log_info(logger, "Te damos la bienvenida a mundo GameBoy!");
 
 	config = config_create("gameBoy.config");
 
@@ -14,34 +14,23 @@ int main(int argc, char* argv[])
 	Eventos* eventos = Eventos_Crear0();
 
 	// GESTION DE MENSAJES
-	if (argc <= 3) {
-		log_error(logger, "TE FALTAN PARAMETROS");
-		terminarPrograma(logger, config);
-		exit(-1);
-	}
+	if (argc <= 3) TerminarProgramaConError("QUE QUERES QUE HAGA SI NO ME PONES LOS PARAMETROS?");
 
-	if (sonIguales(argv[1],"TEAM")) {
+	// GESTION DE MENSAJES TEAM
+	if (sonIguales(argv[1], "TEAM")) {
 
 		char* ipTeam = config_get_string_value(config, "IP_TEAM");
 		int puertoTeam = config_get_int_value(config, "PUERTO_TEAM");
 
-		Cliente* clienteTeam = CrearCliente(ipTeam,puertoTeam,eventos);
+		Cliente* clienteTeam = CrearCliente(ipTeam, puertoTeam, eventos);
 
-		if(clienteTeam == NULL) {
-			log_error(logger, "NO SE PUDO CONECTAR AL TEAM");
-			terminarPrograma(logger, config);
-			exit(-1);
-		}
+		if (clienteTeam == NULL) TerminarProgramaConError("NO ME PUDE CONECTAR AL TEAM");
 
 		ConectadoConProceso("TEAM");
 
 		if (sonIguales(argv[2],"APPEARED_POKEMON"))
 			EnviarMensaje(clienteTeam, APPEARED_POKEMON, convertir_APPEARED_POKEMON(argc, argv), (void*) &Serializar_APPEARED_POKEMON);
-		  else {
-			log_error(logger, "TEAM NO ENTIENDE TU OPERACION");
-			terminarPrograma(logger, config);
-			exit (-1);
-		}
+		else TerminarProgramaConError("TEAM NO ENTIENDE TU OPERACION");
 
 		DestruirCliente(clienteTeam);
 
@@ -52,11 +41,7 @@ int main(int argc, char* argv[])
 
 		Cliente* clienteBroker = CrearCliente(ipBroker, puertoBroker, eventos);
 
-		if(clienteBroker == NULL) {
-			log_error(logger, "NO SE PUDO CONECTAR AL BROKER");
-			terminarPrograma(logger, config);
-			exit(-1);
-		}
+		if (clienteBroker == NULL) TerminarProgramaConError("NO ME PUDE CONECTAR AL BROKER");
 
 		ConectadoConProceso("BROKER");
 
@@ -70,26 +55,18 @@ int main(int argc, char* argv[])
 			  EnviarMensaje(clienteBroker, CAUGHT_POKEMON, convertir_CAUGHT_POKEMON_ID(argc, argv), (void*) &Serializar_CAUGHT_POKEMON_ID);
 		  else if (sonIguales(argv[2], "GET_POKEMON"))
 			  EnviarMensaje(clienteBroker, GET_POKEMON, convertir_GET_POKEMON(argc, argv), (void*) &Serializar_GET_POKEMON);
-		  else {
-		  	log_error(logger, "BROKER NO ENTIENDE TU MENSAJE");
-		  	terminarPrograma(logger, config);
-		  	exit (-1);
-		  }
+		  else TerminarProgramaConError("BROKER NO ENTIENDE TU OPERACION");
 
 		DestruirCliente(clienteBroker);
 
-	} else if (sonIguales(argv[1],"GAMECARD")) {
+	} else if (sonIguales(argv[1], "GAMECARD")) {
 
 		char* ipGameCard = config_get_string_value(config, "IP_GAMECARD");
 		int puertoGameCard = config_get_int_value(config, "PUERTO_GAMECARD");
 
 		Cliente* clienteGameCard = CrearCliente(ipGameCard, puertoGameCard, eventos);
 
-		if(clienteGameCard == NULL) {
-			log_error(logger, "NO SE PUDO CONECTAR A LA GAMECARD");
-			terminarPrograma(logger, config);
-			exit(-1);
-		}
+		if (clienteGameCard == NULL) TerminarProgramaConError("NO ME PUDE CONECTAR A LA GAMECARD");
 
 		ConectadoConProceso("GAMECARD");
 
@@ -99,92 +76,74 @@ int main(int argc, char* argv[])
 			  EnviarMensaje(clienteGameCard, CATCH_POKEMON, convertir_CATCH_POKEMON_ID(argc, argv), (void*) &Serializar_CATCH_POKEMON_ID);
 		  else if (sonIguales(argv[2], "GET_POKEMON"))
 			  EnviarMensaje(clienteGameCard, GET_POKEMON, convertir_GET_POKEMON_ID(argc, argv), (void*) &Serializar_GET_POKEMON_ID);
-		  else {
-			  log_error(logger, "GAMECARD NO ENTIENDE TU MENSAJE");
-			  terminarPrograma(logger, config);
-			  exit(-1);
-		  }
+		  else TerminarProgramaConError("GAMECARD NO ENTIENDE TU OPERACION");
 
 		DestruirCliente(clienteGameCard);
 
-	} else if (sonIguales(argv[1],"SUSCRIPTOR")) {
-
-		if (argc != 4) {
-			log_error(logger,"No pusiste el tiempo sabandija");
-			terminarPrograma(logger, config);
-			exit(-1);
-		}
+	} else if (sonIguales(argv[1], "SUSCRIPTOR")) {
 
 		char* ipBroker = config_get_string_value(config, "IP_BROKER");
 		int puertoBroker = config_get_int_value(config, "PUERTO_BROKER");
 
-		Eventos_AgregarOperacion(eventos, BROKER_CONECTADO, (EventoOperacion) &conexionBroker);
+		Eventos_AgregarOperacion(eventos, BROKER_CONECTADO, (EventoOperacion) &ConexionBroker);
 
 		Cliente* clienteBroker = CrearCliente(ipBroker, puertoBroker, eventos);
 
-		if(clienteBroker == NULL) {
-			log_error(logger, "NO SE PUDO CONECTAR AL BROKER");
-			terminarPrograma(logger, config);
-			exit(-1);
-		}
+		if (clienteBroker == NULL) TerminarProgramaConError("NO ME PUDE CONECTAR AL BROKER");
 
 		clienteBroker->info = (void*) convertirCodigo(argv[2]);
 
-		if(clienteBroker->info == NULL) {
-			log_error(logger,"Codigo invalido sabandija");
-			terminarPrograma(logger, config);
-			exit(-1);
-		}
+		if (clienteBroker->info == NULL) TerminarProgramaConError("ESCRIBIME BIEN LA OPERACION, DALE");
 
-		long tiempo = strtol(argv[3],NULL,10);
+		if (argc != 4) TerminarProgramaConError("MANDAME BIEN LOS PARAMETROS, SABANDIJA");
+
+		long tiempo = strtol(argv[3], NULL, 10);
 
 		if (Socket_Enviar(BROKER_CONECTAR, NULL, 0, clienteBroker->socket) < 0) {
 			free(clienteBroker->info);
-			log_error(logger,"No me pude conectar al broker");
-			terminarPrograma(logger, config);
-			exit(-1);
+			TerminarProgramaConError("NO LE PUDE AVISAR AL BROKER QUE ME QUIERO CONECTAR");
 		}
 
-		log_info(logger,"Me conecte bien!!!");
+		ConectadoConCola(argv[2]);
 
 		sleep(tiempo);
 
 		DestruirCliente(clienteBroker);
 
-	} else {
-		log_error(logger, "TENEMOS LA SOSPECHA QUE ESCRIBISTE MAL EL PROCESO");
-		terminarPrograma(logger, config);
-		exit (-1);
-	}
+	} else TerminarProgramaConError("TENGO LA SOSPECHA QUE ESCRIBISTE MAL EL PROCESO");
 
 	// TERMINAR PROGRAMA
-	terminarPrograma(logger, config);
+	TerminarPrograma(logger, config);
 
 	return 0;
 }
 
-void terminarPrograma(t_log* logger, t_config* config) {
+void TerminarProgramaConError(char* error)
+{
+		log_error(logger, error);
+		TerminarPrograma(logger, config);
+		exit(-1);
+}
 
+void TerminarPrograma(t_log* logger, t_config* config)
+{
 	log_destroy(logger);
 	config_destroy(config);
 }
 
-bool sonIguales(char* a, char* b) {
+bool sonIguales(char* a, char* b)
+{
 	return strcmp(a, b) == 0;
 }
 
 //./GameBoy BROKER NEW_POKEMON pikachu 3 1 3
 //    1        2        3         4    5 6 7
 //    0        1        2         3    4 5 6
-DATOS_NEW_POKEMON* convertir_NEW_POKEMON(int cantParametros, char* parametros[]) {
+DATOS_NEW_POKEMON* convertir_NEW_POKEMON(int cantParametros, char* parametros[])
+{
+	if (cantParametros != 7) TerminarProgramaConError("MANDAME BIEN LOS PARAMETROS, SABANDIJA");
 
-	if (cantParametros != 7) {
-		log_error(logger, "Mandaste mal los parametros sabandija");
-		terminarPrograma(logger, config);
-		exit(-1);
-	}
-
-	DATOS_NEW_POKEMON* datos = malloc(strlen(parametros[3]) + sizeof(uint32_t)*4);
+	DATOS_NEW_POKEMON* datos = malloc(sizeof(DATOS_NEW_POKEMON));
 
 	datos->largoPokemon = (uint32_t) strlen(parametros[3]);
 	datos->pokemon = parametros[3];
@@ -198,13 +157,9 @@ DATOS_NEW_POKEMON* convertir_NEW_POKEMON(int cantParametros, char* parametros[])
 //./GameBoy BROKER NEW_POKEMON pikachu 3 1 3 ID
 //    1        2        3         4    5 6 7  8
 //    0        1        2         3    4 5 6  7
-DATOS_NEW_POKEMON_ID* convertir_NEW_POKEMON_ID(int cantParametros, char* parametros[]) {
-
-	if (cantParametros != 8) {
-		log_error(logger, "Mandaste mal los parametros sabandija");
-		terminarPrograma(logger, config);
-		exit(-1);
-	}
+DATOS_NEW_POKEMON_ID* convertir_NEW_POKEMON_ID(int cantParametros, char* parametros[])
+{
+	if (cantParametros != 8) TerminarProgramaConError("MANDAME BIEN LOS PARAMETROS, SABANDIJA");
 
 	DATOS_NEW_POKEMON_ID* datos = malloc(sizeof(DATOS_NEW_POKEMON_ID));
 
@@ -221,13 +176,9 @@ DATOS_NEW_POKEMON_ID* convertir_NEW_POKEMON_ID(int cantParametros, char* paramet
 //./GameBoy BROKER APPEARED_POKEMON pikachu 3 1
 //    1        2        3             4     5 6
 //    0        1        2             3     4 5
-DATOS_APPEARED_POKEMON* convertir_APPEARED_POKEMON(int cantParametros, char* parametros[]) {
-
-	if (cantParametros != 6) {
-		log_error(logger, "Mandaste mal los parametros sabandija");
-		terminarPrograma(logger, config);
-		exit(-1);
-	}
+DATOS_APPEARED_POKEMON* convertir_APPEARED_POKEMON(int cantParametros, char* parametros[])
+{
+	if (cantParametros != 6) TerminarProgramaConError("MANDAME BIEN LOS PARAMETROS, SABANDIJA");
 
 	DATOS_APPEARED_POKEMON* datos = malloc(sizeof(DATOS_APPEARED_POKEMON_ID));
 
@@ -242,13 +193,9 @@ DATOS_APPEARED_POKEMON* convertir_APPEARED_POKEMON(int cantParametros, char* par
 //./GameBoy BROKER APPEARED_POKEMON pikachu 3 1 ID
 //    1        2        3             4     5 6  7
 //    0        1        2             3     4 5  6
-DATOS_APPEARED_POKEMON_ID* convertir_APPEARED_POKEMON_ID(int cantParametros, char* parametros[]) {
-
-	if (cantParametros != 7) {
-		log_error(logger, "Mandaste mal los parametros sabandija");
-		terminarPrograma(logger, config);
-		exit(-1);
-	}
+DATOS_APPEARED_POKEMON_ID* convertir_APPEARED_POKEMON_ID(int cantParametros, char* parametros[])
+{
+	if (cantParametros != 7) TerminarProgramaConError("MANDAME BIEN LOS PARAMETROS, SABANDIJA");
 
 	DATOS_APPEARED_POKEMON_ID* datos = malloc(sizeof(DATOS_APPEARED_POKEMON_ID));
 
@@ -264,13 +211,9 @@ DATOS_APPEARED_POKEMON_ID* convertir_APPEARED_POKEMON_ID(int cantParametros, cha
 //./GameBoy BROKER CATCH_POKEMON pikachu 3 1
 //    1        2        3          4     5 6
 //    0        1        2          3     4 5
-DATOS_CATCH_POKEMON* convertir_CATCH_POKEMON(int cantParametros, char* parametros[]) {
-
-	if (cantParametros != 6) {
-		log_error(logger, "Mandaste mal los parametros sabandija");
-		terminarPrograma(logger, config);
-		exit(-1);
-	}
+DATOS_CATCH_POKEMON* convertir_CATCH_POKEMON(int cantParametros, char* parametros[])
+{
+	if (cantParametros != 6) TerminarProgramaConError("MANDAME BIEN LOS PARAMETROS, SABANDIJA");
 
 	DATOS_CATCH_POKEMON* datos = malloc(sizeof(DATOS_CATCH_POKEMON));
 
@@ -285,15 +228,11 @@ DATOS_CATCH_POKEMON* convertir_CATCH_POKEMON(int cantParametros, char* parametro
 //./GameBoy BROKER CATCH_POKEMON pikachu 3 1 ID
 //    1        2        3          4     5 6  7
 //    0        1        2          3     4 5  6
-DATOS_CATCH_POKEMON_ID* convertir_CATCH_POKEMON_ID(int cantParametros, char* parametros[]) {
+DATOS_CATCH_POKEMON_ID* convertir_CATCH_POKEMON_ID(int cantParametros, char* parametros[])
+{
+	if (cantParametros != 7) TerminarProgramaConError("MANDAME BIEN LOS PARAMETROS, SABANDIJA");
 
-	if (cantParametros != 7) {
-		log_error(logger, "Mandaste mal los parametros sabandija");
-		terminarPrograma(logger, config);
-		exit(-1);
-	}
-
-	DATOS_CATCH_POKEMON_ID* datos = malloc(sizeof(DATOS_CATCH_POKEMON));
+	DATOS_CATCH_POKEMON_ID* datos = malloc(sizeof(DATOS_CATCH_POKEMON_ID));
 
 	datos->largoPokemon = (uint32_t) strlen(parametros[3]);
 	datos->pokemon = parametros[3];
@@ -307,13 +246,9 @@ DATOS_CATCH_POKEMON_ID* convertir_CATCH_POKEMON_ID(int cantParametros, char* par
 //./GameBoy BROKER CAUGHT_POKEMON bool ID
 //    1        2        3          4    5
 //    0        1        2          3    4
-DATOS_CAUGHT_POKEMON_ID* convertir_CAUGHT_POKEMON_ID(int cantParametros, char* parametros[]) {
-
-	if (cantParametros != 5) {
-		log_error(logger, "Mandaste mal los parametros sabandija");
-		terminarPrograma(logger, config);
-		exit(-1);
-	}
+DATOS_CAUGHT_POKEMON_ID* convertir_CAUGHT_POKEMON_ID(int cantParametros, char* parametros[])
+{
+	if (cantParametros != 5) TerminarProgramaConError("MANDAME BIEN LOS PARAMETROS, SABANDIJA");
 
 	DATOS_CAUGHT_POKEMON_ID* datos = malloc(sizeof(DATOS_CAUGHT_POKEMON_ID));
 
@@ -326,15 +261,11 @@ DATOS_CAUGHT_POKEMON_ID* convertir_CAUGHT_POKEMON_ID(int cantParametros, char* p
 //./GameBoy BROKER GET_POKEMON Pokemon
 //    1        2        3         4
 //    0        1        2         3
-DATOS_GET_POKEMON* convertir_GET_POKEMON(int cantParametros, char* parametros[]) {
+DATOS_GET_POKEMON* convertir_GET_POKEMON(int cantParametros, char* parametros[])
+{
+	if (cantParametros != 4) TerminarProgramaConError("MANDAME BIEN LOS PARAMETROS, SABANDIJA");
 
-	if (cantParametros != 4){
-		log_error(logger, "Mandaste mal los parametros sabandija");
-		terminarPrograma(logger, config);
-		exit(-1);
-	}
-
-	DATOS_GET_POKEMON* datos = malloc(sizeof(uint32_t)+strlen(parametros[3]));
+	DATOS_GET_POKEMON* datos = malloc(sizeof(DATOS_GET_POKEMON));
 
 	datos->largoPokemon = (uint32_t) strlen(parametros[3]);
 	datos->pokemon = parametros[3];
@@ -345,13 +276,9 @@ DATOS_GET_POKEMON* convertir_GET_POKEMON(int cantParametros, char* parametros[])
 //./GameBoy BROKER GET_POKEMON Pokemon ID
 //    1        2        3         4    5
 //    0        1        2         3    4
-DATOS_GET_POKEMON_ID* convertir_GET_POKEMON_ID(int cantParametros, char* parametros[]) {
-
-	if (cantParametros != 5) {
-		log_error(logger, "Mandaste mal los parametros sabandija");
-		terminarPrograma(logger, config);
-		exit(-1);
-	}
+DATOS_GET_POKEMON_ID* convertir_GET_POKEMON_ID(int cantParametros, char* parametros[])
+{
+	if (cantParametros != 5) TerminarProgramaConError("MANDAME BIEN LOS PARAMETROS, SABANDIJA");
 
 	DATOS_GET_POKEMON_ID* datos = malloc(sizeof(DATOS_GET_POKEMON_ID));
 
@@ -362,8 +289,8 @@ DATOS_GET_POKEMON_ID* convertir_GET_POKEMON_ID(int cantParametros, char* paramet
 	return datos;
 }
 
-CodigoDeCola* convertirCodigo(char* codigo) {
-
+CodigoDeCola* convertirCodigo(char* codigo)
+{
 	CodigoDeCola* code = malloc(sizeof(CodigoDeCola));
 
 	if (sonIguales(codigo, "NEW_POKEMON"))
@@ -386,27 +313,27 @@ CodigoDeCola* convertirCodigo(char* codigo) {
 	return code;
 }
 
-void conexionBroker(Cliente* cliente, Paquete* paquete) {
-
+void ConexionBroker(Cliente* cliente, Paquete* paquete)
+{
 	BROKER_DATOS_SUSCRIBIRSE datos;
 
 	datos.cola = *((CodigoDeCola*) (cliente->info));
 
 	int tamanioBuffer;
-	void* buffer = Serializar_BROKER_SUSCRIBIRSE(&datos, &tamanioBuffer);
 
-	if(Socket_Enviar(BROKER_SUSCRIBIRSE, buffer, tamanioBuffer, cliente->socket) < 0) {
-		log_error(logger, "No se pudo conectar a la cola");
-		terminarPrograma(logger, config);
-		exit(-1);
-	}
+	EnviarMensaje(cliente, BROKER_SUSCRIBIRSE, datos, (void*) &Serializar_BROKER_SUSCRIBIRSE(&datos, &tamanioBuffer));
 
-	free(buffer);
 	free(cliente->info);
 }
 
-void ConectadoConProceso(char* proceso) {
-	log_info(logger, "Se conectó correctamente al proceso %s",proceso);
+void ConectadoConProceso(char* proceso)
+{
+	log_info(logger, "Me conecte correctamente al proceso %s", proceso);
+}
+
+void ConectadoConCola(char* cola)
+{
+	log_info(logger, "Me suscribi correctamente a la cola: %s", cola);
 }
 
 

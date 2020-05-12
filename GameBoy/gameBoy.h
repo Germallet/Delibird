@@ -7,13 +7,14 @@
 #include "../Utils/net.h"
 #include "../Utils/socket.h"
 
-typedef void* (*Serializar)(void*,int*);
 
-// DECLARACIONES
 void ConectadoConProceso(char*);
 void DesconectadoProceso(char*);
-void conexionBroker(Cliente* cliente, Paquete* paquete);
-void terminarPrograma(t_log* logger, t_config* config);
+
+void ConexionBroker(Cliente* cliente, Paquete* paquete);
+
+void TerminarPrograma(t_log* logger, t_config* config);
+void TerminarProgramaConError(char* error);
 
 //VERIFICAR DATOS
 void verificarConexion(int conexion, t_log* logger);
