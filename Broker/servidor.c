@@ -51,11 +51,11 @@ static void Operacion_CONECTAR(Cliente* cliente, Paquete* paqueteRecibido)
 		log_error(logger, "El cliente ya está conectado");
 		return;
 	}
-	if (!Paquete_StreamLeido(paqueteRecibido))
+	/*if (!Paquete_StreamLeido(paqueteRecibido))
 	{
 		log_error(logger, "Mensaje inválido");
 		return;
-	}
+	}*/
 
 	ClienteBroker* clienteBroker = CrearClienteBroker(cliente);
 	cliente->info = clienteBroker;
@@ -81,7 +81,7 @@ void Operacion_RECONECTAR(Cliente* cliente, Paquete* paqueteRecibido)
 	}
 
 	BROKER_DATOS_RECONECTAR datos;
-	if (!DeserializarM_BROKER_RECONECTAR(paqueteRecibido, &datos) || !Paquete_StreamLeido(paqueteRecibido))
+	if (!DeserializarM_BROKER_RECONECTAR(paqueteRecibido, &datos))
 		log_error(logger, "Error Deserializar_BROKER_RECONECTAR");
 	else
 	{

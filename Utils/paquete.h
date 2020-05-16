@@ -13,6 +13,3 @@ typedef struct
 extern void* Paquete_Serializar(Paquete* paquete, size_t* tamanioFinal);
 extern int Paquete_Procesar(int numSocket, Paquete* paquete);
 extern void Paquete_Liberar(Paquete* paquete);
-extern bool Paquete_Deserializar(Paquete* paquete, void* datos, int tamanio);
-extern bool Paquete_DeserializarString(Paquete* paquete, char** string);
-extern bool Paquete_StreamLeido(Paquete* paquete);
