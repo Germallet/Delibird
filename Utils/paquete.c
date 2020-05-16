@@ -52,8 +52,12 @@ bool Paquete_Deserializar(Paquete* paquete, void* datos, int tamanio)
 	return true;
 }
 
-bool Paquete_DeserializarString(Paquete* paquete, char** string, int tamanio)
+bool Paquete_DeserializarString(Paquete* paquete, char** string)
 {
+	uint32_t tamanio;
+	if (!Paquete_Deserializar(paquete, &tamanio, sizeof(uint32_t)))
+		return false;
+
 	*string = malloc(tamanio+1);
 	if (!Paquete_Deserializar(paquete, *string, tamanio))
 		return false;

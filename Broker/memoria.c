@@ -14,11 +14,14 @@ void IniciarMemoria()
 	pthread_mutex_init(&mutexMensajes, NULL);
 }
 
-void GuardarMensaje(Mensaje* mensaje)
+void GuardarMensaje(Mensaje* mensaje, Stream* contenido)
 {
 	pthread_mutex_lock(&mutexMensajes);
 	dictionaryInt_put(mensajes, mensaje->id, mensaje);
 	pthread_mutex_unlock(&mutexMensajes);
+
+	mensaje->contenido = malloc(contenido->tamanio);
+	memcpy(mensaje->contenido, contenido->base, contenido->tamanio);
 }
 
 void* ObtenerContenidoMensaje(Mensaje* mensaje)

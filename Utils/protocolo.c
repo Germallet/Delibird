@@ -1,353 +1,238 @@
 #include "protocolo.h"
+#include "serializacion.h"
+#include "paquete.h"
 
-//TODO MEJORARLOS
-
-// FUNCIONES INDIVIDUALES PARA CADA SERIALIZAR
-
-void* Serializar_ID_MENSAJE(DATOS_ID_MENSAJE* datos, int* tamanioBuffer)
+// NEW_POKEMON
+Stream* SerializarM_NEW_POKEMON(DATOS_NEW_POKEMON* datos)
 {
-	*tamanioBuffer = sizeof(DATOS_ID_MENSAJE);
-	void* buffer = malloc(*tamanioBuffer);
-
-	int desplazamiento = 0;
-	memcpy(buffer + desplazamiento, &(datos->id), sizeof(datos->id));
-
-	return buffer;
-}
-
-void* Serializar_NEW_POKEMON(DATOS_NEW_POKEMON* datos, int* tamanioBuffer)
-{
-	*tamanioBuffer = datos->largoPokemon + sizeof(uint32_t)*4;
-	void* buffer = malloc(*tamanioBuffer);
-
-	int desplazamiento = 0;
-	memcpy(buffer, &(datos->largoPokemon), sizeof(uint32_t));
-	desplazamiento += sizeof(uint32_t);
-	memcpy(buffer + desplazamiento, datos->pokemon, datos->largoPokemon);
-	desplazamiento += datos->largoPokemon;
-	memcpy(buffer + desplazamiento, &((datos->posicion).posX), sizeof(uint32_t));
-	desplazamiento += sizeof(uint32_t);
-	memcpy(buffer + desplazamiento, &((datos->posicion).posY), sizeof(uint32_t));
-	desplazamiento += sizeof(uint32_t);
-	memcpy(buffer + desplazamiento, &(datos->cantidad), sizeof(uint32_t));
-
-	return buffer;
-}
-
-void* Serializar_NEW_POKEMON_ID(DATOS_NEW_POKEMON_ID* datos, int* tamanioBuffer)
-{
-	*tamanioBuffer = datos->datos.largoPokemon + sizeof(uint32_t)*5;
-	void* buffer = malloc(*tamanioBuffer);
-
-	int desplazamiento = 0;
-	memcpy(buffer, &(datos->datos.largoPokemon), sizeof(uint32_t));
-	desplazamiento += sizeof(uint32_t);
-	memcpy(buffer + desplazamiento, datos->datos.pokemon, datos->datos.largoPokemon);
-	desplazamiento += datos->datos.largoPokemon;
-	memcpy(buffer + desplazamiento, &(datos->datos.posicion.posX), sizeof(uint32_t));
-	desplazamiento += sizeof(uint32_t);
-	memcpy(buffer + desplazamiento, &(datos->datos.posicion.posY), sizeof(uint32_t));
-	desplazamiento += sizeof(uint32_t);
-	memcpy(buffer + desplazamiento, &(datos->datos.cantidad), sizeof(uint32_t));
-	desplazamiento += sizeof(uint32_t);
-	memcpy(buffer + desplazamiento, &(datos->id), sizeof(uint32_t));
-
-	return buffer;
-}
-
-void* Serializar_APPEARED_POKEMON(DATOS_APPEARED_POKEMON* datos, int* tamanioBuffer)
-{
-	*tamanioBuffer = datos->largoPokemon + sizeof(uint32_t)*3;
-	void* buffer = malloc(*tamanioBuffer);
-
-	int desplazamiento = 0;
-	memcpy(buffer, &(datos->largoPokemon), sizeof(uint32_t));
-	desplazamiento += sizeof(uint32_t);
-	memcpy(buffer + desplazamiento, datos->pokemon, datos->largoPokemon);
-	desplazamiento += datos->largoPokemon;
-	memcpy(buffer + desplazamiento, &(datos->posicion.posX), sizeof(uint32_t));
-	desplazamiento += sizeof(uint32_t);
-	memcpy(buffer + desplazamiento, &(datos->posicion.posY), sizeof(uint32_t));
-
-	return buffer;
-}
-
-void* Serializar_APPEARED_POKEMON_ID(DATOS_APPEARED_POKEMON_ID* datos, int* tamanioBuffer)
-{
-	*tamanioBuffer = datos->datos.largoPokemon + sizeof(uint32_t)*4;
-	void* buffer = malloc(*tamanioBuffer);
-
-	int desplazamiento = 0;
-	memcpy(buffer, &(datos->datos.largoPokemon), sizeof(uint32_t));
-	desplazamiento += sizeof(uint32_t);
-	memcpy(buffer + desplazamiento, datos->datos.pokemon, datos->datos.largoPokemon);
-	desplazamiento += datos->datos.largoPokemon;
-	memcpy(buffer + desplazamiento, &(datos->datos.posicion.posX), sizeof(uint32_t));
-	desplazamiento += sizeof(uint32_t);
-	memcpy(buffer + desplazamiento, &(datos->datos.posicion.posY), sizeof(uint32_t));
-	desplazamiento += sizeof(uint32_t);
-	memcpy(buffer + desplazamiento, &(datos->idCorrelativo_NEW), sizeof(uint32_t));
-
-	return buffer;
-}
-
-void* Serializar_CATCH_POKEMON(DATOS_CATCH_POKEMON* datos, int* tamanioBuffer)
-{
-	*tamanioBuffer = datos->largoPokemon + sizeof(uint32_t)*3;
-	void* buffer = malloc(*tamanioBuffer);
-
-	int desplazamiento = 0;
-	memcpy(buffer, &(datos->largoPokemon), sizeof(uint32_t));
-	desplazamiento += sizeof(uint32_t);
-	memcpy(buffer + desplazamiento, datos->pokemon, datos->largoPokemon);
-	desplazamiento += datos->largoPokemon;
-	memcpy(buffer + desplazamiento, &((datos->posicion).posX), sizeof(uint32_t));
-	desplazamiento += sizeof(uint32_t);
-	memcpy(buffer + desplazamiento, &((datos->posicion).posY), sizeof(uint32_t));
-
-	return buffer;
-}
-
-void* Serializar_CATCH_POKEMON_ID(DATOS_CATCH_POKEMON_ID* datos, int* tamanioBuffer)
-{
-	*tamanioBuffer = datos->datos.largoPokemon + sizeof(uint32_t)*4;
-	void* buffer = malloc(*tamanioBuffer);
-
-	int desplazamiento = 0;
-	memcpy(buffer, &(datos->datos.largoPokemon), sizeof(uint32_t));
-	desplazamiento += sizeof(uint32_t);
-	memcpy(buffer + desplazamiento, datos->datos.pokemon, datos->datos.largoPokemon);
-	desplazamiento += datos->datos.largoPokemon;
-	memcpy(buffer + desplazamiento, &(datos->datos.posicion.posX), sizeof(uint32_t));
-	desplazamiento += sizeof(uint32_t);
-	memcpy(buffer + desplazamiento, &((datos->datos.posicion).posY), sizeof(uint32_t));
-	desplazamiento += sizeof(uint32_t);
-	memcpy(buffer + desplazamiento, &(datos->id), sizeof(uint32_t));
-
-	return buffer;
-}
-
-void* Serializar_CAUGHT_POKEMON_ID(DATOS_CAUGHT_POKEMON_ID* datos, int* tamanioBuffer)
-{
-	*tamanioBuffer = sizeof(uint32_t)*2;
-	void* buffer = malloc(*tamanioBuffer);
-
-	int desplazamiento = 0;
-	memcpy(buffer + desplazamiento, &(datos->idCorrelativo_CATCH), sizeof(uint32_t));
-	desplazamiento += sizeof(uint32_t);
-	memcpy(buffer + desplazamiento, &(datos->capturado), sizeof(uint32_t));
-
-	return buffer;
-}
-
-void* Serializar_GET_POKEMON(DATOS_GET_POKEMON* datos, int* tamanioBuffer)
-{
-	*tamanioBuffer = datos->largoPokemon + sizeof(uint32_t);
-	void* buffer = malloc(*tamanioBuffer);
-
-	int desplazamiento = 0;
-	memcpy(buffer, &(datos->largoPokemon), sizeof(uint32_t));
-	desplazamiento += sizeof(uint32_t);
-	memcpy(buffer+desplazamiento, datos->pokemon, datos->largoPokemon);
-
-	return buffer;
-}
-
-void* Serializar_GET_POKEMON_ID(DATOS_GET_POKEMON_ID* datos, int* tamanioBuffer)
-{
-	*tamanioBuffer = datos->datos.largoPokemon + sizeof(uint32_t)*2;
-	void* buffer = malloc(*tamanioBuffer);
-
-	int desplazamiento = 0;
-	memcpy(buffer, &(datos->datos.largoPokemon), sizeof(uint32_t));
-	desplazamiento += sizeof(uint32_t);
-	memcpy(buffer+desplazamiento, datos->datos.pokemon, datos->datos.largoPokemon);
-	desplazamiento += sizeof(uint32_t);
-	memcpy(buffer+desplazamiento, &(datos->id), sizeof(uint32_t));
-
-	return buffer;
-}
-
-void* Serializar_LOCALIZED_POKEMON_ID(DATOS_LOCALIZED_POKEMON_ID* datos, int* tamanioBuffer)
-{
-	*tamanioBuffer = datos->largoPokemon + sizeof(uint32_t) + (datos->cantidad)*(sizeof(uint32_t)*2);
-	void* buffer = malloc(*tamanioBuffer);
-
-	int desplazamiento = 0;
-	memcpy(buffer, &(datos->largoPokemon), sizeof(uint32_t));
-	desplazamiento += sizeof(uint32_t);
-	memcpy(buffer + desplazamiento, datos->pokemon, datos->largoPokemon);
-	desplazamiento += datos->largoPokemon;
-	memcpy(buffer + desplazamiento, &(datos->cantidad), sizeof(uint32_t));
-	desplazamiento += sizeof(uint32_t);
-
-	for (int i = 0; i < datos->cantidad; i++) {
-		memcpy(buffer + desplazamiento, &(datos->posiciones[i].posX), sizeof(uint32_t));
-		desplazamiento += sizeof(uint32_t);
-		memcpy(buffer + desplazamiento, &(datos->posiciones[i].posY), sizeof(uint32_t));
-		desplazamiento += sizeof(uint32_t);
-	}
-
-	memcpy(buffer+desplazamiento, &(datos->idCorrelativo_GET), sizeof(uint32_t));
-
-	return buffer;
-}
-
-// FUNCIONES INDIVIDUALES PARA CADA DESERIALIZAR
-
-bool Deserializar_ID_MENSAJE(Paquete* paquete, DATOS_ID_MENSAJE* datos)
-{
-	if (!Paquete_Deserializar(paquete, &(datos->id), sizeof(uint32_t))) return false;
-	return true;
-}
-
-bool Deserializar_NEW_POKEMON(Paquete* paquete, DATOS_NEW_POKEMON* datos)
-{
-	if (!Paquete_Deserializar(paquete, &(datos->largoPokemon), sizeof(uint32_t))) return false;
-	if (!Paquete_DeserializarString(paquete, &(datos->pokemon), datos->largoPokemon)) return false;
-	if (!Paquete_Deserializar(paquete, &((datos->posicion).posX), sizeof(uint32_t))) return false;
-	if (!Paquete_Deserializar(paquete, &((datos->posicion).posY), sizeof(uint32_t))) return false;
-	if (!Paquete_Deserializar(paquete, &(datos->cantidad), sizeof(uint32_t))) return false;
-	return true;
-}
-
-bool Deserializar_NEW_POKEMON_ID(Paquete* paquete, DATOS_NEW_POKEMON_ID* datos)
-{
-	if (!Deserializar_NEW_POKEMON(paquete, &(datos->datos))) return false;
-	if (!Paquete_Deserializar(paquete, &(datos->id), sizeof(uint32_t))) return false;
-	return true;
-}
-
-bool Deserializar_APPEARED_POKEMON(Paquete* paquete, DATOS_APPEARED_POKEMON* datos)
-{
-	if (!Paquete_Deserializar(paquete, &(datos->largoPokemon), sizeof(uint32_t))) return false;
-	if (!Paquete_DeserializarString(paquete, &(datos->pokemon), datos->largoPokemon)) return false;
-	if (!Paquete_Deserializar(paquete, &((datos->posicion).posX), sizeof(uint32_t))) return false;
-	if (!Paquete_Deserializar(paquete, &((datos->posicion).posY), sizeof(uint32_t))) return false;
-	return true;
-}
-
-bool Deserializar_APPEARED_POKEMON_ID(Paquete* paquete, DATOS_APPEARED_POKEMON_ID* datos)
-{
-	if (!Deserializar_APPEARED_POKEMON(paquete, &(datos->datos))) return false;
-	if (!Paquete_Deserializar(paquete, &(datos->idCorrelativo_NEW), sizeof(uint32_t))) return false;
-	return true;
-}
-
-bool Deserializar_APPEARED_POKEMON_IDx2(Paquete* paquete, DATOS_APPEARED_POKEMON_IDx2* datos)
-{
-	if (!Deserializar_APPEARED_POKEMON_ID(paquete, &(datos->datos))) return false;
-	if (!Paquete_Deserializar(paquete, &(datos->id), sizeof(uint32_t))) return false;
-	return true;
-}
-
-bool Deserializar_CATCH_POKEMON(Paquete* paquete, DATOS_CATCH_POKEMON* datos)
-{
-	if (!Paquete_Deserializar(paquete, &(datos->largoPokemon), sizeof(uint32_t))) return false;
-	if (!Paquete_DeserializarString(paquete, &(datos->pokemon), datos->largoPokemon)) return false;
-	if (!Paquete_Deserializar(paquete, &((datos->posicion).posX), sizeof(uint32_t))) return false;
-	if (!Paquete_Deserializar(paquete, &((datos->posicion).posY), sizeof(uint32_t))) return false;
-	return true;
-}
-
-bool Deserializar_CATCH_POKEMON_ID(Paquete* paquete, DATOS_CATCH_POKEMON_ID* datos)
-{
-	if (!Deserializar_CATCH_POKEMON(paquete, &(datos->datos))) return false;
-	if (!Paquete_Deserializar(paquete, &(datos->id), sizeof(uint32_t))) return false;
-	return true;
-}
-
-bool Deserializar_CAUGHT_POKEMON_ID(Paquete* paquete, DATOS_CAUGHT_POKEMON_ID* datos)
-{
-	if (!Paquete_Deserializar(paquete, &(datos->capturado), sizeof(uint32_t))) return false;
-	if (!Paquete_Deserializar(paquete, &(datos->idCorrelativo_CATCH), sizeof(uint32_t))) return false;
-	return true;
-}
-
-bool Deserializar_CAUGHT_POKEMON_IDx2(Paquete* paquete, DATOS_CAUGHT_POKEMON_IDx2* datos)
-{
-	if (!Deserializar_CAUGHT_POKEMON_ID(paquete, &(datos->datos))) return false;
-	if (!Paquete_Deserializar(paquete, &(datos->id), sizeof(uint32_t))) return false;
-	return true;
-}
-
-bool Deserializar_GET_POKEMON(Paquete* paquete, DATOS_GET_POKEMON* datos)
-{
-	if (!Paquete_Deserializar(paquete, &(datos->largoPokemon), sizeof(uint32_t))) return false;
-	if (!Paquete_DeserializarString(paquete, &(datos->pokemon), datos->largoPokemon)) return false;
-	return true;
-}
-
-bool Deserializar_GET_POKEMON_ID(Paquete* paquete, DATOS_GET_POKEMON_ID* datos)
-{
-	if (!Deserializar_GET_POKEMON(paquete, &(datos->datos))) return false;
-	if (!Paquete_Deserializar(paquete, &(datos->id), sizeof(uint32_t))) return false;
-	return true;
-}
-
-bool Deserializar_LOCALIZED_POKEMON_ID(Paquete* paquete, DATOS_LOCALIZED_POKEMON_ID* datos)
-{
-	if (!Paquete_Deserializar(paquete, &(datos->largoPokemon), sizeof(uint32_t))) return false;
-	if (!Paquete_DeserializarString(paquete, &(datos->pokemon), datos->largoPokemon)) return false;
-	if (!Paquete_Deserializar(paquete, &(datos->cantidad), sizeof(uint32_t))) return false;
-
-	datos->posiciones = malloc((datos->cantidad)*sizeof(Posicion));
-
-	for (int i = 0; i < datos->cantidad; i++) {
-		if (!Paquete_Deserializar(paquete, &((datos->posiciones[i]).posX), sizeof(uint32_t))) return false;
-		if (!Paquete_Deserializar(paquete, &((datos->posiciones[i]).posY), sizeof(uint32_t))) return false;
-	}
-
-	if (!Paquete_Deserializar(paquete, &(datos->idCorrelativo_GET), sizeof(uint32_t))) return false;
-	return true;
-}
-
-bool Deserializar_LOCALIZED_POKEMON_IDx2(Paquete* paquete, DATOS_LOCALIZED_POKEMON_IDx2* datos)
-{
-	if (!Deserializar_LOCALIZED_POKEMON_ID(paquete, &(datos->datos))) return false;
-	if (!Paquete_Deserializar(paquete, &(datos->id), sizeof(uint32_t))) return false;
-	return true;
-}
-
-void* Serializar_BROKER_RECONECTAR(BROKER_DATOS_RECONECTAR* datos, int* tamanioBuffer)
-{
-	*tamanioBuffer = sizeof(BROKER_DATOS_RECONECTAR);
-	void* stream = malloc(*tamanioBuffer);
-
-	int desplazamiento = 0;
-	memcpy(stream, &(datos->id), sizeof(datos->id));
-	desplazamiento += sizeof(datos->id);
-
+	Stream* stream = Stream_CrearEscrituraNueva(strlen(datos->pokemon) + sizeof(uint32_t)*5);
+	Serializar_NEW_POKEMON(stream, datos);
 	return stream;
 }
-bool Deserializar_BROKER_RECONECTAR(Paquete* paquete, BROKER_DATOS_RECONECTAR* datos)
+Stream* SerializarM_NEW_POKEMON_ID(DATOS_NEW_POKEMON_ID* datos)
 {
-	if (!Paquete_Deserializar(paquete, &(datos->id), sizeof(uint32_t))) return false;
+	Stream* stream = Stream_CrearEscrituraNueva(strlen(datos->datos.pokemon) + sizeof(uint32_t)*5);
+	Serializar_uint32(stream, datos->id);
+	Serializar_NEW_POKEMON(stream, &(datos->datos));
+	return stream;
+}
+bool DeserializarM_NEW_POKEMON(Paquete* paquete, DATOS_NEW_POKEMON* datos)
+{
+	Stream* stream = Stream_CrearLecturaPaquete(paquete);
+	if (!Deserializar_NEW_POKEMON(stream, datos)) { Stream_Destruir(stream); return false; }
+	Stream_Destruir(stream);
+	return true;
+}
+bool DeserializarM_NEW_POKEMON_ID(Paquete* paquete, DATOS_NEW_POKEMON_ID* datos)
+{
+	Stream* stream = Stream_CrearLecturaPaquete(paquete);
+	if (!Stream_Deserializar(stream, &(datos->id), sizeof(uint32_t))) { Stream_Destruir(stream); return false; }
+	if (!Deserializar_NEW_POKEMON(stream, &(datos->datos))) { Stream_Destruir(stream); return false; }
+	Stream_Destruir(stream);
 	return true;
 }
 
-void* Serializar_BROKER_CONECTADO(BROKER_DATOS_CONECTADO* datos, int* tamanioBuffer)
+// APPEARED_POKEMON
+Stream* SerializarM_APPEARED_POKEMON(DATOS_APPEARED_POKEMON* datos)
 {
-	return Serializar_BROKER_RECONECTAR(datos, tamanioBuffer);
-}
-bool Deserializar_BROKER_CONECTADO(Paquete* paquete, BROKER_DATOS_CONECTADO* datos)
-{
-	return Deserializar_BROKER_RECONECTAR(paquete, datos);
-}
-
-void* Serializar_BROKER_SUSCRIBIRSE(BROKER_DATOS_SUSCRIBIRSE* datos, int* tamanioBuffer)
-{
-	*tamanioBuffer = sizeof(uint32_t);
-	void* stream = malloc(*tamanioBuffer);
-
-	int desplazamiento = 0;
-	memcpy(stream, &(datos->cola), sizeof(uint32_t));
-	desplazamiento += sizeof(uint32_t);
-
+	Stream* stream = Stream_CrearEscrituraNueva(strlen(datos->pokemon) + sizeof(uint32_t)*4);
+	Serializar_APPEARED_POKEMON(stream, datos);
 	return stream;
 }
-bool Deserializar_BROKER_SUSCRIBIRSE(Paquete* paquete, BROKER_DATOS_SUSCRIBIRSE* datos)
+Stream* SerializarM_APPEARED_POKEMON_ID(DATOS_APPEARED_POKEMON_ID* datos)
 {
-	if (!Paquete_Deserializar(paquete, &(datos->cola), sizeof(uint32_t))) return false;
+	Stream* stream = Stream_CrearEscrituraNueva(strlen(datos->datos.pokemon) + sizeof(uint32_t)*4);
+	Serializar_uint32(stream, datos->id);
+	Serializar_APPEARED_POKEMON(stream, &(datos->datos));
+	return stream;
+}
+bool DeserializarM_APPEARED_POKEMON(Paquete* paquete, DATOS_APPEARED_POKEMON* datos)
+{
+	Stream* stream = Stream_CrearLecturaPaquete(paquete);
+	if (!Deserializar_APPEARED_POKEMON(stream, datos)) { Stream_Destruir(stream); return false; }
+	Stream_Destruir(stream);
+	return true;
+}
+bool DeserializarM_APPEARED_POKEMON_ID(Paquete* paquete, DATOS_APPEARED_POKEMON_ID* datos)
+{
+	Stream* stream = Stream_CrearLecturaPaquete(paquete);
+	if (!Stream_Deserializar(stream, &(datos->id), sizeof(uint32_t))) { Stream_Destruir(stream); return false; }
+	if (!Deserializar_APPEARED_POKEMON(stream, &(datos->datos))) { Stream_Destruir(stream); return false; }
+	Stream_Destruir(stream);
+	return true;
+}
+
+// CATCH_POKEMON
+Stream* SerializarM_CATCH_POKEMON(DATOS_CATCH_POKEMON* datos)
+{
+	Stream* stream = Stream_CrearEscrituraNueva(strlen(datos->pokemon) + sizeof(uint32_t)*3);
+	Serializar_CATCH_POKEMON(stream, datos);
+	return stream;
+}
+Stream* SerializarM_CATCH_POKEMON_ID( DATOS_CATCH_POKEMON_ID* datos)
+{
+	Stream* stream = Stream_CrearEscrituraNueva(strlen(datos->datos.pokemon) + sizeof(uint32_t)*4);
+	Serializar_uint32(stream, datos->id);
+	Serializar_CATCH_POKEMON(stream, &(datos->datos));
+	return stream;
+}
+bool DeserializarM_CATCH_POKEMON(Paquete* paquete, DATOS_CATCH_POKEMON* datos)
+{
+	Stream* stream = Stream_CrearLecturaPaquete(paquete);
+	if (!Stream_Deserializar(stream, datos, sizeof(uint32_t))) { Stream_Destruir(stream); return false; }
+	Stream_Destruir(stream);
+	return true;
+}
+bool DeserializarM_CATCH_POKEMON_ID(Paquete* paquete, DATOS_CATCH_POKEMON_ID* datos)
+{
+	Stream* stream = Stream_CrearLecturaPaquete(paquete);
+	if (!Stream_Deserializar(stream, &(datos->id), sizeof(uint32_t))) { Stream_Destruir(stream); return false; }
+	if (!Deserializar_CATCH_POKEMON(stream, &(datos->datos))) { Stream_Destruir(stream); return false; }
+	Stream_Destruir(stream);
+	return true;
+}
+
+// CAUGHT_POKEMON
+Stream* SerializarM_CAUGHT_POKEMON(DATOS_CAUGHT_POKEMON* datos)
+{
+	Stream* stream = Stream_CrearEscrituraNueva(sizeof(uint32_t)*2);
+	Serializar_CAUGHT_POKEMON(stream, datos);
+	return stream;
+}
+Stream* SerializarM_CAUGHT_POKEMON_ID(DATOS_CAUGHT_POKEMON_ID* datos)
+{
+	Stream* stream = Stream_CrearEscrituraNueva(sizeof(uint32_t)*3);
+	Serializar_uint32(stream, datos->id);
+	Serializar_CAUGHT_POKEMON(stream, &(datos->datos));
+	return stream;
+}
+bool DeserializarM_CAUGHT_POKEMON(Paquete* paquete, DATOS_CAUGHT_POKEMON* datos)
+{
+	Stream* stream = Stream_CrearLecturaPaquete(paquete);
+	if (!Deserializar_CAUGHT_POKEMON(stream, datos)) { Stream_Destruir(stream); return false; }
+	Stream_Destruir(stream);
+	return true;
+}
+bool DeserializarM_CAUGHT_POKEMON_ID(Paquete* paquete, DATOS_CAUGHT_POKEMON_ID* datos)
+{
+	Stream* stream = Stream_CrearLecturaPaquete(paquete);
+	if (!Stream_Deserializar(stream, &(datos->id), sizeof(uint32_t))) { Stream_Destruir(stream); return false; }
+	if (!Deserializar_CAUGHT_POKEMON(stream, &(datos->datos))) { Stream_Destruir(stream); return false; }
+	Stream_Destruir(stream);
+	return true;
+}
+
+// GET_POKEMON
+Stream* SerializarM_GET_POKEMON(DATOS_GET_POKEMON* datos)
+{
+	Stream* stream = Stream_CrearEscrituraNueva(sizeof(uint32_t) + strlen(datos->pokemon));
+	Serializar_GET_POKEMON(stream, datos);
+	return stream;
+}
+Stream* SerializarM_GET_POKEMON_ID(DATOS_GET_POKEMON_ID* datos)
+{
+	Stream* stream = Stream_CrearEscrituraNueva(sizeof(uint32_t) + strlen(datos->datos.pokemon) + sizeof(uint32_t));
+	Serializar_uint32(stream, datos->id);
+	Serializar_GET_POKEMON(stream, &(datos->datos));
+	return stream;
+}
+bool DeserializarM_GET_POKEMON(Paquete* paquete, DATOS_GET_POKEMON* datos)
+{
+	Stream* stream = Stream_CrearLecturaPaquete(paquete);
+	if (!Deserializar_GET_POKEMON(stream, datos)) { Stream_Destruir(stream); return false; }
+	Stream_Destruir(stream);
+	return true;
+}
+bool DeserializarM_GET_POKEMON_ID(Paquete* paquete, DATOS_GET_POKEMON_ID* datos)
+{
+	Stream* stream = Stream_CrearLecturaPaquete(paquete);
+	if (!Stream_Deserializar(stream, &(datos->id), sizeof(uint32_t))) { Stream_Destruir(stream); return false; }
+	if (!Deserializar_GET_POKEMON(stream, &(datos->datos))) { Stream_Destruir(stream); return false; }
+	Stream_Destruir(stream);
+	return true;
+}
+
+// LOCALIZED_POKEMON
+Stream* SerializarM_LOCALIZED_POKEMON(DATOS_LOCALIZED_POKEMON* datos)
+{
+	Stream* stream = Stream_CrearEscrituraNueva(strlen(datos->pokemon) + sizeof(uint32_t) + (datos->cantidad)*(sizeof(uint32_t)*2));
+	Serializar_LOCALIZED_POKEMON(stream, datos);
+	return stream;
+}
+Stream* SerializarM_LOCALIZED_POKEMON_ID(DATOS_LOCALIZED_POKEMON_ID* datos)
+{
+	Stream* stream = Stream_CrearEscrituraNueva(strlen(datos->datos.pokemon) + sizeof(uint32_t)*2 + (datos->datos.cantidad)*(sizeof(uint32_t)*2));
+	Serializar_uint32(stream, datos->id);
+	Serializar_LOCALIZED_POKEMON(stream, &(datos->datos));
+	return stream;
+}
+bool DeserializarM_LOCALIZED_POKEMON(Paquete* paquete, DATOS_LOCALIZED_POKEMON* datos)
+{
+	Stream* stream = Stream_CrearLecturaPaquete(paquete);
+	if (!Deserializar_LOCALIZED_POKEMON(stream, datos)) { Stream_Destruir(stream); return false; }
+	Stream_Destruir(stream);
+	return true;
+}
+bool DeserializarM_LOCALIZED_POKEMON_ID(Paquete* paquete, DATOS_LOCALIZED_POKEMON_ID* datos)
+{
+	Stream* stream = Stream_CrearLecturaPaquete(paquete);
+	if (!Stream_Deserializar(stream, &(datos->id), sizeof(uint32_t))) { Stream_Destruir(stream); return false; }
+	if (!Deserializar_LOCALIZED_POKEMON(stream, &(datos->datos))) { Stream_Destruir(stream); return false; }
+	Stream_Destruir(stream);
+	return true;
+}
+
+// ID_MENSAJE
+Stream* SerializarM_ID_MENSAJE(DATOS_ID_MENSAJE* datos)
+{
+	Stream* stream = Stream_CrearEscrituraNueva(sizeof(uint32_t));
+	Serializar_uint32(stream, datos->id);
+	return stream;
+}
+bool DeserializarM_ID_MENSAJE(Paquete* paquete, DATOS_ID_MENSAJE* datos)
+{
+	Stream* stream = Stream_CrearLecturaPaquete(paquete);
+	if (!Stream_Deserializar(stream, &(datos->id), sizeof(uint32_t))) { Stream_Destruir(stream); return false; }
+	Stream_Destruir(stream);
+	return true;
+}
+
+// BROKER_RECONECTAR
+Stream* SerializarM_BROKER_RECONECTAR(BROKER_DATOS_RECONECTAR* datos)
+{
+	Stream* stream = Stream_CrearEscrituraNueva(sizeof(uint32_t));
+	Serializar_uint32(stream, datos->id);
+	return stream;
+}
+bool DeserializarM_BROKER_RECONECTAR(Paquete* paquete, BROKER_DATOS_RECONECTAR* datos)
+{
+	Stream* stream = Stream_CrearLecturaPaquete(paquete);
+	if (!Stream_Deserializar(stream, &(datos->id), sizeof(uint32_t))) { Stream_Destruir(stream); return false; }
+	Stream_Destruir(stream);
+	return true;
+}
+
+// BROKER_CONECTADO
+Stream* SerializarM_BROKER_CONECTADO(BROKER_DATOS_CONECTADO* datos)
+{
+	return SerializarM_BROKER_RECONECTAR(datos);
+}
+bool DeserializarM_BROKER_CONECTADO(Paquete* paquete, BROKER_DATOS_CONECTADO* datos)
+{
+	return DeserializarM_BROKER_RECONECTAR(paquete, datos);
+}
+
+// BROKER_SUSCRIBIRSE
+Stream* SerializarM_BROKER_SUSCRIBIRSE(BROKER_DATOS_SUSCRIBIRSE* datos)
+{
+	Stream* stream = Stream_CrearEscrituraNueva(sizeof(uint32_t));
+	Serializar_uint32(stream, datos->cola);
+	return stream;
+}
+bool DeserializarM_BROKER_SUSCRIBIRSE(Paquete* paquete, BROKER_DATOS_SUSCRIBIRSE* datos)
+{
+	Stream* stream = Stream_CrearLecturaPaquete(paquete);
+	if (!Stream_Deserializar(stream, &(datos->cola), sizeof(uint32_t))) { Stream_Destruir(stream); return false; }
+	Stream_Destruir(stream);
 	return true;
 }

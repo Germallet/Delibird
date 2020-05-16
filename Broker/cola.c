@@ -95,8 +95,6 @@ static void BroadcastMensajeSinChequeo(Cola* cola, Mensaje* mensaje)
 	pthread_mutex_lock(&(cola->mutexSuscriptores));
 	list_iterate(cola->suscriptores, &EnviarMensajeA);
 	pthread_mutex_unlock(&(cola->mutexSuscriptores));
-
-	//TODO free(contenido);
 }
 void Cola_ProcesarNuevoMensaje(CodigoDeCola codigoDeCola, Mensaje* mensaje)
 {
@@ -120,7 +118,7 @@ void Cola_EnviarMensajesRestantesSiCorrespondeA(Cola* cola, ClienteBroker* clien
 			return;
 		void* contenido = ObtenerContenidoMensaje(mensaje);
 		Mensaje_EnviarA(mensaje, contenido, cliente->cliente);
-		// TODO free(contenido);
+		// TODO: free(contenido); CUANDO LA MEMORIA SEA PERSISTENTE
 	}
 
 	if (!TieneSuscriptor(cola, cliente))

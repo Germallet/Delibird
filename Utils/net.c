@@ -126,6 +126,7 @@ void DestruirCliente(Cliente* cliente)
 	{
 		free(cliente->thread);
 		Socket_Cerrar(cliente->socket);
+		cliente->thread = NULL;
 	}
 	else
 	{
@@ -144,8 +145,9 @@ void DestruirServidor(Servidor* servidor)
 	pthread_mutex_t copiaMutex = servidor->mx_destruir;
 	if (servidor->thread != NULL)
 	{
-		servidor->thread = NULL;
+		free(servidor->thread);
 		Socket_Cerrar(servidor->socket);
+		servidor->thread = NULL;
 	}
 	else
 	{
@@ -158,24 +160,15 @@ void DestruirServidor(Servidor* servidor)
 
 int EnviarMensaje(Cliente* cliente, CodigoDeOperacion codigoDeOperacion, void* datos, Serializador serializador)
 {
-	int respuesta = EnviarMensajeSinFree(cliente, codigoDeOperacion, datos, serializador);
-	free(datos);
+	Stream* stream = serializador(datos);
+	int respuesta = Socket_Enviar(codigoDeOperacion, stream->base, stream->tamanio, cliente->socket);
+	Stream_DestruirConBuffer(stream);
 	return respuesta;
 }
 int EnviarMensajeSinFree(Cliente* cliente, CodigoDeOperacion codigoDeOperacion, void* datos, Serializador serializador)
 {
-	int tamanioBuffer = 0;
-	void* buffer = serializador(datos, &tamanioBuffer);
-
-	int respuesta = Socket_Enviar(codigoDeOperacion, buffer, tamanioBuffer, cliente->socket);
-	if (respuesta < 0)
-	{
-		// TODO Borrar
-		printf("No se envio correctamente el mensaje");
-		exit(-1);
-	}
-
-	free(buffer);
-
+	Stream* stream = serializador(datos);
+	int respuesta = Socket_Enviar(codigoDeOperacion, stream->base, stream->tamanio, cliente->socket);
+	Stream_Destruir(stream);
 	return respuesta;
 }

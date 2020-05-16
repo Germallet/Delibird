@@ -7,6 +7,7 @@ typedef struct
 {
 	int id;
 	int posicionEnMemoria;
+	int tamanio;
 	t_list* clientesEnviados;
 	t_list* clientesACK;
 	// TODO: Variables temporales hasta verdadera implementación
@@ -15,6 +16,7 @@ typedef struct
 } Mensaje;
 
 void IniciarMensajes();
-Mensaje* CrearMensaje(CodigoDeCola tipoDeMensaje, void* contenido);
+uint32_t GenerarIDMensaje();
+Mensaje* CrearMensaje(CodigoDeCola tipoDeMensaje, uint32_t id, size_t tamanio);
 bool Mensaje_SeLeEnvioA(Mensaje* mensaje, void* cliente);
 void Mensaje_EnviarA(Mensaje* mensaje, void* contenido, Cliente* cliente);

@@ -1,5 +1,7 @@
 #pragma once
 #include "paquete.h"
+#include "codigoDeCola.h"
+#include "stream.h"
 #include <stdbool.h>
 #include <string.h>
 #include <netdb.h>
@@ -25,86 +27,55 @@ typedef enum
 	LOCALIZED_POKEMON	//12
 } CodigoDeOperacion;
 
-typedef enum
-{
-	COLA_NEW_POKEMON,		//0
-	COLA_APPEARED_POKEMON,	//1
-	COLA_CATCH_POKEMON,		//2
-	COLA_CAUGHT_POKEMON,	//3
-	COLA_GET_POKEMON,		//4
-	COLA_LOCALIZED_POKEMON	//5
-} CodigoDeCola;
-
-typedef struct
-{
-	uint32_t id;
-} BROKER_DATOS_CONECTADO, BROKER_DATOS_RECONECTAR;
-
-typedef struct
-{
-	CodigoDeCola cola;
-} BROKER_DATOS_SUSCRIBIRSE;
-
 typedef struct {
 	uint32_t posX;
 	uint32_t posY;
 } Posicion;
 
+// NEW_POKEMON
 typedef struct {
-	uint32_t id;
-} DATOS_ID_MENSAJE;
-
-typedef struct {
-	uint32_t largoPokemon;
 	char* pokemon;
 	Posicion posicion;
 	uint32_t cantidad;
 } DATOS_NEW_POKEMON;
-
 typedef struct {
 	DATOS_NEW_POKEMON datos;
 	uint32_t id;
 } DATOS_NEW_POKEMON_ID;
 
+// APPEARED_POKEMON
 typedef struct {
-	uint32_t largoPokemon;
+	uint32_t idCorrelativa;
 	char* pokemon;
 	Posicion posicion;
 } DATOS_APPEARED_POKEMON;
-
 typedef struct {
 	DATOS_APPEARED_POKEMON datos;
-	uint32_t idCorrelativo_NEW;
+	uint32_t id;
 } DATOS_APPEARED_POKEMON_ID;
 
+// CATCH_POKEMON
 typedef struct {
-	DATOS_APPEARED_POKEMON_ID datos;
-	uint32_t id;
-} DATOS_APPEARED_POKEMON_IDx2;
-
-typedef struct {
-	uint32_t largoPokemon;
 	char* pokemon;
 	Posicion posicion;
 } DATOS_CATCH_POKEMON;
-
 typedef struct {
 	DATOS_CATCH_POKEMON datos;
 	uint32_t id;
 } DATOS_CATCH_POKEMON_ID;
 
+// CAUGHT_POKEMON
 typedef struct {
-	uint32_t idCorrelativo_CATCH;
+	uint32_t idCorrelativa;
 	uint32_t capturado;
+} DATOS_CAUGHT_POKEMON;
+typedef struct {
+	DATOS_CAUGHT_POKEMON datos;
+	uint32_t id;
 } DATOS_CAUGHT_POKEMON_ID;
 
+// GET_POKEMON
 typedef struct {
-	DATOS_CAUGHT_POKEMON_ID datos;
-	uint32_t id;
-} DATOS_CAUGHT_POKEMON_IDx2;
-
-typedef struct {
-	uint32_t largoPokemon;
 	char* pokemon;
 } DATOS_GET_POKEMON;
 
@@ -113,49 +84,71 @@ typedef struct {
 	uint32_t id;
 } DATOS_GET_POKEMON_ID;
 
+// LOCALIZED_POKEMON
 typedef struct {
-	uint32_t largoPokemon;
+	uint32_t idCorrelativa;
 	char* pokemon;
 	uint32_t cantidad;
 	Posicion* posiciones;
-	uint32_t idCorrelativo_GET;
+} DATOS_LOCALIZED_POKEMON;
+typedef struct {
+	DATOS_LOCALIZED_POKEMON datos;
+	uint32_t id;
 } DATOS_LOCALIZED_POKEMON_ID;
 
-typedef struct {
-	DATOS_LOCALIZED_POKEMON_ID datos;
+// BROKER
+typedef struct
+{
 	uint32_t id;
-} DATOS_LOCALIZED_POKEMON_IDx2;
+} BROKER_DATOS_CONECTADO, BROKER_DATOS_RECONECTAR;
+typedef struct
+{
+	uint32_t id;
+} DATOS_ID_MENSAJE;
+typedef struct
+{
+	CodigoDeCola cola;
+} BROKER_DATOS_SUSCRIBIRSE;
 
-extern void* Serializar_ID_MENSAJE(DATOS_ID_MENSAJE* datos, int* tamanioBuffer);
-extern void* Serializar_NEW_POKEMON(DATOS_NEW_POKEMON* datos, int* tamanioBuffer);
-extern void* Serializar_NEW_POKEMON_ID(DATOS_NEW_POKEMON_ID* datos, int* tamanioBuffer);
-extern void* Serializar_APPEARED_POKEMON(DATOS_APPEARED_POKEMON* datos, int* tamanioBuffer);
-extern void* Serializar_APPEARED_POKEMON_ID(DATOS_APPEARED_POKEMON_ID* datos, int* tamanioBuffer);
-extern void* Serializar_CATCH_POKEMON(DATOS_CATCH_POKEMON* datos, int* tamanioBuffer);
-extern void* Serializar_CATCH_POKEMON_ID(DATOS_CATCH_POKEMON_ID* datos, int* tamanioBuffer);
-extern void* Serializar_CAUGHT_POKEMON_ID(DATOS_CAUGHT_POKEMON_ID* datos, int* tamanioBuffer);
-extern void* Serializar_GET_POKEMON(DATOS_GET_POKEMON* datos, int* tamanioBuffer);
-extern void* Serializar_GET_POKEMON_ID(DATOS_GET_POKEMON_ID* datos, int* tamanioBuffer);
-extern void* Serializar_LOCALIZED_POKEMON_ID(DATOS_LOCALIZED_POKEMON_ID* datos, int* tamanioBuffer);
-
-extern bool Deserializar_ID_MENSAJE(Paquete* paquete, DATOS_ID_MENSAJE* datos);
-extern bool Deserializar_NEW_POKEMON(Paquete* paquete, DATOS_NEW_POKEMON* datos);
-extern bool Deserializar_NEW_POKEMON_ID(Paquete* paquete, DATOS_NEW_POKEMON_ID* datos);
-extern bool Deserializar_APPEARED_POKEMON(Paquete* paquete, DATOS_APPEARED_POKEMON* datos);
-extern bool Deserializar_APPEARED_POKEMON_ID(Paquete* paquete, DATOS_APPEARED_POKEMON_ID* datos);
-extern bool Deserializar_APPEARED_POKEMON_IDx2(Paquete* paquete, DATOS_APPEARED_POKEMON_IDx2* datos);
-extern bool Deserializar_CATCH_POKEMON(Paquete* paquete, DATOS_CATCH_POKEMON* datos);
-extern bool Deserializar_CATCH_POKEMON_ID(Paquete* paquete, DATOS_CATCH_POKEMON_ID* datos);
-extern bool Deserializar_CAUGHT_POKEMON_ID(Paquete* paquete, DATOS_CAUGHT_POKEMON_ID* datos);
-extern bool Deserializar_CAUGHT_POKEMON_IDx2(Paquete* paquete, DATOS_CAUGHT_POKEMON_IDx2* datos);
-extern bool Deserializar_GET_POKEMON(Paquete* paquete, DATOS_GET_POKEMON* datos);
-extern bool Deserializar_GET_POKEMON_ID(Paquete* paquete, DATOS_GET_POKEMON_ID* datos);
-extern bool Deserializar_LOCALIZED_POKEMON_ID(Paquete* paquete, DATOS_LOCALIZED_POKEMON_ID* datos);
-extern bool Deserializar_LOCALIZED_POKEMON_IDx2(Paquete* paquete, DATOS_LOCALIZED_POKEMON_IDx2* datos);
-
-extern void* Serializar_BROKER_RECONECTAR(BROKER_DATOS_RECONECTAR* datos, int* tamanioBuffer);
-extern bool Deserializar_BROKER_RECONECTAR(Paquete* paquete, BROKER_DATOS_RECONECTAR* datos);
-extern void* Serializar_BROKER_CONECTADO(BROKER_DATOS_CONECTADO* datos, int* tamanioBuffer);
-extern bool Deserializar_BROKER_CONECTADO(Paquete* paquete, BROKER_DATOS_CONECTADO* datos);
-void* Serializar_BROKER_SUSCRIBIRSE(BROKER_DATOS_SUSCRIBIRSE* datos, int* tamanioBuffer);
-bool Deserializar_BROKER_SUSCRIBIRSE(Paquete* paquete, BROKER_DATOS_SUSCRIBIRSE* datos);
+// NEW_POKEMON
+extern Stream* SerializarM_NEW_POKEMON(DATOS_NEW_POKEMON* datos);
+extern Stream* SerializarM_NEW_POKEMON_ID(DATOS_NEW_POKEMON_ID* datos);
+extern bool DeserializarM_NEW_POKEMON(Paquete* paquete, DATOS_NEW_POKEMON* datos);
+extern bool DeserializarM_NEW_POKEMON_ID(Paquete* paquete, DATOS_NEW_POKEMON_ID* datos);
+// APPEARED_POKEMON
+extern Stream* SerializarM_APPEARED_POKEMON(DATOS_APPEARED_POKEMON* datos);
+extern Stream* SerializarM_APPEARED_POKEMON_ID(DATOS_APPEARED_POKEMON_ID* datos);
+extern bool DeserializarM_APPEARED_POKEMON(Paquete* paquete, DATOS_APPEARED_POKEMON* datos);
+extern bool DeserializarM_APPEARED_POKEMON_ID(Paquete* paquete, DATOS_APPEARED_POKEMON_ID* datos);
+// CATCH_POKEMON
+extern Stream* SerializarM_CATCH_POKEMON(DATOS_CATCH_POKEMON* datos);
+extern Stream* SerializarM_CATCH_POKEMON_ID(DATOS_CATCH_POKEMON_ID* datos);
+extern bool DeserializarM_CATCH_POKEMON(Paquete* paquete, DATOS_CATCH_POKEMON* datos);
+extern bool DeserializarM_CATCH_POKEMON_ID(Paquete* paquete, DATOS_CATCH_POKEMON_ID* datos);
+// CAUGHT_POKEMON
+extern Stream* SerializarM_CAUGHT_POKEMON(DATOS_CAUGHT_POKEMON* datos);
+extern Stream* SerializarM_CAUGHT_POKEMON_ID(DATOS_CAUGHT_POKEMON_ID* datos);
+extern bool DeserializarM_CAUGHT_POKEMON(Paquete* paquete, DATOS_CAUGHT_POKEMON* datos);
+extern bool DeserializarM_CAUGHT_POKEMON_ID(Paquete* paquete, DATOS_CAUGHT_POKEMON_ID* datos);
+// GET_POKEMON
+extern Stream* SerializarM_GET_POKEMON(DATOS_GET_POKEMON* datos);
+extern Stream* SerializarM_GET_POKEMON_ID(DATOS_GET_POKEMON_ID* datos);
+extern bool DeserializarM_GET_POKEMON(Paquete* paquete, DATOS_GET_POKEMON* datos);
+extern bool DeserializarM_GET_POKEMON_ID(Paquete* paquete, DATOS_GET_POKEMON_ID* datos);
+// LOCALIZED_POKEMON
+extern Stream* SerializarM_LOCALIZED_POKEMON(DATOS_LOCALIZED_POKEMON* datos);
+extern Stream* SerializarM_LOCALIZED_POKEMON_ID(DATOS_LOCALIZED_POKEMON_ID* datos);
+extern bool DeserializarM_LOCALIZED_POKEMON(Paquete* paquete, DATOS_LOCALIZED_POKEMON* datos);
+extern bool DeserializarM_LOCALIZED_POKEMON_ID(Paquete* paquete, DATOS_LOCALIZED_POKEMON_ID* datos);
+// ID_MENSAJE
+extern Stream* SerializarM_ID_MENSAJE(DATOS_ID_MENSAJE* datos);
+extern bool DeserializarM_ID_MENSAJE(Paquete* paquete, DATOS_ID_MENSAJE* datos);
+// BROKER_RECONECTAR
+extern Stream* SerializarM_BROKER_RECONECTAR(BROKER_DATOS_RECONECTAR* datos);
+extern bool DeserializarM_BROKER_RECONECTAR(Paquete* paquete, BROKER_DATOS_RECONECTAR* datos);
+// BROKER_CONECTADO
+extern Stream* SerializarM_BROKER_CONECTADO(BROKER_DATOS_CONECTADO* datos);
+extern bool DeserializarM_BROKER_CONECTADO(Paquete* paquete, BROKER_DATOS_CONECTADO* datos);
+// BROKER_SUSCRIBIRSE
+extern Stream* SerializarM_BROKER_SUSCRIBIRSE(BROKER_DATOS_SUSCRIBIRSE* datos);
+extern bool DeserializarM_BROKER_SUSCRIBIRSE(Paquete* paquete, BROKER_DATOS_SUSCRIBIRSE* datos);

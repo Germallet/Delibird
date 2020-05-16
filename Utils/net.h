@@ -23,7 +23,7 @@ typedef struct
 	pthread_mutex_t mx_destruir;
 } Servidor;
 
-typedef void* (*Serializador)(void*,int*);
+typedef Stream* (*Serializador)(void*);
 
 extern Cliente* CrearCliente(char *ip, uint16_t puerto, Eventos* eventos);
 extern Servidor* CrearServidor(char* ip, uint16_t puerto, Eventos* eventos);

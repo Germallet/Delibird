@@ -3,6 +3,5 @@
 #include "../Utils/protocolo.h"
 
 void IniciarMemoria();
-Mensaje* CrearMensaje(CodigoDeCola tipoDeMensaje, void* contenido);
-void GuardarMensaje(Mensaje* mensaje);
+void GuardarMensaje(Mensaje* mensaje, Stream* contenido);
 void* ObtenerContenidoMensaje(Mensaje* mensaje);

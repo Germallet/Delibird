@@ -1,4 +1,5 @@
 #include "gameBoy.h"
+#include "../Utils/protocolo.h"
 
 t_log* logger;
 t_config* config;
@@ -30,7 +31,7 @@ int main(int argc, char* argv[])
 		ConectadoConProceso("TEAM");
 
 		if (sonIguales(argv[2],"APPEARED_POKEMON"))
-			EnviarMensaje(clienteTeam, APPEARED_POKEMON, convertir_APPEARED_POKEMON(argc, argv), (void*) &Serializar_APPEARED_POKEMON);
+			EnviarMensaje(clienteTeam, APPEARED_POKEMON, convertir_APPEARED_POKEMON(argc, argv), (void*) &SerializarM_APPEARED_POKEMON);
 		else TerminarProgramaConError("TEAM NO ENTIENDE TU OPERACION");
 
 		DestruirCliente(clienteTeam);
@@ -47,15 +48,15 @@ int main(int argc, char* argv[])
 		ConectadoConProceso("BROKER");
 
 		if (sonIguales(argv[2], "NEW_POKEMON"))
-			EnviarMensaje(clienteBroker, NEW_POKEMON, convertir_NEW_POKEMON(argc, argv), (void*) &Serializar_NEW_POKEMON);
+			EnviarMensaje(clienteBroker, NEW_POKEMON, convertir_NEW_POKEMON(argc, argv), (void*) &SerializarM_NEW_POKEMON);
 		  else if (sonIguales(argv[2], "APPEARED_POKEMON"))
-			  EnviarMensaje(clienteBroker, APPEARED_POKEMON, convertir_APPEARED_POKEMON_ID(argc, argv), (void*) &Serializar_APPEARED_POKEMON_ID);
+			  EnviarMensaje(clienteBroker, APPEARED_POKEMON, convertir_APPEARED_POKEMON_ID(argc, argv), (void*) &SerializarM_APPEARED_POKEMON_ID);
 		  else if (sonIguales(argv[2], "CATCH_POKEMON"))
-			  EnviarMensaje(clienteBroker, CATCH_POKEMON, convertir_CATCH_POKEMON(argc, argv), (void*) &Serializar_CATCH_POKEMON);
+			  EnviarMensaje(clienteBroker, CATCH_POKEMON, convertir_CATCH_POKEMON(argc, argv), (void*) &SerializarM_CATCH_POKEMON);
 		  else if (sonIguales(argv[2], "CAUGHT_POKEMON"))
-			  EnviarMensaje(clienteBroker, CAUGHT_POKEMON, convertir_CAUGHT_POKEMON_ID(argc, argv), (void*) &Serializar_CAUGHT_POKEMON_ID);
+			  EnviarMensaje(clienteBroker, CAUGHT_POKEMON, convertir_CAUGHT_POKEMON_ID(argc, argv), (void*) &SerializarM_CAUGHT_POKEMON_ID);
 		  else if (sonIguales(argv[2], "GET_POKEMON"))
-			  EnviarMensaje(clienteBroker, GET_POKEMON, convertir_GET_POKEMON(argc, argv), (void*) &Serializar_GET_POKEMON);
+			  EnviarMensaje(clienteBroker, GET_POKEMON, convertir_GET_POKEMON(argc, argv), (void*) &SerializarM_GET_POKEMON);
 		  else TerminarProgramaConError("BROKER NO ENTIENDE TU OPERACION");
 
 		DestruirCliente(clienteBroker);
@@ -72,11 +73,11 @@ int main(int argc, char* argv[])
 		ConectadoConProceso("GAMECARD");
 
 		if (sonIguales(argv[2], "NEW_POKEMON"))
-			EnviarMensaje(clienteGameCard, NEW_POKEMON, convertir_NEW_POKEMON_ID(argc, argv), (void*) &Serializar_NEW_POKEMON_ID);
+			EnviarMensaje(clienteGameCard, NEW_POKEMON, convertir_NEW_POKEMON_ID(argc, argv), (void*) &SerializarM_NEW_POKEMON_ID);
 		  else if (sonIguales(argv[2], "CATCH_POKEMON"))
-			  EnviarMensaje(clienteGameCard, CATCH_POKEMON, convertir_CATCH_POKEMON_ID(argc, argv), (void*) &Serializar_CATCH_POKEMON_ID);
+			  EnviarMensaje(clienteGameCard, CATCH_POKEMON, convertir_CATCH_POKEMON_ID(argc, argv), (void*) &SerializarM_CATCH_POKEMON_ID);
 		  else if (sonIguales(argv[2], "GET_POKEMON"))
-			  EnviarMensaje(clienteGameCard, GET_POKEMON, convertir_GET_POKEMON_ID(argc, argv), (void*) &Serializar_GET_POKEMON_ID);
+			  EnviarMensaje(clienteGameCard, GET_POKEMON, convertir_GET_POKEMON_ID(argc, argv), (void*) &SerializarM_GET_POKEMON_ID);
 		  else TerminarProgramaConError("GAMECARD NO ENTIENDE TU OPERACION");
 
 		DestruirCliente(clienteGameCard);
@@ -147,7 +148,7 @@ DATOS_NEW_POKEMON* convertir_NEW_POKEMON(int cantParametros, char* parametros[])
 
 	DATOS_NEW_POKEMON* datos = malloc(sizeof(DATOS_NEW_POKEMON));
 
-	datos->largoPokemon = (uint32_t) strlen(parametros[3]);
+	//datos->largoPokemon = (uint32_t) strlen(parametros[3]);
 	datos->pokemon = parametros[3];
 	datos->posicion.posX = strtol(parametros[4], NULL, 10);
 	datos->posicion.posY = strtol(parametros[5], NULL, 10);
@@ -180,7 +181,7 @@ DATOS_APPEARED_POKEMON* convertir_APPEARED_POKEMON(int cantParametros, char* par
 
 	DATOS_APPEARED_POKEMON* datos = malloc(sizeof(DATOS_APPEARED_POKEMON_ID));
 
-	datos->largoPokemon = (uint32_t) strlen(parametros[3]);
+	//datos->largoPokemon = (uint32_t) strlen(parametros[3]);
 	datos->pokemon = parametros[3];
 	datos->posicion.posX = strtol(parametros[4], NULL, 10);
 	datos->posicion.posY = strtol(parametros[5], NULL, 10);
@@ -198,7 +199,7 @@ DATOS_APPEARED_POKEMON_ID* convertir_APPEARED_POKEMON_ID(int cantParametros, cha
 	DATOS_APPEARED_POKEMON_ID* datos = malloc(sizeof(DATOS_APPEARED_POKEMON_ID));
 
 	datos->datos = *convertir_APPEARED_POKEMON(cantParametros - 1, parametros);
-	datos->idCorrelativo_NEW = strtol(parametros[6], NULL, 10);
+	datos->id = strtol(parametros[6], NULL, 10); //datos->idCorrelativo_NEW = strtol(parametros[6], NULL, 10);
 
 	return datos;
 }
@@ -212,7 +213,7 @@ DATOS_CATCH_POKEMON* convertir_CATCH_POKEMON(int cantParametros, char* parametro
 
 	DATOS_CATCH_POKEMON* datos = malloc(sizeof(DATOS_CATCH_POKEMON));
 
-	datos->largoPokemon = (uint32_t) strlen(parametros[3]);
+	//datos->largoPokemon = (uint32_t) strlen(parametros[3]);
 	datos->pokemon = parametros[3];
 	datos->posicion.posX = strtol(parametros[4], NULL, 10);
 	datos->posicion.posY = strtol(parametros[5], NULL, 10);
@@ -238,13 +239,13 @@ DATOS_CATCH_POKEMON_ID* convertir_CATCH_POKEMON_ID(int cantParametros, char* par
 //./GameBoy BROKER CAUGHT_POKEMON bool ID
 //    1        2        3          4    5
 //    0        1        2          3    4
-DATOS_CAUGHT_POKEMON_ID* convertir_CAUGHT_POKEMON_ID(int cantParametros, char* parametros[])
+DATOS_CAUGHT_POKEMON* convertir_CAUGHT_POKEMON_ID(int cantParametros, char* parametros[])
 {
 	if (cantParametros != 5) TerminarProgramaConError("MANDAME BIEN LOS PARAMETROS, SABANDIJA");
 
-	DATOS_CAUGHT_POKEMON_ID* datos = malloc(sizeof(DATOS_CAUGHT_POKEMON_ID));
+	DATOS_CAUGHT_POKEMON* datos = malloc(sizeof(DATOS_CAUGHT_POKEMON));
 
-	datos->idCorrelativo_CATCH = strtol(parametros[3], NULL, 10);
+	datos->idCorrelativa = strtol(parametros[3], NULL, 10);
 	datos->capturado = strtol(parametros[4], NULL, 10);
 
 	return datos;
@@ -259,7 +260,7 @@ DATOS_GET_POKEMON* convertir_GET_POKEMON(int cantParametros, char* parametros[])
 
 	DATOS_GET_POKEMON* datos = malloc(sizeof(DATOS_GET_POKEMON));
 
-	datos->largoPokemon = (uint32_t) strlen(parametros[3]);
+	//datos->largoPokemon = (uint32_t) strlen(parametros[3]);
 	datos->pokemon = parametros[3];
 
 	return datos;
@@ -309,7 +310,7 @@ void ConexionBroker(Cliente* cliente, Paquete* paquete) {
 
 	datos.cola = *((CodigoDeCola*) (cliente->info));
 
-	EnviarMensajeSinFree(cliente, BROKER_SUSCRIBIRSE, &datos, (void*) &Serializar_BROKER_SUSCRIBIRSE);
+	EnviarMensajeSinFree(cliente, BROKER_SUSCRIBIRSE, &datos, (void*) &SerializarM_BROKER_SUSCRIBIRSE);
 
 	free(cliente->info);
 }
@@ -342,7 +343,7 @@ void RecibirMensaje_NEW_POKEMON_ID(Cliente* cliente, Paquete* paqueteRecibido)
 {
 	DATOS_NEW_POKEMON_ID datos;
 
-	if (!Deserializar_NEW_POKEMON_ID(paqueteRecibido, &datos))
+	if (!DeserializarM_NEW_POKEMON_ID(paqueteRecibido, &datos))
 		log_error(logger, "Error al deserializar NEW_POKEMON");
 	else
 		log_info(logger, "NEW_POKEMON: %s %d (%d,%d) %d", datos.datos.pokemon, datos.datos.posicion.posX, datos.datos.posicion.posY, datos.datos.cantidad);
@@ -352,12 +353,12 @@ void RecibirMensaje_NEW_POKEMON_ID(Cliente* cliente, Paquete* paqueteRecibido)
 
 void RecibirMensaje_APPEARED_POKEMON_IDx2(Cliente* cliente, Paquete* paqueteRecibido)
 {
-	DATOS_APPEARED_POKEMON_IDx2 datos;
+	DATOS_APPEARED_POKEMON_ID datos;
 
-	if (!Deserializar_APPEARED_POKEMON_IDx2(paqueteRecibido, &datos))
+	if (!DeserializarM_APPEARED_POKEMON_ID(paqueteRecibido, &datos))
 		log_error(logger, "Error al deserializar APPEARED_POKEMON");
 	else
-		log_info(logger, "APPEARED_POKEMON: %s (%d,%d) %d", datos.datos.datos.pokemon, datos.datos.datos.posicion.posX, datos.datos.datos.posicion.posY, datos.datos.idCorrelativo_NEW);
+		log_info(logger, "APPEARED_POKEMON: %s (%d,%d) %d", datos.datos.pokemon, datos.datos.posicion.posX, datos.datos.posicion.posY, datos.datos.idCorrelativa);
 
 	EnviarID(cliente, datos.id);
 }
@@ -366,7 +367,7 @@ void RecibirMensaje_CATCH_POKEMON_ID(Cliente* cliente, Paquete* paqueteRecibido)
 {
 	DATOS_CATCH_POKEMON_ID datos;
 
-	if (!Deserializar_CATCH_POKEMON_ID(paqueteRecibido, &datos))
+	if (!DeserializarM_CATCH_POKEMON_ID(paqueteRecibido, &datos))
 		log_error(logger, "Error al deserializar CATCH_POKEMON");
 	else
 		log_info(logger, "CATCH_POKEMON: %d %s (%d,%d)", datos.datos.pokemon, datos.datos.posicion.posX, datos.datos.posicion.posY);
@@ -376,12 +377,12 @@ void RecibirMensaje_CATCH_POKEMON_ID(Cliente* cliente, Paquete* paqueteRecibido)
 
 void RecibirMensaje_CAUGHT_POKEMON_IDx2(Cliente* cliente, Paquete* paqueteRecibido)
 {
-	DATOS_CAUGHT_POKEMON_IDx2 datos;
+	DATOS_CAUGHT_POKEMON_ID datos;
 
-	if (!Deserializar_CAUGHT_POKEMON_IDx2(paqueteRecibido, &datos))
+	if (!DeserializarM_CAUGHT_POKEMON_ID(paqueteRecibido, &datos))
 		log_error(logger, "Error al deserializar CAUGHT_POKEMON");
 	else
-		log_info(logger, "CAUGHT_POKEMON: %d %d", datos.datos.idCorrelativo_CATCH, datos.datos.capturado);
+		log_info(logger, "CAUGHT_POKEMON: %d %d", datos.datos.idCorrelativa, datos.datos.capturado);
 
 	EnviarID(cliente, datos.id);
 }
@@ -390,7 +391,7 @@ void RecibirMensaje_GET_POKEMON_ID(Cliente* cliente, Paquete* paqueteRecibido)
 {
 	DATOS_GET_POKEMON_ID datos;
 
-	if (!Deserializar_GET_POKEMON_ID(paqueteRecibido, &datos))
+	if (!DeserializarM_GET_POKEMON_ID(paqueteRecibido, &datos))
 		log_error(logger, "Error al deserializar GET_POKEMON");
 	else
 		log_info(logger, "GET_POKEMON: %s", datos.datos.pokemon);
@@ -400,26 +401,26 @@ void RecibirMensaje_GET_POKEMON_ID(Cliente* cliente, Paquete* paqueteRecibido)
 
 void RecibirMensaje_LOCALIZED_POKEMON_IDx2(Cliente* cliente, Paquete* paqueteRecibido)
 {
-	DATOS_LOCALIZED_POKEMON_IDx2 datos;
+	DATOS_LOCALIZED_POKEMON_ID datos;
 
-	if (!Deserializar_LOCALIZED_POKEMON_IDx2(paqueteRecibido, &datos))
+	if (!DeserializarM_LOCALIZED_POKEMON_ID(paqueteRecibido, &datos))
 		log_error(logger, "Error al deserializar LOCALIZED_POKEMON");
 	else {
 		for (int i = 0; i < datos.datos.cantidad; i++) {
-			log_info(logger, "LOCALIZED_POKEMON: %s %d %d %d", datos.datos.pokemon, datos.datos.posiciones[i].posX, datos.datos.posiciones[i].posY, datos.datos.idCorrelativo_GET);
+			log_info(logger, "LOCALIZED_POKEMON: %s %d %d %d", datos.datos.pokemon, datos.datos.posiciones[i].posX, datos.datos.posiciones[i].posY, datos.datos.idCorrelativa);
 		}
 	}
 
 	EnviarID(cliente, datos.id);
 }
 
-void EnviarID(Cliente* cliente, int identificador)
+void EnviarID(Cliente* cliente, uint32_t identificador)
 {
 	DATOS_ID_MENSAJE* id_mensaje = malloc(sizeof(DATOS_ID_MENSAJE));
 
 	id_mensaje->id = identificador;
-
-	EnviarMensaje(cliente, BROKER_ACK, id_mensaje, (void*) &Serializar_ID_MENSAJE);
+	log_error(logger, "Enviando ACK %d", id_mensaje->id);
+	EnviarMensaje(cliente, BROKER_ACK, id_mensaje, (void*) &SerializarM_ID_MENSAJE);
 
 	free(id_mensaje);
 

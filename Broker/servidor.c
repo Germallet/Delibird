@@ -7,26 +7,25 @@
 
 Servidor* servidor;
 
-void ClienteConectado(Cliente* cliente);
-void ClienteDesconectado(Cliente* cliente);
+static void Operacion_CONECTAR(Cliente* cliente, Paquete* paqueteRecibido);
+static void Operacion_RECONECTAR(Cliente* cliente, Paquete* paqueteRecibido);
+static void Operacion_SUSCRIBIRSE(Cliente* cliente, Paquete* paqueteRecibido);
+static void Operacion_ACK(Cliente* cliente, Paquete* paqueteRecibido);
 
-void Operacion_CONECTAR(Cliente* cliente, Paquete* paqueteRecibido);
-void Operacion_RECONECTAR(Cliente* cliente, Paquete* paqueteRecibido);
-void Operacion_SUSCRIBIRSE(Cliente* cliente, Paquete* paqueteRecibido);
-
-void Operacion_NEW_POKEMON(Cliente* cliente, Paquete* paqueteRecibido);
-void Operacion_APPEARED_POKEMON(Cliente* cliente, Paquete* paqueteRecibido);
-void Operacion_CATCH_POKEMON(Cliente* cliente, Paquete* paqueteRecibido);
-void Operacion_CAUGHT_POKEMON(Cliente* cliente, Paquete* paqueteRecibido);
-void Operacion_GET_POKEMON(Cliente* cliente, Paquete* paqueteRecibido);
-void Operacion_LOCALIZED_POKEMON(Cliente* cliente, Paquete* paqueteRecibido);
+static void Operacion_NEW_POKEMON(Cliente* cliente, Paquete* paqueteRecibido);
+static void Operacion_APPEARED_POKEMON(Cliente* cliente, Paquete* paqueteRecibido);
+static void Operacion_CATCH_POKEMON(Cliente* cliente, Paquete* paqueteRecibido);
+static void Operacion_CAUGHT_POKEMON(Cliente* cliente, Paquete* paqueteRecibido);
+static void Operacion_GET_POKEMON(Cliente* cliente, Paquete* paqueteRecibido);
+static void Operacion_LOCALIZED_POKEMON(Cliente* cliente, Paquete* paqueteRecibido);
 
 void IniciarServidorBroker(char* ip, int puerto)
 {
-	Eventos* eventos = Eventos_Crear2((EventoGeneral)&ClienteConectado, (EventoGeneral)&ClienteDesconectado);
+	Eventos* eventos = Eventos_Crear0();
 	Eventos_AgregarOperacion(eventos, BROKER_CONECTAR, (EventoOperacion)&Operacion_CONECTAR);
 	Eventos_AgregarOperacion(eventos, BROKER_RECONECTAR, (EventoOperacion)&Operacion_RECONECTAR);
 	Eventos_AgregarOperacion(eventos, BROKER_SUSCRIBIRSE, (EventoOperacion)&Operacion_SUSCRIBIRSE);
+	Eventos_AgregarOperacion(eventos, BROKER_ACK, (EventoOperacion)&Operacion_ACK);
 
 	Eventos_AgregarOperacion(eventos, NEW_POKEMON, (EventoOperacion)&Operacion_NEW_POKEMON);
 	Eventos_AgregarOperacion(eventos, APPEARED_POKEMON, (EventoOperacion)&Operacion_APPEARED_POKEMON);
@@ -37,9 +36,7 @@ void IniciarServidorBroker(char* ip, int puerto)
 
 	servidor = CrearServidor(ip, puerto, eventos);
 
-	if (servidor != NULL)
-		log_info(logger, "Escucha iniciada (%s:%d)", ip, puerto);
-	else
+	if (servidor == NULL)
 		log_error(logger, "Error al iniciar escucha (%s:%d)", ip, puerto);
 }
 void FinalizarServidorBroker()
@@ -47,26 +44,15 @@ void FinalizarServidorBroker()
 	DestruirServidor(servidor);
 }
 
-void ClienteConectado(Cliente* cliente)
-{
-	log_info(logger, "Se conectó un cliente");
-}
-void ClienteDesconectado(Cliente* cliente)
-{
-	log_info(logger, "Se desconectó un cliente");
-}
-
-void Operacion_CONECTAR(Cliente* cliente, Paquete* paqueteRecibido)
+static void Operacion_CONECTAR(Cliente* cliente, Paquete* paqueteRecibido)
 {
 	if (cliente->info != NULL)
 	{
-		// TODO
 		log_error(logger, "El cliente ya está conectado");
 		return;
 	}
 	if (!Paquete_StreamLeido(paqueteRecibido))
 	{
-		// TODO
 		log_error(logger, "Mensaje inválido");
 		return;
 	}
@@ -74,14 +60,14 @@ void Operacion_CONECTAR(Cliente* cliente, Paquete* paqueteRecibido)
 	ClienteBroker* clienteBroker = CrearClienteBroker(cliente);
 	cliente->info = clienteBroker;
 
-	int tamanioBuffer;
 	BROKER_DATOS_RECONECTAR datos;
 	datos.id = clienteBroker->id;
-	void* buffer = Serializar_BROKER_CONECTADO(&(datos), &tamanioBuffer);
-	int r = Socket_Enviar(BROKER_CONECTADO, buffer, tamanioBuffer, cliente->socket);
+	Stream* stream = SerializarM_BROKER_CONECTADO(&datos);
+	int r = Socket_Enviar(BROKER_CONECTADO, stream->base, stream->tamanio, cliente->socket);
+	Stream_DestruirConBuffer(stream);
 
 	if (r > 0)
-		log_info(logger, "Se conectó un cliente correctamente (id: %d)", clienteBroker->id);
+		log_info(logger, "Nuevo proceso conectado (id: %d)", clienteBroker->id);
 	else
 		log_error(logger, "Error al conectar cliente");
 }
@@ -90,31 +76,29 @@ void Operacion_RECONECTAR(Cliente* cliente, Paquete* paqueteRecibido)
 {
 	if (cliente->info != NULL)
 	{
-		// TODO
 		log_error(logger, "El cliente ya está conectado");
 		return;
 	}
 
 	BROKER_DATOS_RECONECTAR datos;
-	if (!Deserializar_BROKER_RECONECTAR(paqueteRecibido, &datos) || !Paquete_StreamLeido(paqueteRecibido))
+	if (!DeserializarM_BROKER_RECONECTAR(paqueteRecibido, &datos) || !Paquete_StreamLeido(paqueteRecibido))
 		log_error(logger, "Error Deserializar_BROKER_RECONECTAR");
 	else
 	{
 		ClienteBroker* clienteBroker = ObtenerClienteBroker(datos.id);
 		if (clienteBroker == NULL)
 		{
-			// TODO
 			log_error(logger, "El cliente no puede reconectar");
 			return;
 		}
 		else
 		{
-			int tamanioBuffer;
-			void* buffer = Serializar_BROKER_CONECTADO(&(datos), &tamanioBuffer);
-			int r = Socket_Enviar(BROKER_CONECTADO, buffer, tamanioBuffer, cliente->socket);
+			Stream* stream = SerializarM_BROKER_CONECTADO(&(datos));
+			int r = Socket_Enviar(BROKER_CONECTADO, stream->base, stream->tamanio, cliente->socket);
+			Stream_DestruirConBuffer(stream);
 
 			if (r > 0)
-				log_info(logger, "Se conectó un cliente correctamente (id: %d)", clienteBroker->id);
+				log_info(logger, "Proceso reconectado (id: %d)", clienteBroker->id);
 			else
 				log_error(logger, "Error al conectar cliente");
 
@@ -127,97 +111,129 @@ static void EnviarIDMensaje(uint32_t idMensaje, Cliente* cliente)
 {
 	DATOS_ID_MENSAJE respuesta;
 	respuesta.id = idMensaje;
-	EnviarMensajeSinFree(cliente, BROKER_ID_MENSAJE, &respuesta, (Serializador)&Serializar_ID_MENSAJE);
+	EnviarMensaje(cliente, BROKER_ID_MENSAJE, &respuesta, (Serializador)&SerializarM_ID_MENSAJE);
 }
-static void RecibirMensaje(Cliente* cliente, CodigoDeCola tipoDeMensaje, void* contenido)
+static void RecibirMensaje(Cliente* cliente, CodigoDeCola tipoDeMensaje, uint32_t idMensaje, Stream* contenido)
 {
-	Mensaje* nuevoMensaje = CrearMensaje(COLA_NEW_POKEMON, contenido);
-	EnviarIDMensaje(nuevoMensaje->id, cliente);
-	GuardarMensaje(nuevoMensaje);
+	Mensaje* nuevoMensaje = CrearMensaje(tipoDeMensaje, idMensaje, contenido->tamanio);
+	EnviarIDMensaje(idMensaje, cliente);
+	GuardarMensaje(nuevoMensaje, contenido);
 	Cola_ProcesarNuevoMensaje(tipoDeMensaje, nuevoMensaje);
+	log_info(logger, "Nuevo mensaje recibido (cola %s)", CodigoDeColaAString(tipoDeMensaje));
 }
 
-void Operacion_SUSCRIBIRSE(Cliente* cliente, Paquete* paqueteRecibido)
+// Mensajes administrativos
+
+static void Operacion_SUSCRIBIRSE(Cliente* cliente, Paquete* paqueteRecibido)
 {
 	if (cliente->info == NULL)
 	{
-		// TODO
 		log_error(logger, "El cliente no está conectado!");
 		return;
 	}
 
 	BROKER_DATOS_SUSCRIBIRSE datosSuscripcion;
-	Deserializar_BROKER_SUSCRIBIRSE(paqueteRecibido, &datosSuscripcion);
+	DeserializarM_BROKER_SUSCRIBIRSE(paqueteRecibido, &datosSuscripcion);
 	Cola* cola = ObtenerCola(datosSuscripcion.cola);
 	AgregarSuscriptor(cola, (ClienteBroker*)cliente->info);
-	log_info(logger, "Nueva suscripción: %d", datosSuscripcion.cola);
+	log_info(logger, "Nueva suscripción (cliente: %d, cola: %s)", ((ClienteBroker*)cliente->info)->id, CodigoDeColaAString(datosSuscripcion.cola));
 
 	Cola_EnviarMensajesRestantesSiCorrespondeA(cola, cliente->info);
 }
+static void Operacion_ACK(Cliente* cliente, Paquete* paqueteRecibido)
+{
+	if (cliente->info == NULL)
+	{
+		log_error(logger, "El cliente no está conectado!");
+		return;
+	}
 
-void Operacion_NEW_POKEMON(Cliente* cliente, Paquete* paqueteRecibido)
+	DATOS_ID_MENSAJE datosACK;
+	DeserializarM_ID_MENSAJE(paqueteRecibido, &datosACK);
+	//TODO registrar ACK
+	log_info(logger, "Recibido ACK (cliente: %d, mensaje: %d)", ((ClienteBroker*)cliente->info)->id, datosACK.id);
+}
+
+// Mensajes de colas
+
+static void Operacion_NEW_POKEMON(Cliente* cliente, Paquete* paqueteRecibido)
 {
 	DATOS_NEW_POKEMON datos;
-	if (!Deserializar_NEW_POKEMON(paqueteRecibido, &datos))
+	if (!DeserializarM_NEW_POKEMON(paqueteRecibido, &datos))
 		log_error(logger, "Error al deserializar NEW_POKEMON");
-	else
-		log_info(logger, "NEW_POKEMON: %s", datos.pokemon);
+	DATOS_NEW_POKEMON_ID datosProcesados;
+	datosProcesados.datos = datos;
+	datosProcesados.id = GenerarIDMensaje();
 
-	RecibirMensaje(cliente, COLA_NEW_POKEMON, &datos);
+	Stream* stream = SerializarM_NEW_POKEMON_ID(&datosProcesados);
+	RecibirMensaje(cliente, COLA_NEW_POKEMON, datosProcesados.id, stream);
+	Stream_DestruirConBuffer(stream);
 }
-
-void Operacion_APPEARED_POKEMON(Cliente* cliente, Paquete* paqueteRecibido)
+static void Operacion_APPEARED_POKEMON(Cliente* cliente, Paquete* paqueteRecibido)
 {
 	DATOS_APPEARED_POKEMON datos;
-	if (!Deserializar_APPEARED_POKEMON(paqueteRecibido, &datos))
+	if (!DeserializarM_APPEARED_POKEMON(paqueteRecibido, &datos))
 		log_error(logger, "Error al deserializar APPEARED_POKEMON");
-	else
-		log_info(logger, "APPEARED_POKEMON: %s", datos.pokemon);
+	DATOS_APPEARED_POKEMON_ID datosProcesados;
+	datosProcesados.datos = datos;
+	datosProcesados.id = GenerarIDMensaje();
 
-	RecibirMensaje(cliente, COLA_APPEARED_POKEMON, &datos);
+	Stream* stream = SerializarM_APPEARED_POKEMON_ID(&datosProcesados);
+	RecibirMensaje(cliente, COLA_APPEARED_POKEMON, datosProcesados.id, stream);
+	Stream_DestruirConBuffer(stream);
 }
-
-void Operacion_CATCH_POKEMON(Cliente* cliente, Paquete* paqueteRecibido)
+static void Operacion_CATCH_POKEMON(Cliente* cliente, Paquete* paqueteRecibido)
 {
 	DATOS_CATCH_POKEMON datos;
-	if (!Deserializar_CATCH_POKEMON(paqueteRecibido, &datos))
+	if (!DeserializarM_CATCH_POKEMON(paqueteRecibido, &datos))
 		log_error(logger, "Error al deserializar CATCH_POKEMON");
-	else
-		log_info(logger, "CATCH_POKEMON: %d ; %s ; (%d, %d)", datos.largoPokemon, datos.pokemon, datos.posicion.posX, datos.posicion.posY);
+	DATOS_CATCH_POKEMON_ID datosProcesados;
+	datosProcesados.datos = datos;
+	datosProcesados.id = GenerarIDMensaje();
 
-	RecibirMensaje(cliente, COLA_CATCH_POKEMON, &datos);
+	Stream* stream = SerializarM_CATCH_POKEMON_ID(&datosProcesados);
+	RecibirMensaje(cliente, COLA_CATCH_POKEMON, datosProcesados.id, stream);
+	Stream_DestruirConBuffer(stream);
 }
-
-void Operacion_CAUGHT_POKEMON(Cliente* cliente, Paquete* paqueteRecibido)
+static void Operacion_CAUGHT_POKEMON(Cliente* cliente, Paquete* paqueteRecibido)
 {
-	DATOS_CAUGHT_POKEMON_ID datos;
-	if (!Deserializar_CAUGHT_POKEMON_ID(paqueteRecibido, &datos))
+	DATOS_CAUGHT_POKEMON datos;
+	if (!DeserializarM_CAUGHT_POKEMON(paqueteRecibido, &datos))
 		log_error(logger, "Error al deserializar CAUGHT_POKEMON");
-	else
-		log_info(logger, "CAUGHT_POKEMON: %d ; %d", datos.capturado, datos.idCorrelativo_CATCH);
 
-	RecibirMensaje(cliente, COLA_CAUGHT_POKEMON, &datos);
+	DATOS_CAUGHT_POKEMON_ID datosProcesados;
+	datosProcesados.datos = datos;
+	datosProcesados.id = GenerarIDMensaje();
+
+	Stream* stream = SerializarM_CAUGHT_POKEMON_ID(&datosProcesados);
+	RecibirMensaje(cliente, COLA_CAUGHT_POKEMON, datosProcesados.id, stream);
+	Stream_DestruirConBuffer(stream);
 }
-
-void Operacion_GET_POKEMON(Cliente* cliente, Paquete* paqueteRecibido)
+static void Operacion_GET_POKEMON(Cliente* cliente, Paquete* paqueteRecibido)
 {
 	DATOS_GET_POKEMON datos;
-	if (!Deserializar_GET_POKEMON(paqueteRecibido, &datos))
+	if (!DeserializarM_GET_POKEMON(paqueteRecibido, &datos))
 		log_error(logger, "Error al deserializar GET_POKEMON");
-	else
-		log_info(logger, "GET_POKEMON: %d ; %s", datos.largoPokemon, datos.pokemon);
+	DATOS_GET_POKEMON_ID datosProcesados;
+	datosProcesados.datos = datos;
+	datosProcesados.id = GenerarIDMensaje();
 
-	RecibirMensaje(cliente, COLA_GET_POKEMON, paqueteRecibido->stream);
+	Stream* stream = SerializarM_GET_POKEMON_ID(&datosProcesados);
+	RecibirMensaje(cliente, COLA_GET_POKEMON, datosProcesados.id, stream);
+	Stream_DestruirConBuffer(stream);
 
 	free(datos.pokemon);
 }
-void Operacion_LOCALIZED_POKEMON(Cliente* cliente, Paquete* paqueteRecibido)
+static void Operacion_LOCALIZED_POKEMON(Cliente* cliente, Paquete* paqueteRecibido)
 {
-	DATOS_LOCALIZED_POKEMON_ID datos;
-	if (!Deserializar_LOCALIZED_POKEMON_ID(paqueteRecibido, &datos))
+	DATOS_LOCALIZED_POKEMON datos;
+	if (!DeserializarM_LOCALIZED_POKEMON(paqueteRecibido, &datos))
 		log_error(logger, "Error al deserializar LOCALIZED_POKEMON_ID");
-	else
-		log_info(logger, "LOCALIZED_POKEMON_ID: %s", datos.pokemon);
+	DATOS_LOCALIZED_POKEMON_ID datosProcesados;
+	datosProcesados.datos = datos;
+	datosProcesados.id = GenerarIDMensaje();
 
-	RecibirMensaje(cliente, COLA_LOCALIZED_POKEMON, &datos);
+	Stream* stream = SerializarM_LOCALIZED_POKEMON_ID(&datosProcesados);
+	RecibirMensaje(cliente, COLA_LOCALIZED_POKEMON, datosProcesados.id, stream);
+	Stream_DestruirConBuffer(stream);
 }
