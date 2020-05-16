@@ -19,8 +19,8 @@ static void EscucharMensajes(Cliente* cliente)
 				DestruirCliente(cliente);
 			}
 			else*/
-			if(cliente->eventos->error != NULL)
-				(cliente->eventos->error)(ERROR_RECIBIR, paqueteRecibido);
+			//if(cliente->eventos->error != NULL)
+			//	(cliente->eventos->error)(ERROR_RECIBIR, paqueteRecibido);
 			Paquete_Liberar(paqueteRecibido);
 			DestruirCliente(cliente);
 			break;

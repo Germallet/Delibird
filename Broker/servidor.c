@@ -113,8 +113,8 @@ static void RecibirMensaje(Cliente* cliente, CodigoDeCola tipoDeMensaje, uint32_
 	Mensaje* nuevoMensaje = CrearMensaje(tipoDeMensaje, idMensaje, contenido->tamanio);
 	EnviarIDMensaje(idMensaje, cliente);
 	GuardarMensaje(nuevoMensaje, contenido);
-	Cola_ProcesarNuevoMensaje(tipoDeMensaje, nuevoMensaje);
 	log_info(logger, "Nuevo mensaje recibido (cola %s)", CodigoDeColaAString(tipoDeMensaje));
+	Cola_ProcesarNuevoMensaje(tipoDeMensaje, nuevoMensaje);
 }
 
 // Mensajes administrativos
