@@ -13,15 +13,16 @@ static void EscucharMensajes(Cliente* cliente)
 		Paquete* paqueteRecibido = NULL;
 		if (Socket_RecibirPaquete(cliente->socket, &paqueteRecibido) <= 0)
 		{
-			if (paqueteRecibido == NULL)
+			/*if (paqueteRecibido == NULL)
 			{
 				if(cliente->eventos->desconectado != NULL) (cliente->eventos->desconectado)(cliente);
 				DestruirCliente(cliente);
 			}
-			else
-				if(cliente->eventos->error != NULL)
-					(cliente->eventos->error)(ERROR_RECIBIR, paqueteRecibido);
+			else*/
+			if(cliente->eventos->error != NULL)
+				(cliente->eventos->error)(ERROR_RECIBIR, paqueteRecibido);
 			Paquete_Liberar(paqueteRecibido);
+			DestruirCliente(cliente);
 			break;
 		}
 		if (!Eventos_TieneOperacion(cliente->eventos, paqueteRecibido->codigoOperacion))

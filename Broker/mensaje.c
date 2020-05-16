@@ -5,11 +5,16 @@
 #include <stdlib.h>
 #include <pthread.h>
 
+t_dictionaryInt* mensajes;
+pthread_mutex_t mutexMensajes;
+
 uint32_t siguienteIDMensaje = 0;
 pthread_mutex_t mutexIDMensaje;
 
 void IniciarMensajes()
 {
+	mensajes = dictionaryInt_create();
+	pthread_mutex_init(&mutexMensajes, NULL);
 	pthread_mutex_init(&mutexIDMensaje, NULL);
 }
 
@@ -30,17 +35,44 @@ Mensaje* CrearMensaje(CodigoDeCola tipoDeMensaje, uint32_t id, size_t tamanio)
 	mensaje->tamanio = tamanio;
 	mensaje->clientesEnviados = list_create();
 	mensaje->clientesACK = list_create();
+	pthread_mutex_init(&(mensaje->mutexMensaje), NULL);
+
+	pthread_mutex_lock(&mutexMensajes);
+	dictionaryInt_put(mensajes, mensaje->id, mensaje);
+	pthread_mutex_unlock(&mutexMensajes);
+
 	return mensaje;
 }
 
-
-bool Mensaje_SeLeEnvioA(Mensaje* mensaje, void* cliente)
+bool RegistrarACK(uint32_t idMensaje, void* clienteBroker)
 {
-	bool sonIguales(void* cliente2) { return cliente == cliente2; }
+	bool SonIguales(void* clienteBroker2) { return (ClienteBroker*)clienteBroker2 == clienteBroker; }
+
+	pthread_mutex_lock(&mutexIDMensaje);
+	Mensaje* mensaje = dictionaryInt_get(mensajes, idMensaje);
+	pthread_mutex_unlock(&mutexIDMensaje);
+
+	int modificacion = false;
+	pthread_mutex_lock(&(mensaje->mutexMensaje));
+	if(!list_any_satisfy(mensaje->clientesACK, &SonIguales))
+	{
+		list_add(mensaje->clientesEnviados, clienteBroker);
+		return true;
+	}
+	pthread_mutex_unlock(&(mensaje->mutexMensaje));
+	return modificacion;
+}
+
+bool Mensaje_SeLeEnvioA(Mensaje* mensaje, void* clienteBroker)
+{
+	bool sonIguales(void* clienteBroker2) { return (ClienteBroker*)clienteBroker2 == clienteBroker; }
 	return list_any_satisfy(mensaje->clientesACK, &sonIguales);
 }
+
 void Mensaje_EnviarA(Mensaje* mensaje, void* contenido, Cliente* cliente)
 {
+	bool SonIguales(void* cliente2) { return (Cliente*)cliente2 == cliente; }
+
 	if(cliente == NULL)
 		return;
 
@@ -85,5 +117,10 @@ void Mensaje_EnviarA(Mensaje* mensaje, void* contenido, Cliente* cliente)
 	log_info(logger, "Mensaje enviado (cola: %s, cliente: %d)", CodigoDeColaAString(mensaje->tipoDeMensaje), ((ClienteBroker*)cliente->info)->id);
 
 	if (resultado > 0)
-		list_add(mensaje->clientesEnviados, cliente);
+	{
+		pthread_mutex_lock(&(mensaje->mutexMensaje));
+		if(!list_any_satisfy(mensaje->clientesEnviados, &SonIguales))
+			list_add(mensaje->clientesEnviados, cliente);
+		pthread_mutex_unlock(&(mensaje->mutexMensaje));
+	}
 }

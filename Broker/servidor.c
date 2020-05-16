@@ -51,11 +51,6 @@ static void Operacion_CONECTAR(Cliente* cliente, Paquete* paqueteRecibido)
 		log_error(logger, "El cliente ya está conectado");
 		return;
 	}
-	/*if (!Paquete_StreamLeido(paqueteRecibido))
-	{
-		log_error(logger, "Mensaje inválido");
-		return;
-	}*/
 
 	ClienteBroker* clienteBroker = CrearClienteBroker(cliente);
 	cliente->info = clienteBroker;
@@ -150,8 +145,8 @@ static void Operacion_ACK(Cliente* cliente, Paquete* paqueteRecibido)
 
 	DATOS_ID_MENSAJE datosACK;
 	DeserializarM_ID_MENSAJE(paqueteRecibido, &datosACK);
-	//TODO registrar ACK
-	log_info(logger, "Recibido ACK (cliente: %d, mensaje: %d)", ((ClienteBroker*)cliente->info)->id, datosACK.id);
+	if(RegistrarACK(datosACK.id, (ClienteBroker*)cliente->info))
+			log_info(logger, "Recibido ACK (cliente: %d, mensaje: %d)", ((ClienteBroker*)cliente->info)->id, datosACK.id);
 }
 
 // Mensajes de colas

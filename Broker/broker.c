@@ -18,6 +18,7 @@ int main()
 	config = config_create("broker.config");
 	logger = log_create(Config_String("LOG_FILE"), "Broker", true, LOG_LEVEL_INFO);
 
+	IniciarMensajes();
 	IniciarMemoria();
 	CrearColas();
 	IniciarServidorBroker(Config_String("IP_BROKER"), Config_Int("PUERTO_BROKER"));
