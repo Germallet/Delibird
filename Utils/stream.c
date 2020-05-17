@@ -8,6 +8,7 @@ Stream* Stream_CrearEscrituraNueva(size_t tamanio)
 	stream->base = malloc(tamanio);
 	stream->desplazamiento = 0;
 	stream->tamanio = tamanio;
+	stream->error = false;
 	return stream;
 }
 
@@ -54,7 +55,10 @@ void Stream_SerializarString(Stream* stream, char* string)
 bool Stream_Deserializar(Stream* stream, void* datos, int tamanio)
 {
 	if (stream->tamanio < stream->desplazamiento + tamanio)
+	{
 		return false;
+		stream->error = true;
+	}
 	memcpy(datos, stream->base + stream->desplazamiento, tamanio);
 	stream->desplazamiento += tamanio;
 	return true;

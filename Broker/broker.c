@@ -19,7 +19,7 @@ int main()
 	logger = log_create(Config_String("LOG_FILE"), "Broker", true, LOG_LEVEL_INFO);
 
 	IniciarMensajes();
-	IniciarMemoria();
+	IniciarMemoria(Config_Int("TAMANO_MEMORIA"));
 	CrearColas();
 	IniciarServidorBroker(Config_String("IP_BROKER"), Config_Int("PUERTO_BROKER"));
 
@@ -42,6 +42,7 @@ void Finalizar()
 {
 	FinalizarServidorBroker();
 	DestruirColas();
+	DestruirMemoria();
 	config_destroy(config);
 	log_destroy(logger);
 	pthread_exit(0);

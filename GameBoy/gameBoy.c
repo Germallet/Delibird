@@ -1,5 +1,6 @@
 #include "gameBoy.h"
 #include "../Utils/protocolo.h"
+#include "../Utils/serializacion.h"
 
 t_log* logger;
 t_config* config;
@@ -341,77 +342,119 @@ void loggearMensajesRecibidos(Eventos* eventos, CodigoDeCola cola)
 
 void RecibirMensaje_NEW_POKEMON_ID(Cliente* cliente, Paquete* paqueteRecibido)
 {
-	DATOS_NEW_POKEMON_ID datos;
+	Stream* stream = Stream_CrearLecturaPaquete(paqueteRecibido);
+	uint32_t id = Deserializar_uint32(stream);
+	DATOS_NEW_POKEMON datos = Deserializar_NEW_POKEMON(stream);
 
-	if (!DeserializarM_NEW_POKEMON_ID(paqueteRecibido, &datos))
-		log_error(logger, "Error al deserializar NEW_POKEMON");
+	if (!stream->error)
+	{
+		char* textoDatos = DatosAString_NEW_POKEMON(&datos);
+		log_info(logger, "Recibido mensaje (id: %d): %s", id, textoDatos);
+		free(textoDatos);
+		EnviarID(cliente, id);
+	}
 	else
-		log_info(logger, "NEW_POKEMON: %s %d (%d,%d) %d", datos.datos.pokemon, datos.datos.posicion.posX, datos.datos.posicion.posY, datos.datos.cantidad);
+		log_error(logger, "Error al deserializar NEW_POKEMON");
 
-	EnviarID(cliente, datos.id);
+	Stream_Destruir(stream);
 }
 
 void RecibirMensaje_APPEARED_POKEMON_IDx2(Cliente* cliente, Paquete* paqueteRecibido)
 {
-	DATOS_APPEARED_POKEMON_ID datos;
+	Stream* stream = Stream_CrearLecturaPaquete(paqueteRecibido);
+	uint32_t id = Deserializar_uint32(stream);
+	uint32_t idCorrelativa = Deserializar_uint32(stream);
+	DATOS_APPEARED_POKEMON datos = Deserializar_APPEARED_POKEMON(stream);
 
-	if (!DeserializarM_APPEARED_POKEMON_ID(paqueteRecibido, &datos))
-		log_error(logger, "Error al deserializar APPEARED_POKEMON");
+	if (!stream->error)
+	{
+		char* textoDatos = DatosAString_APPEARED_POKEMON(&datos);
+		log_info(logger, "Recibido mensaje (id: %d, correlativo: %d): %s", id, idCorrelativa, textoDatos);
+		free(textoDatos);
+		EnviarID(cliente, id);
+	}
 	else
-		log_info(logger, "APPEARED_POKEMON: %s (%d,%d) %d", datos.datos.pokemon, datos.datos.posicion.posX, datos.datos.posicion.posY, datos.datos.idCorrelativa);
+		log_error(logger, "Error al deserializar APPEARED_POKEMON");
 
-	EnviarID(cliente, datos.id);
+	Stream_Destruir(stream);
 }
 
 void RecibirMensaje_CATCH_POKEMON_ID(Cliente* cliente, Paquete* paqueteRecibido)
 {
-	DATOS_CATCH_POKEMON_ID datos;
+	Stream* stream = Stream_CrearLecturaPaquete(paqueteRecibido);
+	uint32_t id = Deserializar_uint32(stream);
+	DATOS_CATCH_POKEMON datos = Deserializar_CATCH_POKEMON(stream);
 
-	if (!DeserializarM_CATCH_POKEMON_ID(paqueteRecibido, &datos))
-		log_error(logger, "Error al deserializar CATCH_POKEMON");
+	if (!stream->error)
+	{
+		char* textoDatos = DatosAString_CATCH_POKEMON(&datos);
+		log_info(logger, "Recibido mensaje (id: %d): %s", id, textoDatos);
+		free(textoDatos);
+		EnviarID(cliente, id);
+	}
 	else
-		log_info(logger, "CATCH_POKEMON: %d %s (%d,%d)", datos.datos.pokemon, datos.datos.posicion.posX, datos.datos.posicion.posY);
+		log_error(logger, "Error al deserializar CATCH_POKEMON");
 
-	EnviarID(cliente, datos.id);
+	Stream_Destruir(stream);
 }
 
 void RecibirMensaje_CAUGHT_POKEMON_IDx2(Cliente* cliente, Paquete* paqueteRecibido)
 {
-	DATOS_CAUGHT_POKEMON_ID datos;
+	Stream* stream = Stream_CrearLecturaPaquete(paqueteRecibido);
+	uint32_t id = Deserializar_uint32(stream);
+	uint32_t idCorrelativa = Deserializar_uint32(stream);
+	DATOS_CAUGHT_POKEMON datos = Deserializar_CAUGHT_POKEMON(stream);
 
-	if (!DeserializarM_CAUGHT_POKEMON_ID(paqueteRecibido, &datos))
-		log_error(logger, "Error al deserializar CAUGHT_POKEMON");
+	if (!stream->error)
+	{
+		char* textoDatos = DatosAString_CAUGHT_POKEMON(&datos);
+		log_info(logger, "Recibido mensaje (id: %d, correlativo: %d): %s", id, idCorrelativa, textoDatos);
+		free(textoDatos);
+		EnviarID(cliente, id);
+	}
 	else
-		log_info(logger, "CAUGHT_POKEMON: %d %d", datos.datos.idCorrelativa, datos.datos.capturado);
+		log_error(logger, "Error al deserializar CAUGHT_POKEMON");
 
-	EnviarID(cliente, datos.id);
+	Stream_Destruir(stream);
 }
 
 void RecibirMensaje_GET_POKEMON_ID(Cliente* cliente, Paquete* paqueteRecibido)
 {
-	DATOS_GET_POKEMON_ID datos;
+	Stream* stream = Stream_CrearLecturaPaquete(paqueteRecibido);
+	uint32_t id = Deserializar_uint32(stream);
+	DATOS_GET_POKEMON datos = Deserializar_GET_POKEMON(stream);
 
-	if (!DeserializarM_GET_POKEMON_ID(paqueteRecibido, &datos))
-		log_error(logger, "Error al deserializar GET_POKEMON");
+	if (!stream->error)
+	{
+		char* textoDatos = DatosAString_GET_POKEMON(&datos);
+		log_info(logger, "Recibido mensaje (id: %d): %s", id, textoDatos);
+		free(textoDatos);
+		EnviarID(cliente, id);
+	}
 	else
-		log_info(logger, "GET_POKEMON: %s", datos.datos.pokemon);
+		log_error(logger, "Error al deserializar GET_POKEMON");
 
-	EnviarID(cliente, datos.id);
+	Stream_Destruir(stream);
 }
 
 void RecibirMensaje_LOCALIZED_POKEMON_IDx2(Cliente* cliente, Paquete* paqueteRecibido)
 {
-	DATOS_LOCALIZED_POKEMON_ID datos;
+	Stream* stream = Stream_CrearLecturaPaquete(paqueteRecibido);
+	uint32_t id = Deserializar_uint32(stream);
+	uint32_t idCorrelativa = Deserializar_uint32(stream);
+	DATOS_LOCALIZED_POKEMON datos = Deserializar_LOCALIZED_POKEMON(stream);
 
-	if (!DeserializarM_LOCALIZED_POKEMON_ID(paqueteRecibido, &datos))
-		log_error(logger, "Error al deserializar LOCALIZED_POKEMON");
-	else {
-		for (int i = 0; i < datos.datos.cantidad; i++) {
-			log_info(logger, "LOCALIZED_POKEMON: %s %d %d %d", datos.datos.pokemon, datos.datos.posiciones[i].posX, datos.datos.posiciones[i].posY, datos.datos.idCorrelativa);
-		}
+	if (!stream->error)
+	{
+		char* textoDatos = DatosAString_LOCALIZED_POKEMON(&datos);
+		log_info(logger, "Recibido mensaje (id: %d, correlativo: %d): %s", id, idCorrelativa, textoDatos);
+		free(textoDatos);
+		EnviarID(cliente, id);
 	}
+	else
+		log_error(logger, "Error al deserializar LOCALIZED_POKEMON");
 
-	EnviarID(cliente, datos.id);
+	Stream_Destruir(stream);
 }
 
 void EnviarID(Cliente* cliente, uint32_t identificador)

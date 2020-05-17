@@ -1,6 +1,7 @@
 #include "protocolo.h"
 #include "serializacion.h"
 #include "paquete.h"
+#include <stdio.h>
 
 // NEW_POKEMON
 Stream* SerializarM_NEW_POKEMON(DATOS_NEW_POKEMON* datos)
@@ -15,21 +16,6 @@ Stream* SerializarM_NEW_POKEMON_ID(DATOS_NEW_POKEMON_ID* datos)
 	Serializar_uint32(stream, datos->id);
 	Serializar_NEW_POKEMON(stream, &(datos->datos));
 	return stream;
-}
-bool DeserializarM_NEW_POKEMON(Paquete* paquete, DATOS_NEW_POKEMON* datos)
-{
-	Stream* stream = Stream_CrearLecturaPaquete(paquete);
-	if (!Deserializar_NEW_POKEMON(stream, datos)) { Stream_Destruir(stream); return false; }
-	Stream_Destruir(stream);
-	return true;
-}
-bool DeserializarM_NEW_POKEMON_ID(Paquete* paquete, DATOS_NEW_POKEMON_ID* datos)
-{
-	Stream* stream = Stream_CrearLecturaPaquete(paquete);
-	if (!Stream_Deserializar(stream, &(datos->id), sizeof(uint32_t))) { Stream_Destruir(stream); return false; }
-	if (!Deserializar_NEW_POKEMON(stream, &(datos->datos))) { Stream_Destruir(stream); return false; }
-	Stream_Destruir(stream);
-	return true;
 }
 
 // APPEARED_POKEMON
@@ -46,21 +32,6 @@ Stream* SerializarM_APPEARED_POKEMON_ID(DATOS_APPEARED_POKEMON_ID* datos)
 	Serializar_APPEARED_POKEMON(stream, &(datos->datos));
 	return stream;
 }
-bool DeserializarM_APPEARED_POKEMON(Paquete* paquete, DATOS_APPEARED_POKEMON* datos)
-{
-	Stream* stream = Stream_CrearLecturaPaquete(paquete);
-	if (!Deserializar_APPEARED_POKEMON(stream, datos)) { Stream_Destruir(stream); return false; }
-	Stream_Destruir(stream);
-	return true;
-}
-bool DeserializarM_APPEARED_POKEMON_ID(Paquete* paquete, DATOS_APPEARED_POKEMON_ID* datos)
-{
-	Stream* stream = Stream_CrearLecturaPaquete(paquete);
-	if (!Stream_Deserializar(stream, &(datos->id), sizeof(uint32_t))) { Stream_Destruir(stream); return false; }
-	if (!Deserializar_APPEARED_POKEMON(stream, &(datos->datos))) { Stream_Destruir(stream); return false; }
-	Stream_Destruir(stream);
-	return true;
-}
 
 // CATCH_POKEMON
 Stream* SerializarM_CATCH_POKEMON(DATOS_CATCH_POKEMON* datos)
@@ -75,21 +46,6 @@ Stream* SerializarM_CATCH_POKEMON_ID( DATOS_CATCH_POKEMON_ID* datos)
 	Serializar_uint32(stream, datos->id);
 	Serializar_CATCH_POKEMON(stream, &(datos->datos));
 	return stream;
-}
-bool DeserializarM_CATCH_POKEMON(Paquete* paquete, DATOS_CATCH_POKEMON* datos)
-{
-	Stream* stream = Stream_CrearLecturaPaquete(paquete);
-	if (!Stream_Deserializar(stream, datos, sizeof(uint32_t))) { Stream_Destruir(stream); return false; }
-	Stream_Destruir(stream);
-	return true;
-}
-bool DeserializarM_CATCH_POKEMON_ID(Paquete* paquete, DATOS_CATCH_POKEMON_ID* datos)
-{
-	Stream* stream = Stream_CrearLecturaPaquete(paquete);
-	if (!Stream_Deserializar(stream, &(datos->id), sizeof(uint32_t))) { Stream_Destruir(stream); return false; }
-	if (!Deserializar_CATCH_POKEMON(stream, &(datos->datos))) { Stream_Destruir(stream); return false; }
-	Stream_Destruir(stream);
-	return true;
 }
 
 // CAUGHT_POKEMON
@@ -106,21 +62,6 @@ Stream* SerializarM_CAUGHT_POKEMON_ID(DATOS_CAUGHT_POKEMON_ID* datos)
 	Serializar_CAUGHT_POKEMON(stream, &(datos->datos));
 	return stream;
 }
-bool DeserializarM_CAUGHT_POKEMON(Paquete* paquete, DATOS_CAUGHT_POKEMON* datos)
-{
-	Stream* stream = Stream_CrearLecturaPaquete(paquete);
-	if (!Deserializar_CAUGHT_POKEMON(stream, datos)) { Stream_Destruir(stream); return false; }
-	Stream_Destruir(stream);
-	return true;
-}
-bool DeserializarM_CAUGHT_POKEMON_ID(Paquete* paquete, DATOS_CAUGHT_POKEMON_ID* datos)
-{
-	Stream* stream = Stream_CrearLecturaPaquete(paquete);
-	if (!Stream_Deserializar(stream, &(datos->id), sizeof(uint32_t))) { Stream_Destruir(stream); return false; }
-	if (!Deserializar_CAUGHT_POKEMON(stream, &(datos->datos))) { Stream_Destruir(stream); return false; }
-	Stream_Destruir(stream);
-	return true;
-}
 
 // GET_POKEMON
 Stream* SerializarM_GET_POKEMON(DATOS_GET_POKEMON* datos)
@@ -136,21 +77,6 @@ Stream* SerializarM_GET_POKEMON_ID(DATOS_GET_POKEMON_ID* datos)
 	Serializar_GET_POKEMON(stream, &(datos->datos));
 	return stream;
 }
-bool DeserializarM_GET_POKEMON(Paquete* paquete, DATOS_GET_POKEMON* datos)
-{
-	Stream* stream = Stream_CrearLecturaPaquete(paquete);
-	if (!Deserializar_GET_POKEMON(stream, datos)) { Stream_Destruir(stream); return false; }
-	Stream_Destruir(stream);
-	return true;
-}
-bool DeserializarM_GET_POKEMON_ID(Paquete* paquete, DATOS_GET_POKEMON_ID* datos)
-{
-	Stream* stream = Stream_CrearLecturaPaquete(paquete);
-	if (!Stream_Deserializar(stream, &(datos->id), sizeof(uint32_t))) { Stream_Destruir(stream); return false; }
-	if (!Deserializar_GET_POKEMON(stream, &(datos->datos))) { Stream_Destruir(stream); return false; }
-	Stream_Destruir(stream);
-	return true;
-}
 
 // LOCALIZED_POKEMON
 Stream* SerializarM_LOCALIZED_POKEMON(DATOS_LOCALIZED_POKEMON* datos)
@@ -165,21 +91,6 @@ Stream* SerializarM_LOCALIZED_POKEMON_ID(DATOS_LOCALIZED_POKEMON_ID* datos)
 	Serializar_uint32(stream, datos->id);
 	Serializar_LOCALIZED_POKEMON(stream, &(datos->datos));
 	return stream;
-}
-bool DeserializarM_LOCALIZED_POKEMON(Paquete* paquete, DATOS_LOCALIZED_POKEMON* datos)
-{
-	Stream* stream = Stream_CrearLecturaPaquete(paquete);
-	if (!Deserializar_LOCALIZED_POKEMON(stream, datos)) { Stream_Destruir(stream); return false; }
-	Stream_Destruir(stream);
-	return true;
-}
-bool DeserializarM_LOCALIZED_POKEMON_ID(Paquete* paquete, DATOS_LOCALIZED_POKEMON_ID* datos)
-{
-	Stream* stream = Stream_CrearLecturaPaquete(paquete);
-	if (!Stream_Deserializar(stream, &(datos->id), sizeof(uint32_t))) { Stream_Destruir(stream); return false; }
-	if (!Deserializar_LOCALIZED_POKEMON(stream, &(datos->datos))) { Stream_Destruir(stream); return false; }
-	Stream_Destruir(stream);
-	return true;
 }
 
 // ID_MENSAJE
@@ -235,4 +146,75 @@ bool DeserializarM_BROKER_SUSCRIBIRSE(Paquete* paquete, BROKER_DATOS_SUSCRIBIRSE
 	if (!Stream_Deserializar(stream, &(datos->cola), sizeof(uint32_t))) { Stream_Destruir(stream); return false; }
 	Stream_Destruir(stream);
 	return true;
+}
+
+char* CodigoDeOperacionAString(CodigoDeOperacion codigoDeOperacion)
+{
+	switch(codigoDeOperacion)
+	{
+	case BROKER_CONECTAR:
+		return "BROKER_CONECTAR";
+	case BROKER_RECONECTAR:
+		return "BROKER_RECONECTAR";
+	case BROKER_SUSCRIBIRSE:
+		return "BROKER_SUSCRIBIRSE";
+	case BROKER_ACK:
+		return "BROKER_ACK";
+	case BROKER_CONECTADO:
+		return "BROKER_CONECTADO";
+	case BROKER_SUSCRITO:
+		return "BROKER_SUSCRITO";
+	case BROKER_ID_MENSAJE:
+		return "BROKER_ID_MENSAJE";
+	case NEW_POKEMON:
+		return "NEW_POKEMON";
+	case APPEARED_POKEMON:
+		return "APPEARED_POKEMON";
+	case CATCH_POKEMON:
+		return "CATCH_POKEMON";
+	case CAUGHT_POKEMON:
+		return "CAUGHT_POKEMON";
+	case GET_POKEMON:
+		return "GET_POKEMON";
+	case LOCALIZED_POKEMON:
+		return "LOCALIZED_POKEMON";
+	}
+	return "INVALIDO";
+}
+
+char* DatosAString_NEW_POKEMON(DATOS_NEW_POKEMON* datos)
+{
+	char* mensaje = malloc(50);
+	snprintf(mensaje, 50, "NEW_POKEMON: {pokemon: '%s', cantidad: %d}", datos->pokemon, datos->cantidad);
+	return mensaje;
+}
+char* DatosAString_APPEARED_POKEMON(DATOS_APPEARED_POKEMON* datos)
+{
+	char* mensaje = malloc(50);
+	snprintf(mensaje, 50, "APPEARED_POKEMON: {pokemon: '%s', posicion: (%d, %d)}", datos->pokemon, datos->posicion.posX, datos->posicion.posY);
+	return mensaje;
+}
+char* DatosAString_CATCH_POKEMON(DATOS_CATCH_POKEMON* datos)
+{
+	char* mensaje = malloc(50);
+	snprintf(mensaje, 50, "CATCH_POKEMON: {pokemon: '%s', posicion: (%d, %d)}", datos->pokemon, datos->posicion.posX, datos->posicion.posY);
+	return mensaje;
+}
+char* DatosAString_CAUGHT_POKEMON(DATOS_CAUGHT_POKEMON* datos)
+{
+	char* mensaje = malloc(50);
+	snprintf(mensaje, 50, "CAUGHT_POKEMON: {capturado: %d}", datos->capturado);
+	return mensaje;
+}
+char* DatosAString_GET_POKEMON(DATOS_GET_POKEMON* datos)
+{
+	char* mensaje = malloc(50);
+	snprintf(mensaje, 50, "GET_POKEMON: {pokemon: '%s'}", datos->pokemon);
+	return mensaje;
+}
+char* DatosAString_LOCALIZED_POKEMON(DATOS_LOCALIZED_POKEMON* datos)
+{
+	char* mensaje = malloc(50);
+	snprintf(mensaje, 50, "LOCALIZED_POKEMON: {pokemon: '%s', cantidad: %d}", datos->pokemon, datos->cantidad);
+	return mensaje;
 }

@@ -5,13 +5,13 @@
 #include <stdlib.h>
 #include <pthread.h>
 
-//t_dictionaryInt* mensajes;
-//pthread_mutex_t mutexMensajes;
+void* memoria;
+pthread_mutex_t mutexMemoria;
 
-void IniciarMemoria()
+void IniciarMemoria(int tamanioMemoria)
 {
-	//mensajes = dictionaryInt_create();
-	//pthread_mutex_init(&mutexMensajes, NULL);
+	memoria = malloc(tamanioMemoria);
+	pthread_mutex_init(&mutexMemoria, NULL);
 }
 
 void GuardarMensaje(Mensaje* mensaje, Stream* contenido)
@@ -23,4 +23,9 @@ void GuardarMensaje(Mensaje* mensaje, Stream* contenido)
 void* ObtenerContenidoMensaje(Mensaje* mensaje)
 {
 	return mensaje->contenido;
+}
+
+void DestruirMemoria()
+{
+	free(memoria);
 }

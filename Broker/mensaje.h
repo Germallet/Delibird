@@ -5,7 +5,7 @@
 
 typedef struct
 {
-	int id;
+	uint32_t id;
 	int posicionEnMemoria;
 	int tamanio;
 	pthread_mutex_t mutexMensaje;

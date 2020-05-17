@@ -9,6 +9,7 @@ typedef struct
 	void* base;
 	uint32_t tamanio;
 	uint32_t desplazamiento;
+	bool error;
 } Stream;
 
 extern Stream* Stream_CrearEscrituraNueva(size_t tamanio);
