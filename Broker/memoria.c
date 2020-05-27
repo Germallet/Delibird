@@ -1,16 +1,20 @@
 #include "broker.h"
 #include "mensaje.h"
 #include "clienteBroker.h"
+#include "particion.h"
 #include "../Utils/dictionaryInt.h"
 #include <stdlib.h>
 #include <pthread.h>
 
 void* memoria;
+t_list* particiones;
 pthread_mutex_t mutexMemoria;
 
 void IniciarMemoria(int tamanioMemoria)
 {
 	memoria = malloc(tamanioMemoria);
+	particiones = list_create();
+	list_add(particiones, Particion_Crear(0, tamanioMemoria));
 	pthread_mutex_init(&mutexMemoria, NULL);
 }
 
@@ -39,15 +43,19 @@ void Dump()
 	struct tm tm = *localtime(&t);
 	fprintf(archivo, "Dump: %d/%d/%d %d:%d:%d\n", tm.tm_mday, tm.tm_mon + 1, tm.tm_year + 1900, tm.tm_hour, tm.tm_min, tm.tm_sec);
 
-	// TODO: Mostrar particiones
+	pthread_mutex_lock(&mutexMemoria);
+	for(int indice = 0; indice < particiones->elements_count; indice++)
+		Particion_Dump((Particion*)(list_get(particiones, indice)), archivo, indice+1);
+	pthread_mutex_unlock(&mutexMemoria);
 
 	fprintf(archivo, "-----------------------------------------------------------------------------------------------------------------------------\n");
 
 	fclose(archivo);
-	log_info(logger, "Dump creado (dump.txt)");
+	log_info(logger, "Dump! (dump.txt)");
 }
 
 void DestruirMemoria()
 {
 	free(memoria);
+	list_destroy_and_destroy_elements(particiones, (void*)&Particion_Destruir);
 }
