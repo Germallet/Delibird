@@ -2,7 +2,7 @@
 #include "mensaje.h"
 #include "../Utils/protocolo.h"
 
-void IniciarMemoria(int tamanioMemoria);
+void IniciarMemoria(int tamanioMemoria, char* algoritmoMemoria);
 void GuardarMensaje(Mensaje* mensaje, Stream* contenido);
 void* ObtenerContenidoMensaje(Mensaje* mensaje);
 void Dump();

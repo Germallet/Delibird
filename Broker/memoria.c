@@ -2,6 +2,8 @@
 #include "mensaje.h"
 #include "clienteBroker.h"
 #include "particion.h"
+#include "dynamicPartitioning.h"
+#include "buddySystem.h"
 #include "../Utils/dictionaryInt.h"
 #include <stdlib.h>
 #include <pthread.h>
@@ -9,12 +11,23 @@
 void* memoria;
 t_list* particiones;
 pthread_mutex_t mutexMemoria;
+Particion* (*creadorParticiones)(int);
 
-void IniciarMemoria(int tamanioMemoria)
+void IniciarMemoria(int tamanioMemoria, char* algoritmoMemoria)
 {
+	if (strcmp(algoritmoMemoria, "PARTICIONES") == 0)
+		creadorParticiones = &DP_CrearParticion;
+	else if (strcmp(algoritmoMemoria, "BS") == 0)
+		creadorParticiones = &BS_CrearParticion;
+	else
+	{
+		log_error(logger, "Algorimo de memoria inválido");
+		exit(-1);
+	}
+
 	memoria = malloc(tamanioMemoria);
 	particiones = list_create();
-	list_add(particiones, Particion_Crear(0, tamanioMemoria));
+	list_add(particiones, creadorParticiones(tamanioMemoria));
 	pthread_mutex_init(&mutexMemoria, NULL);
 }
 

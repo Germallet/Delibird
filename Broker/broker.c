@@ -23,7 +23,7 @@ int main()
 	logger = log_create(Config_String("LOG_FILE"), "Broker", true, LOG_LEVEL_INFO);
 
 	IniciarMensajes();
-	IniciarMemoria(Config_Int("TAMANO_MEMORIA"));
+	IniciarMemoria(Config_Int("TAMANO_MEMORIA"), Config_String("ALGORITMO_MEMORIA"));
 	CrearColas();
 	EscucharSignal();
 	IniciarServidorBroker(Config_String("IP_BROKER"), Config_Int("PUERTO_BROKER"));
