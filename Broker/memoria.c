@@ -89,7 +89,7 @@ void GuardarMensaje(Mensaje* mensaje, Stream* contenido)
 	particion->id = mensaje->id;
 	particion->ocupado = true;
 	particion->cola = mensaje->tipoDeMensaje;
-	memcpy(mensaje->contenido, memoria + particion->inicio, contenido->tamanio);
+	memcpy(contenido->base, memoria + particion->inicio, contenido->tamanio);
 	pthread_mutex_unlock(&mutexMemoria);
 }
 

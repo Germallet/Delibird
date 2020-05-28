@@ -109,9 +109,12 @@ static void EnviarIDMensaje(uint32_t idMensaje, Cliente* cliente)
 	respuesta.id = idMensaje;
 	EnviarMensaje(cliente, BROKER_ID_MENSAJE, &respuesta, (Serializador)&SerializarM_ID_MENSAJE);
 }
-static void RecibirMensaje(Cliente* cliente, CodigoDeCola tipoDeMensaje, uint32_t idMensaje, Stream* contenido)
+static void RecibirMensaje(Cliente* cliente, CodigoDeCola tipoDeMensaje, uint32_t idMensaje, uint32_t idCorrelativo, Stream* contenido)
 {
-	Mensaje* nuevoMensaje = CrearMensaje(tipoDeMensaje, idMensaje, contenido->tamanio);
+	if (!CorresponderRecibirRespuesta(tipoDeMensaje, idCorrelativo))
+		return;
+
+	Mensaje* nuevoMensaje = CrearMensaje(tipoDeMensaje, idMensaje, idCorrelativo, contenido->tamanio);
 	EnviarIDMensaje(idMensaje, cliente);
 	GuardarMensaje(nuevoMensaje, contenido);
 	Cola_ProcesarNuevoMensaje(tipoDeMensaje, nuevoMensaje);
@@ -157,6 +160,7 @@ static void Operacion_NEW_POKEMON(Cliente* cliente, Paquete* paqueteRecibido)
 	DATOS_NEW_POKEMON datos = Deserializar_NEW_POKEMON(streamLectura);
 	if (streamLectura->error)
 		log_error(logger, "Error al deserializar NEW_POKEMON");
+
 	DATOS_NEW_POKEMON_ID datosProcesados;
 	datosProcesados.datos = datos;
 	datosProcesados.id = GenerarIDMensaje();
@@ -166,17 +170,20 @@ static void Operacion_NEW_POKEMON(Cliente* cliente, Paquete* paqueteRecibido)
 	free(textoDatos);
 
 	Stream* stream = SerializarM_NEW_POKEMON_ID(&datosProcesados);
-	RecibirMensaje(cliente, COLA_NEW_POKEMON, datosProcesados.id, stream);
-
+	RecibirMensaje(cliente, COLA_NEW_POKEMON, datosProcesados.id, 0, stream);
 	Stream_Destruir(streamLectura);
 	Stream_DestruirConBuffer(stream);
+
+	free(datos.pokemon);
 }
 static void Operacion_APPEARED_POKEMON(Cliente* cliente, Paquete* paqueteRecibido)
 {
 	Stream* streamLectura = Stream_CrearLecturaPaquete(paqueteRecibido);
+	uint32_t idCorrelativa = Deserializar_uint32(streamLectura);
 	DATOS_APPEARED_POKEMON datos = Deserializar_APPEARED_POKEMON(streamLectura);
 	if (streamLectura->error)
 		log_error(logger, "Error al deserializar APPEARED_POKEMON");
+
 	DATOS_APPEARED_POKEMON_ID datosProcesados;
 	datosProcesados.datos = datos;
 	datosProcesados.id = GenerarIDMensaje();
@@ -186,10 +193,11 @@ static void Operacion_APPEARED_POKEMON(Cliente* cliente, Paquete* paqueteRecibid
 	free(textoDatos);
 
 	Stream* stream = SerializarM_APPEARED_POKEMON_ID(&datosProcesados);
-	RecibirMensaje(cliente, COLA_APPEARED_POKEMON, datosProcesados.id, stream);
-
+	RecibirMensaje(cliente, COLA_APPEARED_POKEMON, datosProcesados.id, idCorrelativa, stream);
 	Stream_Destruir(streamLectura);
 	Stream_DestruirConBuffer(stream);
+
+	free(datos.pokemon);
 }
 static void Operacion_CATCH_POKEMON(Cliente* cliente, Paquete* paqueteRecibido)
 {
@@ -197,6 +205,7 @@ static void Operacion_CATCH_POKEMON(Cliente* cliente, Paquete* paqueteRecibido)
 	DATOS_CATCH_POKEMON datos = Deserializar_CATCH_POKEMON(streamLectura);
 	if (streamLectura->error)
 		log_error(logger, "Error al deserializar CATCH_POKEMON");
+
 	DATOS_CATCH_POKEMON_ID datosProcesados;
 	datosProcesados.datos = datos;
 	datosProcesados.id = GenerarIDMensaje();
@@ -206,14 +215,16 @@ static void Operacion_CATCH_POKEMON(Cliente* cliente, Paquete* paqueteRecibido)
 	free(textoDatos);
 
 	Stream* stream = SerializarM_CATCH_POKEMON_ID(&datosProcesados);
-	RecibirMensaje(cliente, COLA_CATCH_POKEMON, datosProcesados.id, stream);
-
+	RecibirMensaje(cliente, COLA_CATCH_POKEMON, datosProcesados.id, 0, stream);
 	Stream_Destruir(streamLectura);
 	Stream_DestruirConBuffer(stream);
+
+	free(datos.pokemon);
 }
 static void Operacion_CAUGHT_POKEMON(Cliente* cliente, Paquete* paqueteRecibido)
 {
 	Stream* streamLectura = Stream_CrearLecturaPaquete(paqueteRecibido);
+	uint32_t idCorrelativa = Deserializar_uint32(streamLectura);
 	DATOS_CAUGHT_POKEMON datos = Deserializar_CAUGHT_POKEMON(streamLectura);
 	if (streamLectura->error)
 		log_error(logger, "Error al deserializar CAUGHT_POKEMON");
@@ -227,8 +238,7 @@ static void Operacion_CAUGHT_POKEMON(Cliente* cliente, Paquete* paqueteRecibido)
 	free(textoDatos);
 
 	Stream* stream = SerializarM_CAUGHT_POKEMON_ID(&datosProcesados);
-	RecibirMensaje(cliente, COLA_CAUGHT_POKEMON, datosProcesados.id, stream);
-
+	RecibirMensaje(cliente, COLA_CAUGHT_POKEMON, datosProcesados.id, idCorrelativa, stream);
 	Stream_Destruir(streamLectura);
 	Stream_DestruirConBuffer(stream);
 }
@@ -239,13 +249,16 @@ static void Operacion_GET_POKEMON(Cliente* cliente, Paquete* paqueteRecibido)
 	if (streamLectura->error)
 		log_error(logger, "Error al deserializar GET_POKEMON");
 
+	DATOS_GET_POKEMON_ID datosProcesados;
+	datosProcesados.datos = datos;
+	datosProcesados.id = GenerarIDMensaje();
+
 	char* textoDatos = DatosAString_GET_POKEMON(&datos);
 	log_info(logger, "Nuevo mensaje recibido: %s", textoDatos);
 	free(textoDatos);
 
-	Stream* stream = SerializarM_GET_POKEMON(&datos);
-	RecibirMensaje(cliente, COLA_GET_POKEMON, GenerarIDMensaje(), stream);
-
+	Stream* stream = SerializarM_GET_POKEMON_ID(&datosProcesados);
+	RecibirMensaje(cliente, COLA_GET_POKEMON, datosProcesados.id, 0, stream);
 	Stream_Destruir(streamLectura);
 	Stream_DestruirConBuffer(stream);
 
@@ -254,9 +267,11 @@ static void Operacion_GET_POKEMON(Cliente* cliente, Paquete* paqueteRecibido)
 static void Operacion_LOCALIZED_POKEMON(Cliente* cliente, Paquete* paqueteRecibido)
 {
 	Stream* streamLectura = Stream_CrearLecturaPaquete(paqueteRecibido);
+	uint32_t idCorrelativa = Deserializar_uint32(streamLectura);
 	DATOS_LOCALIZED_POKEMON datos = Deserializar_LOCALIZED_POKEMON(streamLectura);
 	if (streamLectura->error)
 		log_error(logger, "Error al deserializar LOCALIZED_POKEMON_ID");
+
 	DATOS_LOCALIZED_POKEMON_ID datosProcesados;
 	datosProcesados.datos = datos;
 	datosProcesados.id = GenerarIDMensaje();
@@ -266,8 +281,7 @@ static void Operacion_LOCALIZED_POKEMON(Cliente* cliente, Paquete* paqueteRecibi
 	free(textoDatos);
 
 	Stream* stream = SerializarM_LOCALIZED_POKEMON_ID(&datosProcesados);
-	RecibirMensaje(cliente, COLA_LOCALIZED_POKEMON, datosProcesados.id, stream);
-
+	RecibirMensaje(cliente, COLA_LOCALIZED_POKEMON, datosProcesados.id, idCorrelativa, stream);
 	Stream_Destruir(streamLectura);
 	Stream_DestruirConBuffer(stream);
 }

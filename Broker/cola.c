@@ -87,6 +87,19 @@ bool TieneSuscriptor(Cola* cola, ClienteBroker* clienteBroker)
 	return existe;
 }
 
+bool CorresponderRecibirRespuesta(CodigoDeCola codigo, uint32_t idCorrelativo)
+{
+	bool MismoCorrelativo(void* mensaje) { return ((Mensaje*)mensaje)->idCorrelativo == idCorrelativo;}
+	Cola* cola = ObtenerCola(codigo);
+	bool resultado;
+
+	pthread_mutex_lock(&(cola->mutexMensajes));
+	resultado = !list_any_satisfy(cola->mensajes, &MismoCorrelativo);
+	pthread_mutex_unlock(&(cola->mutexMensajes));
+
+	return resultado;
+}
+
 static void BroadcastMensajeSinChequeo(Cola* cola, Mensaje* mensaje)
 {
 	void* contenido = ObtenerContenidoMensaje(mensaje);

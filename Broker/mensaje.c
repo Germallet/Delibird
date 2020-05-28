@@ -29,10 +29,11 @@ uint32_t GenerarIDMensaje()
 	return nuevaID;
 }
 
-Mensaje* CrearMensaje(CodigoDeCola tipoDeMensaje, uint32_t id, size_t tamanio)
+Mensaje* CrearMensaje(CodigoDeCola tipoDeMensaje, uint32_t id, uint32_t idCorrelativo, size_t tamanio)
 {
 	Mensaje* mensaje = malloc(sizeof(Mensaje));
 	mensaje->id = id;
+	mensaje->idCorrelativo = idCorrelativo;
 	mensaje->tipoDeMensaje = tipoDeMensaje;
 	mensaje->tamanio = tamanio;
 	mensaje->clientesEnviados = list_create();
@@ -77,8 +78,6 @@ bool Mensaje_SeLeEnvioA(Mensaje* mensaje, void* clienteBroker)
 	return list_any_satisfy(mensaje->clientesACK, &sonIguales);
 }
 
-// TODO remover innecesario y agregar idCorrelativa
-// TODO no aceptar mensajes de respuesta a la misma idCorrelativa
 void Mensaje_EnviarA(Mensaje* mensaje, void* contenido, Cliente* cliente)
 {
 	bool SonIguales(void* cliente2) { return (Cliente*)cliente2 == cliente; }
@@ -87,19 +86,6 @@ void Mensaje_EnviarA(Mensaje* mensaje, void* contenido, Cliente* cliente)
 		return;
 
 	int resultado = -1;
-	/*if(mensaje->tipoDeMensaje == COLA_NEW_POKEMON)
-		resultado = Socket_Enviar(NEW_POKEMON, contenido, mensaje->tamanio, cliente->socket);
-	else if(mensaje->tipoDeMensaje == COLA_GET_POKEMON)
-		resultado = Socket_Enviar(GET_POKEMON, contenido, mensaje->tamanio, cliente->socket);
-	else if(mensaje->tipoDeMensaje == COLA_CATCH_POKEMON)
-		resultado = Socket_Enviar(CATCH_POKEMON, contenido, mensaje->tamanio, cliente->socket);
-	else if(mensaje->tipoDeMensaje == COLA_CAUGHT_POKEMON)
-		resultado = Socket_Enviar(CAUGHT_POKEMON, contenido, mensaje->tamanio, cliente->socket);
-	else if(mensaje->tipoDeMensaje == COLA_APPEARED_POKEMON)
-		resultado = Socket_Enviar(APPEARED_POKEMON, contenido, mensaje->tamanio, cliente->socket);
-	else if(mensaje->tipoDeMensaje == COLA_LOCALIZED_POKEMON)
-		resultado = Socket_Enviar(LOCALIZED_POKEMON, contenido, mensaje->tamanio, cliente->socket);*/
-
 	Stream* streamLectura = Stream_CrearLectura(contenido, mensaje->tamanio);
 
 	Stream* streamEscritura = Stream_CrearEscrituraNueva(sizeof(uint32_t) + mensaje->tamanio);
@@ -111,11 +97,12 @@ void Mensaje_EnviarA(Mensaje* mensaje, void* contenido, Cliente* cliente)
 		Serializar_NEW_POKEMON(streamEscritura, &datosDeserializados);
 		resultado = Socket_Enviar(NEW_POKEMON, streamEscritura->base, streamEscritura->tamanio, cliente->socket);
 	}
-	else if(mensaje->tipoDeMensaje == COLA_GET_POKEMON)
+	else if(mensaje->tipoDeMensaje == COLA_APPEARED_POKEMON)
 	{
-		DATOS_GET_POKEMON datosDeserializados = Deserializar_GET_POKEMON(streamLectura);
-		Serializar_GET_POKEMON(streamEscritura, &datosDeserializados);
-		resultado = Socket_Enviar(GET_POKEMON, streamEscritura->base, streamEscritura->tamanio, cliente->socket);
+		DATOS_APPEARED_POKEMON datosDeserializados = Deserializar_APPEARED_POKEMON(streamLectura);
+		Serializar_uint32(streamEscritura, mensaje->idCorrelativo);
+		Serializar_APPEARED_POKEMON(streamEscritura, &datosDeserializados);
+		resultado = Socket_Enviar(APPEARED_POKEMON, streamEscritura->base, streamEscritura->tamanio, cliente->socket);
 	}
 	else if(mensaje->tipoDeMensaje == COLA_CATCH_POKEMON)
 	{
@@ -126,18 +113,20 @@ void Mensaje_EnviarA(Mensaje* mensaje, void* contenido, Cliente* cliente)
 	else if(mensaje->tipoDeMensaje == COLA_CAUGHT_POKEMON)
 	{
 		DATOS_CAUGHT_POKEMON datosDeserializados = Deserializar_CAUGHT_POKEMON(streamLectura);
+		Serializar_uint32(streamEscritura, mensaje->idCorrelativo);
 		Serializar_CAUGHT_POKEMON(streamEscritura, &datosDeserializados);
 		resultado = Socket_Enviar(CAUGHT_POKEMON, streamEscritura->base, streamEscritura->tamanio, cliente->socket);
 	}
-	else if(mensaje->tipoDeMensaje == COLA_APPEARED_POKEMON)
+	else if(mensaje->tipoDeMensaje == COLA_GET_POKEMON)
 	{
-		DATOS_APPEARED_POKEMON datosDeserializados = Deserializar_APPEARED_POKEMON(streamLectura);
-		Serializar_APPEARED_POKEMON(streamEscritura, &datosDeserializados);
-		resultado = Socket_Enviar(APPEARED_POKEMON, streamEscritura->base, streamEscritura->tamanio, cliente->socket);
+		DATOS_GET_POKEMON datosDeserializados = Deserializar_GET_POKEMON(streamLectura);
+		Serializar_GET_POKEMON(streamEscritura, &datosDeserializados);
+		resultado = Socket_Enviar(GET_POKEMON, streamEscritura->base, streamEscritura->tamanio, cliente->socket);
 	}
 	else if(mensaje->tipoDeMensaje == COLA_LOCALIZED_POKEMON)
 	{
 		DATOS_LOCALIZED_POKEMON datosDeserializados = Deserializar_LOCALIZED_POKEMON(streamLectura);
+		Serializar_uint32(streamEscritura, mensaje->idCorrelativo);
 		Serializar_LOCALIZED_POKEMON(streamEscritura, &datosDeserializados);
 		resultado = Socket_Enviar(LOCALIZED_POKEMON, streamEscritura->base, streamEscritura->tamanio, cliente->socket);
 	}
@@ -150,31 +139,4 @@ void Mensaje_EnviarA(Mensaje* mensaje, void* contenido, Cliente* cliente)
 		list_add(mensaje->clientesEnviados, cliente);
 	else
 		log_error(logger, "Error al enviar mensaje (cola: %s, cliente: %d)", CodigoDeColaAString(mensaje->tipoDeMensaje), ((ClienteBroker*)cliente->info)->id);
-
-	//return;
-
-	// ?
-
-	/*if(mensaje->tipoDeMensaje == COLA_NEW_POKEMON)
-		resultado = EnviarMensajeSinFree(cliente, NEW_POKEMON, contenido, (Serializador)&SerializarM_NEW_POKEMON_ID);
-	else if(mensaje->tipoDeMensaje == COLA_GET_POKEMON)
-		resultado = EnviarMensajeSinFree(cliente, GET_POKEMON, contenido, (Serializador)&SerializarM_GET_POKEMON_ID);
-	else if(mensaje->tipoDeMensaje == COLA_CATCH_POKEMON)
-		resultado = EnviarMensajeSinFree(cliente, CATCH_POKEMON, contenido, (Serializador)&SerializarM_CATCH_POKEMON_ID);
-	else if(mensaje->tipoDeMensaje == COLA_CAUGHT_POKEMON)
-		resultado = EnviarMensajeSinFree(cliente, CAUGHT_POKEMON, contenido, (Serializador)&SerializarM_CAUGHT_POKEMON_ID);
-	else if(mensaje->tipoDeMensaje == COLA_APPEARED_POKEMON)
-		resultado = EnviarMensajeSinFree(cliente, APPEARED_POKEMON, contenido, (Serializador)&SerializarM_APPEARED_POKEMON_ID);
-	else if(mensaje->tipoDeMensaje == COLA_LOCALIZED_POKEMON)
-		resultado = EnviarMensajeSinFree(cliente, LOCALIZED_POKEMON, contenido, (Serializador)&SerializarM_LOCALIZED_POKEMON_ID);
-
-	log_info(logger, "Mensaje enviado (cola: %s, cliente: %d)", CodigoDeColaAString(mensaje->tipoDeMensaje), ((ClienteBroker*)cliente->info)->id);
-
-	if (resultado > 0)
-	{
-		pthread_mutex_lock(&(mensaje->mutexMensaje));
-		if(!list_any_satisfy(mensaje->clientesEnviados, &SonIguales))
-			list_add(mensaje->clientesEnviados, cliente);
-		pthread_mutex_unlock(&(mensaje->mutexMensaje));
-	}*/
 }
