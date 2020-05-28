@@ -4,6 +4,7 @@
 #include "particion.h"
 #include "dynamicPartitioning.h"
 #include "buddySystem.h"
+#include "selectorParticionLibre.h"
 #include "../Utils/dictionaryInt.h"
 #include <stdlib.h>
 #include <pthread.h>
@@ -11,10 +12,15 @@
 void* memoria;
 t_list* particiones;
 pthread_mutex_t mutexMemoria;
-Particion* (*creadorParticiones)(int);
 
-void IniciarMemoria(int tamanioMemoria, char* algoritmoMemoria)
+Particion* (*creadorParticiones)(int);
+//Particion* (*reemplazoParticion)(int);
+Particion* (*selectorParticion)(int);
+int frecuenciaCompactacion;
+
+void IniciarMemoria(int tamanioMemoria, char* algoritmoMemoria, char* algoritmoReemplazo, char* algoritmoSeleccion, int _frecuenciaCompactacion)
 {
+	// algoritmoMemoria
 	if (strcmp(algoritmoMemoria, "PARTICIONES") == 0)
 		creadorParticiones = &DP_CrearParticion;
 	else if (strcmp(algoritmoMemoria, "BS") == 0)
@@ -25,6 +31,30 @@ void IniciarMemoria(int tamanioMemoria, char* algoritmoMemoria)
 		exit(-1);
 	}
 
+	// algoritmoMemoria
+	/*if (strcmp(algoritmoReemplazo, "FIFO") == 0)
+		reemplazoParticion = &DP_CrearParticion;
+	else if (strcmp(algoritmoReemplazo, "LRU") == 0)
+		reemplazoParticion = &BS_CrearParticion;
+	else
+	{
+		log_error(logger, "Algorimo de memoria inválido");
+		exit(-1);
+	}*/
+
+	// algoritmoSeleccion
+	if (strcmp(algoritmoSeleccion, "FF") == 0)
+		selectorParticion = &SelectorFF;
+	else if (strcmp(algoritmoSeleccion, "BF") == 0)
+		selectorParticion = &SelectorBF;
+	else
+	{
+		log_error(logger, "Algorimo de selección inválido");
+		exit(-1);
+	}
+
+	frecuenciaCompactacion = _frecuenciaCompactacion;
+
 	memoria = malloc(tamanioMemoria);
 	particiones = list_create();
 	list_add(particiones, creadorParticiones(tamanioMemoria));
@@ -33,8 +63,34 @@ void IniciarMemoria(int tamanioMemoria, char* algoritmoMemoria)
 
 void GuardarMensaje(Mensaje* mensaje, Stream* contenido)
 {
-	mensaje->contenido = malloc(contenido->tamanio);
-	memcpy(mensaje->contenido, contenido->base, contenido->tamanio);
+	Particion* particion = NULL;
+	int intentos = 0;
+
+	pthread_mutex_lock(&mutexMemoria);
+	while(true)
+	{
+		particion = selectorParticion(contenido->tamanio);
+		if (particion != NULL)
+			break;
+		intentos++;
+
+		if (intentos == frecuenciaCompactacion || (frecuenciaCompactacion == -1 && particiones->elements_count == 1 && !((Particion*)(list_get(particiones, 0)))->ocupado))
+		{
+			//TODO: compactar solamente cuando se hayan eliminado todas las particione???
+			//TODO: Compactar();
+			intentos = 0;
+		}
+		else
+		{
+			//TODO: reemplazoParticion();
+		}
+	}
+
+	particion->id = mensaje->id;
+	particion->ocupado = true;
+	particion->cola = mensaje->tipoDeMensaje;
+	memcpy(mensaje->contenido, memoria + particion->inicio, contenido->tamanio);
+	pthread_mutex_unlock(&mutexMemoria);
 }
 
 void* ObtenerContenidoMensaje(Mensaje* mensaje)
@@ -60,8 +116,6 @@ void Dump()
 	for(int indice = 0; indice < particiones->elements_count; indice++)
 		Particion_Dump((Particion*)(list_get(particiones, indice)), archivo, indice+1);
 	pthread_mutex_unlock(&mutexMemoria);
-
-	fprintf(archivo, "-----------------------------------------------------------------------------------------------------------------------------\n");
 
 	fclose(archivo);
 	log_info(logger, "Dump! (dump.txt)");
