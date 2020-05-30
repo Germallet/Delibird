@@ -1,26 +1,30 @@
 #include "mensajes.h"
+#include "gameCard.h"
 
-//Servidor* servidor;
-Eventos* eventos;
-
-void SocketEscucha() {
-
-}
-
+Servidor* servidor;
 
 void SuscribirseColas(Cliente* cliente) {
-	eventos = Eventos_Crear0();
 
-	Eventos_AgregarOperacion(eventos, BROKER_CONECTADO, (EventoOperacion) &ConexionColas);
-	Eventos_AgregarOperacion(eventos, NEW_POKEMON, (EventoOperacion)&Operacion_NEW_POKEMON);
-	Eventos_AgregarOperacion(eventos, CATCH_POKEMON, (EventoOperacion)&Operacion_CATCH_POKEMON);
-	Eventos_AgregarOperacion(eventos, GET_POKEMON, (EventoOperacion)&Operacion_GET_POKEMON);
+	Eventos_AgregarOperacion(cliente->eventos, BROKER_CONECTADO, (EventoOperacion) &ConexionColas);
+	Eventos_AgregarOperacion(cliente->eventos, NEW_POKEMON, (EventoOperacion)&Recibir_NEW_POKEMON);
+	Eventos_AgregarOperacion(cliente->eventos, CATCH_POKEMON, (EventoOperacion)&Recibir_CATCH_POKEMON);
+	Eventos_AgregarOperacion(cliente->eventos, GET_POKEMON, (EventoOperacion)&Recibir_GET_POKEMON);
 
 	if (Socket_Enviar(BROKER_CONECTAR, NULL, 0, cliente->socket) < 0) {
 		free(cliente->info);
 		TerminarProgramaConError("ERROR EN CONEXION CON EL BROKER");
 	}
+}
 
+void SocketEscucha(char* ip, int puerto) {
+
+	Eventos* eventos = Eventos_Crear0();
+
+	Eventos_AgregarOperacion(eventos, NEW_POKEMON, (EventoOperacion) &Recibir_NEW_POKEMON);
+	Eventos_AgregarOperacion(eventos, CATCH_POKEMON, (EventoOperacion) &Recibir_CATCH_POKEMON);
+	Eventos_AgregarOperacion(eventos, GET_POKEMON, (EventoOperacion) &Recibir_GET_POKEMON);
+
+	servidor = CrearServidor(ip,puerto,eventos);
 }
 
 void ConexionColas(Cliente* cliente, Paquete* paquete) {
@@ -39,26 +43,27 @@ void ConexionColas(Cliente* cliente, Paquete* paquete) {
 	free(cliente->info);
 }
 
-
-static void Recibir_NEW_POKEMON(Cliente* cliente, Paquete* paqueteRecibido) {
+void Recibir_NEW_POKEMON(Cliente* cliente, Paquete* paqueteRecibido) {
 	Stream* stream = Stream_CrearLecturaPaquete(paqueteRecibido);
 	uint32_t id = Deserializar_uint32(stream);
 	DATOS_NEW_POKEMON datos = Deserializar_NEW_POKEMON(stream);
 
 	if (stream->error)
-		log_error(logger, "Error al deserializar NEW_POKEMON");
+		log_error(logger,"Error al deserializar NEW_POKEMON");
 	else
 		EnviarID(cliente,id);
 
-	pthread_mutex_t mutexOperacion;
-	pthread_mutex_init(&mutexOperacion,&Operacion_NEW_POKEMON(datos));
+	pthread_t thread;
+	pthread_create(&thread, NULL, (void*) Operacion_NEW_POKEMON,&datos);
+	pthread_detach(thread);
 }
 
-static void Operacion_NEW_POKEMON(DATOS_NEW_POKEMON datos) {
+void Operacion_NEW_POKEMON(DATOS_NEW_POKEMON* datos) {
+	log_info(logger,"llego");
 	//TODO hacer lo que se tenga que hacer con el NEW_POKEMON
 }
 
-static void Recibir_CATCH_POKEMON(Cliente* cliente, Paquete* paqueteRecibido) {
+void Recibir_CATCH_POKEMON(Cliente* cliente, Paquete* paqueteRecibido) {
 	Stream* stream = Stream_CrearLecturaPaquete(paqueteRecibido);
 	uint32_t id = Deserializar_uint32(stream);
 	DATOS_CATCH_POKEMON datos = Deserializar_CATCH_POKEMON(stream);
@@ -68,15 +73,17 @@ static void Recibir_CATCH_POKEMON(Cliente* cliente, Paquete* paqueteRecibido) {
 	else
 		EnviarID(cliente,id);
 
-	pthread_mutex_t mutexOperacion;
-	pthread_mutex_init(&mutexOperacion,&Operacion_CATCH_POKEMON(datos));
+	pthread_t thread;
+	pthread_create(&thread, NULL, (void*) Operacion_CATCH_POKEMON,&datos);
+	pthread_detach(thread);
 }
 
-static void Operacion_CATCH_POKEMON(DATOS_CATCH_POKEMON datos) {
+void Operacion_CATCH_POKEMON(DATOS_CATCH_POKEMON* datos) {
+	log_info(logger,"llego");
 	//TODO hacer lo que se tenga que hacer con el CATCH_POKEMON
 }
 
-static void Recibir_GET_POKEMON(Cliente* cliente, Paquete* paqueteRecibido) {
+void Recibir_GET_POKEMON(Cliente* cliente, Paquete* paqueteRecibido) {
 	Stream* stream = Stream_CrearLecturaPaquete(paqueteRecibido);
 	uint32_t id = Deserializar_uint32(stream);
 	DATOS_GET_POKEMON datos = Deserializar_GET_POKEMON(stream);
@@ -86,12 +93,15 @@ static void Recibir_GET_POKEMON(Cliente* cliente, Paquete* paqueteRecibido) {
 	else
 		EnviarID(cliente,id);
 
-	pthread_mutex_t mutexOperacion;
-	pthread_mutex_init(&mutexOperacion,&Operacion_GET_POKEMON(datos));
+	pthread_t thread;
+	pthread_create(&thread, NULL, (void*) Operacion_GET_POKEMON,&datos);
+	pthread_detach(thread);
 
 }
 
-static void Operacion_GET_POKEMON(DATOS_GET_POKEMON datos) {
+void Operacion_GET_POKEMON(DATOS_GET_POKEMON* datos) {
+
+	log_info(logger,"llego");
 	//TODO hacer lo que se tenga que hacer con el GET_POKEMON
 }
 
