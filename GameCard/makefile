@@ -1,5 +1,5 @@
 TARGET = GameCard
-LIBS = -L./../Utils -lutils -lcommons
+LIBS = -L./../Utils -lutils -lcommons -lpthread 
 CC = gcc
 CFLAGS = -g -Wall
 
