@@ -5,8 +5,6 @@
 t_log* logger;
 t_config* config;
 
-//todo ver como achicar un toque el main y delegar en otros archivos algunas funciones
-
 int main(int argc, char* argv[])
 {
 	logger = log_create("gameBoy.log", "GameBoy", true, LOG_LEVEL_INFO);
