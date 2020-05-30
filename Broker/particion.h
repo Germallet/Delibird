@@ -2,12 +2,14 @@
 #include "../Utils/codigoDeCola.h"
 #include <stdbool.h>
 #include <stdio.h>
+#include <time.h>
 
 typedef struct {
-	int inicio;
+	int base;
 	int tamanio;
 	bool ocupado;
-	int LRU;
+	clock_t tiempoAsignado;
+	clock_t tiempoUpdated;
 	CodigoDeCola cola;
 	int id;
 } Particion;

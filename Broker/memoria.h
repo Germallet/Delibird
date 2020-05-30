@@ -7,5 +7,3 @@ void GuardarMensaje(Mensaje* mensaje, Stream* contenido);
 void* ObtenerContenidoMensaje(Mensaje* mensaje);
 void Dump();
 void DestruirMemoria();
-
-extern t_list* particiones;

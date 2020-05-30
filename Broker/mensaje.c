@@ -34,7 +34,6 @@ Mensaje* CrearMensaje(CodigoDeCola tipoDeMensaje, uint32_t id, uint32_t idCorrel
 	Mensaje* mensaje = malloc(sizeof(Mensaje));
 	mensaje->id = id;
 	mensaje->idCorrelativo = idCorrelativo;
-	mensaje->tipoDeMensaje = tipoDeMensaje;
 	mensaje->tamanio = tamanio;
 	mensaje->clientesEnviados = list_create();
 	mensaje->clientesACK = list_create();

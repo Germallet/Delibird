@@ -1,4 +1,5 @@
 #pragma once
+#include "particion.h"
 #include "../Utils/protocolo.h"
 #include "../Utils/net.h"
 #include <commons/collections/list.h>
@@ -7,14 +8,11 @@ typedef struct
 {
 	uint32_t id;
 	uint32_t idCorrelativo;
-	int posicionEnMemoria;
-	int tamanio;
-	pthread_mutex_t mutexMensaje;
+	pthread_mutex_t mutexMensaje; // TODO
 	t_list* clientesEnviados;
 	t_list* clientesACK;
-	// TODO: Variables temporales hasta verdadera implementación
-	CodigoDeCola tipoDeMensaje;
-	void* contenido;
+	Particion* particion;
+	int tamanio;
 } Mensaje;
 
 void IniciarMensajes();

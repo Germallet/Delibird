@@ -1,4 +1,9 @@
 #pragma once
 #include "particion.h"
 
-Particion* BS_CrearParticion(int tamanio);
+Particion* BS_Seleccionar(int tamanio);
+void BS_Compactar();
+void BS_Eliminar_FIFO();
+void BS_Eliminar_LRU();
+void BS_Dump();
+void BS_Destruir();
