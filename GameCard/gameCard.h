@@ -3,10 +3,8 @@
 #include <commons/collections/list.h>
 #include <stdbool.h>
 #include <stdlib.h>
-//#include <fuse.h>
 #include <stdint.h>
 #include "../Utils/socket.h"
-//#include "../Utils/protocolo.h"
 
 t_log* logger;
 
@@ -25,3 +23,4 @@ void informar(char* log);
 void informarError(char* error);
 void TerminarProgramaConError(char* error);
 void TerminarPrograma(t_log* logger, t_config* config);
+void EsperarHilos();

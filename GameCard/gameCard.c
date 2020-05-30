@@ -1,5 +1,8 @@
 #include "gameCard.h"
 #include "mensajes.h"
+//#include <fuse.h>
+//
+//#define D_FILE_OFFSET_BITS 64
 
 t_config* config;
 
@@ -11,25 +14,40 @@ int main()
 	char* miIp = config_get_string_value(config,"IP_GAMECARD");
 	int miPuerto = config_get_int_value(config,"PUERTO_GAMECARD");
 
-//	char* puntoMontaje = config_get_string_value(config,"PUNTO_MONTAJE_TALLGRASS");
-//	int tiempoReintentoConexion = config_get_int_value(config,"TIEMPO_DE_REINTENTO_CONEXION");
-//	int tiempoReintentoOperacion = config_get_int_value(config,"TIEMPO_DE_REINTENTO_OPERACION");
-//	int tiempoRetardoOperacion = config_get_int_value(config,"TIEMPO_RETARDO_OPERACION");
-//	char* ipBroker = config_get_string_value(config,"IP_BROKER");
-//	int puertoBroker = config_get_int_value(config,"PUERTO_BROKER");
-//
-//	Eventos* eventos = Eventos_Crear0();
+	char* puntoMontaje = config_get_string_value(config,"PUNTO_MONTAJE_TALLGRASS");
+	int tiempoReintentoConexion = config_get_int_value(config,"TIEMPO_DE_REINTENTO_CONEXION");
+	int tiempoReintentoOperacion = config_get_int_value(config,"TIEMPO_DE_REINTENTO_OPERACION");
+	int tiempoRetardoOperacion = config_get_int_value(config,"TIEMPO_RETARDO_OPERACION");
+	char* ipBroker = config_get_string_value(config,"IP_BROKER");
+	int puertoBroker = config_get_int_value(config,"PUERTO_BROKER");
 
-//	Cliente clienteBroker = CrearCliente(ipBroker,puertoBroker,eventos);
+	Eventos* eventos = Eventos_Crear0();
 
-//	SuscribirseColas(clienteBroker);
+	Cliente* clienteBroker = CrearCliente(ipBroker,puertoBroker,eventos);
+
+	SuscribirseColas(clienteBroker);
 
 	SocketEscucha(miIp, miPuerto);
 
+	EsperarHilos();
+
 	//EN ALGUN LADO METER UN FORK PARA TENER VARIOS PROCESO GAME CARD
+
+	log_info(logger,puntoMontaje);
+	log_info(logger,"/s",tiempoReintentoConexion);
+	log_info(logger,"/s",tiempoReintentoOperacion);
+	log_info(logger,"/s",tiempoRetardoOperacion);
 
 	TerminarPrograma(logger,config);
 	return 0;
+}
+
+void EsperarHilos()
+{
+	pthread_mutex_t mx_main;
+	pthread_mutex_init(&mx_main, NULL);
+	pthread_mutex_lock(&mx_main);
+	pthread_mutex_lock(&mx_main);
 }
 
 void TerminarProgramaConError(char* error)
