@@ -58,7 +58,7 @@ static void Operacion_NEW_POKEMON(DATOS_NEW_POKEMON datos) {
 	//TODO hacer lo que se tenga que hacer con el NEW_POKEMON
 }
 
-static void Operacion_CATCH_POKEMON(Cliente* cliente, Paquete* paqueteRecibido) {
+static void Recibir_CATCH_POKEMON(Cliente* cliente, Paquete* paqueteRecibido) {
 	Stream* stream = Stream_CrearLecturaPaquete(paqueteRecibido);
 	uint32_t id = Deserializar_uint32(stream);
 	DATOS_CATCH_POKEMON datos = Deserializar_CATCH_POKEMON(stream);
@@ -76,7 +76,7 @@ static void Operacion_CATCH_POKEMON(DATOS_CATCH_POKEMON datos) {
 	//TODO hacer lo que se tenga que hacer con el CATCH_POKEMON
 }
 
-static void Operacion_GET_POKEMON(Cliente* cliente, Paquete* paqueteRecibido) {
+static void Recibir_GET_POKEMON(Cliente* cliente, Paquete* paqueteRecibido) {
 	Stream* stream = Stream_CrearLecturaPaquete(paqueteRecibido);
 	uint32_t id = Deserializar_uint32(stream);
 	DATOS_GET_POKEMON datos = Deserializar_GET_POKEMON(stream);
@@ -100,7 +100,6 @@ void EnviarID(Cliente* cliente, uint32_t identificador)
 	DATOS_ID_MENSAJE* id_mensaje = malloc(sizeof(DATOS_ID_MENSAJE));
 
 	id_mensaje->id = identificador;
-	log_error(logger, "Enviando ACK %d", id_mensaje->id);
 	EnviarMensaje(cliente, BROKER_ACK, id_mensaje, (void*) &SerializarM_ID_MENSAJE);
 
 	free(id_mensaje);
