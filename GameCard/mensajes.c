@@ -14,6 +14,7 @@ void SuscribirseColas(Cliente* cliente) {
 		free(cliente->info);
 		TerminarProgramaConError("ERROR EN CONEXION CON EL BROKER");
 	}
+
 }
 
 void SocketEscucha(char* ip, int puerto) {
@@ -61,6 +62,7 @@ void Recibir_NEW_POKEMON(Cliente* cliente, Paquete* paqueteRecibido) {
 void Operacion_NEW_POKEMON(DATOS_NEW_POKEMON* datos) {
 	log_info(logger,"llego");
 	//TODO hacer lo que se tenga que hacer con el NEW_POKEMON
+	// HAY QUE MANDARLE AL BROKER UN MENSAJE DE APPEARED
 }
 
 void Recibir_CATCH_POKEMON(Cliente* cliente, Paquete* paqueteRecibido) {
@@ -81,6 +83,7 @@ void Recibir_CATCH_POKEMON(Cliente* cliente, Paquete* paqueteRecibido) {
 void Operacion_CATCH_POKEMON(DATOS_CATCH_POKEMON* datos) {
 	log_info(logger,"llego");
 	//TODO hacer lo que se tenga que hacer con el CATCH_POKEMON
+	// HAY QUE MANDARLE AL BROKER UN MENSAJE DE CAUGHT
 }
 
 void Recibir_GET_POKEMON(Cliente* cliente, Paquete* paqueteRecibido) {
@@ -103,6 +106,7 @@ void Operacion_GET_POKEMON(DATOS_GET_POKEMON* datos) {
 
 	log_info(logger,"llego");
 	//TODO hacer lo que se tenga que hacer con el GET_POKEMON
+	// HAY QUE MANDARLE AL BROKER UN MENSAJE DE LOCALIZED
 }
 
 void EnviarID(Cliente* cliente, uint32_t identificador)

@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include "../Utils/socket.h"
+#include "../Utils/hiloTimer.h"
 
 t_log* logger;
 
@@ -19,8 +20,8 @@ typedef struct {
 	char open;
 } DatosArchivosPokemon;
 
-void informar(char* log);
-void informarError(char* error);
+void conectarse();
+void reconexion(Cliente* clienteBroker);
 void TerminarProgramaConError(char* error);
 void TerminarPrograma(t_log* logger, t_config* config);
 void EsperarHilos();
