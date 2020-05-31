@@ -89,6 +89,9 @@ bool TieneSuscriptor(Cola* cola, ClienteBroker* clienteBroker)
 
 bool CorresponderRecibirRespuesta(CodigoDeCola codigo, uint32_t idCorrelativo)
 {
+	if (idCorrelativo == -1)
+		return true;
+
 	bool MismoCorrelativo(void* mensaje) { return ((Mensaje*)mensaje)->idCorrelativo == idCorrelativo;}
 	Cola* cola = ObtenerCola(codigo);
 	bool resultado;
@@ -100,38 +103,41 @@ bool CorresponderRecibirRespuesta(CodigoDeCola codigo, uint32_t idCorrelativo)
 	return resultado;
 }
 
-static void BroadcastMensajeSinChequeo(Cola* cola, Mensaje* mensaje)
+static void BroadcastMensajeSinChequeo(Cola* cola, CodigoDeCola codigoDeCola, Mensaje* mensaje)
 {
 	void* contenido = ObtenerContenidoMensaje(mensaje);
-	void EnviarMensajeA(void* cliente) { Mensaje_EnviarA(mensaje, contenido, ((ClienteBroker*)cliente)->cliente); }
+	void EnviarMensajeA(void* cliente) { Mensaje_EnviarA(mensaje, codigoDeCola, contenido, ((ClienteBroker*)cliente)->cliente); }
 
 	pthread_mutex_lock(&(cola->mutexSuscriptores));
 	list_iterate(cola->suscriptores, &EnviarMensajeA);
 	pthread_mutex_unlock(&(cola->mutexSuscriptores));
+
+	free(contenido);
 }
 void Cola_ProcesarNuevoMensaje(CodigoDeCola codigoDeCola, Mensaje* mensaje)
 {
 	Cola* cola = ObtenerCola(codigoDeCola);
 
 	void* contenido = ObtenerContenidoMensaje(mensaje);
-	void EnviarMensajeA(void* cliente) { Mensaje_EnviarA(mensaje, contenido, ((ClienteBroker*)cliente)->cliente); }
+	void EnviarMensajeA(void* cliente) { Mensaje_EnviarA(mensaje, codigoDeCola, contenido, ((ClienteBroker*)cliente)->cliente); }
 
 	pthread_mutex_lock(&(cola->mutexMensajes));
 	list_add(cola->mensajes, mensaje);
 	pthread_mutex_unlock(&(cola->mutexMensajes));
 
-	BroadcastMensajeSinChequeo(cola, mensaje);
+	BroadcastMensajeSinChequeo(cola, codigoDeCola, mensaje);
+	free(contenido);
 }
 
-void Cola_EnviarMensajesRestantesSiCorrespondeA(Cola* cola, ClienteBroker* cliente)
+void Cola_EnviarMensajesRestantesSiCorrespondeA(Cola* cola, CodigoDeCola codigoDeCola, ClienteBroker* cliente)
 {
 	void EnviarMensajeSiCorresponde(void* mensaje)
 	{
 		if (Mensaje_SeLeEnvioA(mensaje, cliente))
 			return;
 		void* contenido = ObtenerContenidoMensaje(mensaje);
-		Mensaje_EnviarA(mensaje, contenido, cliente->cliente);
-		// TODO: free(contenido); CUANDO LA MEMORIA SEA PERSISTENTE
+		Mensaje_EnviarA(mensaje, codigoDeCola, contenido, cliente->cliente);
+		free(contenido);
 	}
 
 	if (!TieneSuscriptor(cola, cliente))
@@ -144,10 +150,10 @@ void Cola_EnviarMensajesRestantesSiCorrespondeA(Cola* cola, ClienteBroker* clien
 
 void Colas_EnviarMensajesRestantesSiCorrespondeA(ClienteBroker* cliente)
 {
-	Cola_EnviarMensajesRestantesSiCorrespondeA(cola_NEW_POKEMON, cliente);
-	Cola_EnviarMensajesRestantesSiCorrespondeA(cola_APPEARED_POKEMON, cliente);
-	Cola_EnviarMensajesRestantesSiCorrespondeA(cola_CATCH_POKEMON, cliente);
-	Cola_EnviarMensajesRestantesSiCorrespondeA(cola_CAUGHT_POKEMON, cliente);
-	Cola_EnviarMensajesRestantesSiCorrespondeA(cola_GET_POKEMON, cliente);
-	Cola_EnviarMensajesRestantesSiCorrespondeA(cola_LOCALIZED_POKEMON, cliente);
+	Cola_EnviarMensajesRestantesSiCorrespondeA(cola_NEW_POKEMON, COLA_NEW_POKEMON, cliente);
+	Cola_EnviarMensajesRestantesSiCorrespondeA(cola_APPEARED_POKEMON, COLA_APPEARED_POKEMON, cliente);
+	Cola_EnviarMensajesRestantesSiCorrespondeA(cola_CATCH_POKEMON, COLA_CATCH_POKEMON, cliente);
+	Cola_EnviarMensajesRestantesSiCorrespondeA(cola_CAUGHT_POKEMON, COLA_CAUGHT_POKEMON, cliente);
+	Cola_EnviarMensajesRestantesSiCorrespondeA(cola_GET_POKEMON, COLA_GET_POKEMON, cliente);
+	Cola_EnviarMensajesRestantesSiCorrespondeA(cola_LOCALIZED_POKEMON, COLA_LOCALIZED_POKEMON, cliente);
 }

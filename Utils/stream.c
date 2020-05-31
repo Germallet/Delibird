@@ -18,6 +18,7 @@ Stream* Stream_CrearEscritura(void* buffer, size_t tamanio)
 	stream->base = buffer;
 	stream->desplazamiento = 0;
 	stream->tamanio = tamanio;
+	stream->error = false;
 	return stream;
 }
 
@@ -27,6 +28,7 @@ Stream* Stream_CrearLectura(void* buffer, size_t tamanio)
 	stream->base = buffer;
 	stream->desplazamiento = 0;
 	stream->tamanio = tamanio;
+	stream->error = false;
 	return stream;
 }
 
@@ -36,6 +38,7 @@ Stream* Stream_CrearLecturaPaquete(Paquete* paquete)
 	stream->base = paquete->stream;
 	stream->desplazamiento = 0;
 	stream->tamanio = paquete->tamanio;
+	stream->error = false;
 	return stream;
 }
 

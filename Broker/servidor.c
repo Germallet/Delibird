@@ -7,6 +7,7 @@
 #include "../Utils/serializacion.h"
 
 Servidor* servidor;
+pthread_mutex_t mutexRecepcion;
 
 static void Operacion_CONECTAR(Cliente* cliente, Paquete* paqueteRecibido);
 static void Operacion_RECONECTAR(Cliente* cliente, Paquete* paqueteRecibido);
@@ -36,9 +37,9 @@ void IniciarServidorBroker(char* ip, int puerto)
 	Eventos_AgregarOperacion(eventos, LOCALIZED_POKEMON, (EventoOperacion)&Operacion_LOCALIZED_POKEMON);
 
 	servidor = CrearServidor(ip, puerto, eventos);
+	if (servidor == NULL) log_error(logger, "Error al iniciar escucha (%s:%d)", ip, puerto);
 
-	if (servidor == NULL)
-		log_error(logger, "Error al iniciar escucha (%s:%d)", ip, puerto);
+	pthread_mutex_init(&mutexRecepcion, NULL);
 }
 void FinalizarServidorBroker()
 {
@@ -114,9 +115,12 @@ static void RecibirMensaje(Cliente* cliente, CodigoDeCola tipoDeMensaje, uint32_
 	if (!CorresponderRecibirRespuesta(tipoDeMensaje, idCorrelativo))
 		return;
 
+	pthread_mutex_lock(&mutexRecepcion);
 	Mensaje* nuevoMensaje = CrearMensaje(tipoDeMensaje, idMensaje, idCorrelativo, contenido->tamanio);
+	GuardarMensaje(nuevoMensaje, tipoDeMensaje, contenido);
+	pthread_mutex_unlock(&mutexRecepcion);
+
 	EnviarIDMensaje(idMensaje, cliente);
-	GuardarMensaje(nuevoMensaje, contenido);
 	Cola_ProcesarNuevoMensaje(tipoDeMensaje, nuevoMensaje);
 }
 
@@ -136,7 +140,7 @@ static void Operacion_SUSCRIBIRSE(Cliente* cliente, Paquete* paqueteRecibido)
 	AgregarSuscriptor(cola, (ClienteBroker*)cliente->info);
 	log_info(logger, "Nueva suscripción (cliente: %d, cola: %s)", ((ClienteBroker*)cliente->info)->id, CodigoDeColaAString(datosSuscripcion.cola));
 
-	Cola_EnviarMensajesRestantesSiCorrespondeA(cola, cliente->info);
+	Cola_EnviarMensajesRestantesSiCorrespondeA(cola, datosSuscripcion.cola, cliente->info);
 }
 static void Operacion_ACK(Cliente* cliente, Paquete* paqueteRecibido)
 {
@@ -170,7 +174,7 @@ static void Operacion_NEW_POKEMON(Cliente* cliente, Paquete* paqueteRecibido)
 	free(textoDatos);
 
 	Stream* stream = SerializarM_NEW_POKEMON_ID(&datosProcesados);
-	RecibirMensaje(cliente, COLA_NEW_POKEMON, datosProcesados.id, 0, stream);
+	RecibirMensaje(cliente, COLA_NEW_POKEMON, datosProcesados.id, -1, stream);
 	Stream_Destruir(streamLectura);
 	Stream_DestruirConBuffer(stream);
 
@@ -215,7 +219,7 @@ static void Operacion_CATCH_POKEMON(Cliente* cliente, Paquete* paqueteRecibido)
 	free(textoDatos);
 
 	Stream* stream = SerializarM_CATCH_POKEMON_ID(&datosProcesados);
-	RecibirMensaje(cliente, COLA_CATCH_POKEMON, datosProcesados.id, 0, stream);
+	RecibirMensaje(cliente, COLA_CATCH_POKEMON, datosProcesados.id, -1, stream);
 	Stream_Destruir(streamLectura);
 	Stream_DestruirConBuffer(stream);
 
@@ -257,8 +261,8 @@ static void Operacion_GET_POKEMON(Cliente* cliente, Paquete* paqueteRecibido)
 	log_info(logger, "Nuevo mensaje recibido: %s", textoDatos);
 	free(textoDatos);
 
-	Stream* stream = SerializarM_GET_POKEMON_ID(&datosProcesados);
-	RecibirMensaje(cliente, COLA_GET_POKEMON, datosProcesados.id, 0, stream);
+	Stream* stream = SerializarM_GET_POKEMON(&(datosProcesados.datos));
+	RecibirMensaje(cliente, COLA_GET_POKEMON, datosProcesados.id, -1, stream);
 	Stream_Destruir(streamLectura);
 	Stream_DestruirConBuffer(stream);
 

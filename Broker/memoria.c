@@ -13,7 +13,7 @@ pthread_mutex_t mutexMemoria;
 
 void (*compactar)();
 Particion* (*seleccionar)(int);
-void* (*eliminarParticion)();
+void (*eliminarParticion)();
 void (*dump)();
 void (*destuir)();
 int frecuenciaCompactacion;
@@ -78,7 +78,7 @@ void IniciarMemoria(int tamanioMemoria, char* algoritmoMemoria, char* algoritmoR
 	pthread_mutex_init(&mutexMemoria, NULL);
 }
 
-void GuardarMensaje(Mensaje* mensaje, Stream* contenido)
+void GuardarMensaje(Mensaje* mensaje, CodigoDeCola tipoDeMensaje, Stream* contenido)
 {
 	Particion* particion = NULL;
 	int intentos = 0;
@@ -102,16 +102,22 @@ void GuardarMensaje(Mensaje* mensaje, Stream* contenido)
 
 	particion->id = mensaje->id;
 	particion->ocupado = true;
-	particion->cola = mensaje->tipoDeMensaje;
+	particion->cola = tipoDeMensaje;
 	particion->tiempoAsignado = clock();
 	particion->tiempoUpdated = clock();
-	memcpy(contenido->base, memoria + particion->base, contenido->tamanio);
+	memcpy(memoria + particion->base, contenido->base, contenido->tamanio);
 	pthread_mutex_unlock(&mutexMemoria);
+
+	mensaje->particion = particion;
 }
 
 void* ObtenerContenidoMensaje(Mensaje* mensaje)
 {
-	return mensaje->contenido;
+	void* contenido = malloc(mensaje->tamanio);
+	pthread_mutex_lock(&mutexMemoria);
+	memcpy(contenido, memoria + mensaje->particion->base, mensaje->tamanio);
+	pthread_mutex_unlock(&mutexMemoria);
+	return contenido;
 }
 
 void Dump()

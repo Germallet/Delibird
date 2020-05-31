@@ -3,7 +3,7 @@
 #include "../Utils/protocolo.h"
 
 void IniciarMemoria(int tamanioMemoria, char* algoritmoMemoria, char* algoritmoReemplazo, char* algoritmoSeleccion, int frecuenciaCompactacion);
-void GuardarMensaje(Mensaje* mensaje, Stream* contenido);
+void GuardarMensaje(Mensaje* mensaje, CodigoDeCola tipoDeMensaje, Stream* contenido);
 void* ObtenerContenidoMensaje(Mensaje* mensaje);
 void Dump();
 void DestruirMemoria();

@@ -20,4 +20,4 @@ uint32_t GenerarIDMensaje();
 Mensaje* CrearMensaje(CodigoDeCola tipoDeMensaje, uint32_t idCorrelativo, uint32_t id, size_t tamanio);
 bool RegistrarACK(uint32_t idMensaje, void* clienteBroker);
 bool Mensaje_SeLeEnvioA(Mensaje* mensaje, void* clienteBroker);
-void Mensaje_EnviarA(Mensaje* mensaje, void* contenido, Cliente* cliente);
+void Mensaje_EnviarA(Mensaje* mensaje, CodigoDeCola tipoDeMensaje, void* contenido, Cliente* cliente);

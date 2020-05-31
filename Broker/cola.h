@@ -22,5 +22,5 @@ void RemoverSuscriptorTotal(ClienteBroker* clienteBroker);
 bool TieneSuscriptor(Cola* cola, ClienteBroker* clienteBroker);
 bool CorresponderRecibirRespuesta(CodigoDeCola codigo, uint32_t idCorrelativo);
 void Cola_ProcesarNuevoMensaje(CodigoDeCola codigoDeCola, Mensaje* mensaje);
-void Cola_EnviarMensajesRestantesSiCorrespondeA(Cola* cola, ClienteBroker* cliente);
+void Cola_EnviarMensajesRestantesSiCorrespondeA(Cola* cola, CodigoDeCola codigoDeCola, ClienteBroker* cliente);
 void Colas_EnviarMensajesRestantesSiCorrespondeA(ClienteBroker* cliente);

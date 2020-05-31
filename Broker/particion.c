@@ -20,7 +20,7 @@ void Particion_Dump(Particion* particion, FILE* archivo, int numero)
 {
 	if (particion->ocupado)
 		fprintf(archivo,
-			"Partición %d: 0x%X - 0x%X.    [%c]    Size: %db    LRU:%li    Cola:%s   ID:%d\n",
+			"Partición %d: 0x%X - 0x%X.    [%c]    Size: %db    LRU: %li    Cola: %s   ID: %d\n",
 			numero,
 			particion->base,
 			particion->base + particion->tamanio,

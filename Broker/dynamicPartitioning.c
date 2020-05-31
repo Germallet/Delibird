@@ -12,8 +12,9 @@ void DP_Inicializar(int tamanio)
 
 static Particion* Subparticionar(Particion* particion, int tamanio)
 {
-	Particion* particionNueva = Particion_Crear(particion->base + tamanio, particion->tamanio - tamanio);
+	Particion* particionNueva = Particion_Crear(particion->base + tamanio + 1, particion->tamanio - tamanio - 1);
 	particion->tamanio = tamanio;
+	list_add(particiones, particionNueva);
 	return particionNueva;
 }
 
