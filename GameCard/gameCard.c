@@ -6,6 +6,18 @@
 
 t_config* config;
 
+Eventos* eventos;
+
+Cliente* clienteBroker;
+
+/* TODO LISTA GENERAL
+ * ESTRUCTURA DE LOS ARCHIVOS METADATA
+ * BITMAP
+ * HACER FUNCIONES PARA LEER, ESCRIBIR, FIJARSE SI ESTA EL ARCHIVO, VERIFICAR SI SE PUEDE ABRIR, OBTENER POSICIONES Y CANTIDADES DE ARCHIVO
+ * ELIMINAR CANTIDADES Y POSICIONES DE ARCHIVO
+ * HACER FILESYSTEM
+ */
+
 int main()
 {
 	logger = log_create("gameCard.log", "GameCard", true, LOG_LEVEL_INFO);
@@ -18,14 +30,8 @@ int main()
 	int tiempoReintentoConexion = config_get_int_value(config,"TIEMPO_DE_REINTENTO_CONEXION");
 	int tiempoReintentoOperacion = config_get_int_value(config,"TIEMPO_DE_REINTENTO_OPERACION");
 	int tiempoRetardoOperacion = config_get_int_value(config,"TIEMPO_RETARDO_OPERACION");
-	char* ipBroker = config_get_string_value(config,"IP_BROKER");
-	int puertoBroker = config_get_int_value(config,"PUERTO_BROKER");
 
-	Eventos* eventos = Eventos_Crear0();
-
-	Cliente* clienteBroker = CrearCliente(ipBroker,puertoBroker,eventos);
-
-	SuscribirseColas(clienteBroker);
+	CrearHiloTimer(-1,tiempoReintentoConexion,&reconexion,NULL);
 
 	SocketEscucha(miIp, miPuerto);
 
@@ -41,6 +47,19 @@ int main()
 	TerminarPrograma(logger,config);
 	return 0;
 }
+
+void conectarse() {
+
+	char* ipBroker = config_get_string_value(config,"IP_BROKER");
+	int puertoBroker = config_get_int_value(config,"PUERTO_BROKER");
+
+	eventos = Eventos_Crear0();
+	clienteBroker = CrearCliente(ipBroker,puertoBroker,eventos);
+
+	SuscribirseColas(clienteBroker);
+}
+
+void reconexion() { if (clienteBroker == NULL) conectarse(); }
 
 void EsperarHilos()
 {
