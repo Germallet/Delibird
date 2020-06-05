@@ -1,6 +1,8 @@
 #include "dynamicPartitioning.h"
 #include "particion.h"
 #include "../Utils/dictionaryInt.h"
+#include "memoria.h"
+#include <string.h>
 
 t_list* particiones;
 
@@ -14,7 +16,11 @@ static Particion* Subparticionar(Particion* particion, int tamanio)
 {
 	Particion* particionNueva = Particion_Crear(particion->base + tamanio + 1, particion->tamanio - tamanio - 1);
 	particion->tamanio = tamanio;
-	list_add(particiones, particionNueva);
+
+	int indice = 0;
+	for(; list_get(particiones, indice) != particion; indice++);
+
+	list_add_in_index(particiones, indice+1, particionNueva);
 	return particionNueva;
 }
 
@@ -54,6 +60,13 @@ Particion* DP_Seleccionar_BF(int tamanio)
 
 void DP_Compactar()
 {
+	int base = 0;
+	for(int indice = 0; indice < particiones->elements_count; indice++)
+	{
+		Particion* particion = list_get(particiones, indice);
+		memmove(memoria + base, memoria + particion->base, particion->tamanio);
+		base += particion->tamanio;
+	}
 }
 
 static void DP_Eliminar(Particion* particion)

@@ -7,3 +7,5 @@ void GuardarMensaje(Mensaje* mensaje, CodigoDeCola tipoDeMensaje, Stream* conten
 void* ObtenerContenidoMensaje(Mensaje* mensaje);
 void Dump();
 void DestruirMemoria();
+
+extern void* memoria;
