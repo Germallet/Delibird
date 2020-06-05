@@ -65,6 +65,7 @@ void DP_Compactar()
 	{
 		Particion* particion = list_get(particiones, indice);
 		memmove(memoria + base, memoria + particion->base, particion->tamanio);
+		particion->base = base;
 		base += particion->tamanio;
 	}
 }
