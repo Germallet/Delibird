@@ -213,8 +213,13 @@ void obtener_entrenadores()
 void capturo_pokemon(Entrenador* entrenador)
 {
 	agregar_pokemon(entrenador->pokemons_atrapados, (char*) (datos_accion_actual(entrenador)->info));
+	resetear_acciones(entrenador);
+
 	if(puede_seguir_atrapando_pokemons(entrenador))
+	{
+		cambiar_estado_a(entrenador, BLOCKED);
 		habilitar_entrenador(entrenador);
+	}
 	else
 	{
 		if(tiene_todos_sus_pokemons(entrenador))
@@ -225,7 +230,6 @@ void capturo_pokemon(Entrenador* entrenador)
 		else
 		{
 			deshabilitar_entrenador(entrenador);
-			resetear_acciones(entrenador);
 			cambiar_estado_a(entrenador, BLOCKED);
 		}
 	}
@@ -374,10 +378,14 @@ static void capturar_pokemon(void* entrenador_void)
 	datos->pokemon = especie_pokemon_a_atrapar;
 	datos->posicion = *(entrenador->posicion);
 
-	Cliente* cliente = crear_cliente_de_broker(Eventos_Crear0());
-	EnviarMensaje(cliente, GET_POKEMON, datos, (Serializador) &SerializarM_CATCH_POKEMON);
-
 	log_info(logger, "El entrenador %d intenta atrapar un %s en la posicion (%d,%d)", entrenador->ID, especie_pokemon_a_atrapar, entrenador->posicion->posX, entrenador->posicion->posY);
+
+	Cliente* cliente = crear_cliente_de_broker(Eventos_Crear0());
+	if(cliente != NULL)
+		EnviarMensaje(cliente, GET_POKEMON, datos, (Serializador) &SerializarM_CATCH_POKEMON);
+	else
+		capturo_pokemon(entrenador);
+
 }
 static void intercambiar_pokemon(Entrenador* entrenador) {}
 static void terminar(Entrenador* entrenador) { pthread_exit(NULL); }
