@@ -4,10 +4,9 @@
 #include "suscripcion.h"
 #include "interrupciones.h"
 #include <stdlib.h>
-#include "../Utils/net.c"
 #include "../Utils/socket.h"
 #include "../Utils/hiloTimer.h"
-#include "../Utils/protocolo.c"
+#include "../Utils/serializacion.h"
 
 BROKER_DATOS_CONECTADO datos_conexion;
 t_list* id_mensajes_esperados;
@@ -17,37 +16,52 @@ bool espero_mensaje(uint32_t id_mensaje);
 //-----------OPERACIONES-----------//
 void operacion_CAUGHT_POKEMON(Cliente* cliente, Paquete* paquete)
 {
-	DATOS_CAUGHT_POKEMON_ID* datos = malloc(sizeof(DATOS_CAUGHT_POKEMON_ID));
-	if(!Deserializar_CAUGHT_POKEMON_ID(paquete, datos)) log_error(logger, "Error al intentar deserializar el mensaje.");
+	Stream* stream_lectura = Stream_CrearLecturaPaquete(paquete);
+	Deserializar_uint32(stream_lectura);
+	uint32_t id_catch = Deserializar_uint32(stream_lectura);
+	DATOS_CAUGHT_POKEMON* datos = malloc(sizeof(DATOS_CAUGHT_POKEMON));
+	*datos = Deserializar_CAUGHT_POKEMON(stream_lectura);
 
-	if(espero_mensaje(datos->idCorrelativo_CATCH))
+	if(espero_mensaje(id_catch))
 	{
 		datos_interrupcion_CAUGHT_POKEMON* datos_interrupcion = malloc(sizeof(datos_interrupcion_CAUGHT_POKEMON));
 		datos_interrupcion->entrenador = cliente->info;
 		datos_interrupcion->recibidos = datos;
 		agregar_interrupcion(CAUGHT_POKEMON, datos_interrupcion);
 	}
+
+	Stream_DestruirConBuffer(stream_lectura);
 }
 void operacion_APPEARED_POKEMON(Cliente* cliente, Paquete* paquete)
 {
+	Stream* stream_lectura = Stream_CrearLecturaPaquete(paquete);
+	Deserializar_uint32(stream_lectura);
 	DATOS_APPEARED_POKEMON* datos = malloc(sizeof(DATOS_APPEARED_POKEMON));
-	if(!Deserializar_APPEARED_POKEMON(paquete, datos)) log_error(logger, "Error al intentar deserializar el mensaje.");
+	*datos = Deserializar_APPEARED_POKEMON(stream_lectura);
 
 	if(necesito_especie_pokemon(datos->pokemon))
 		agregar_interrupcion(APPEARED_POKEMON, datos);
+
+	Stream_DestruirConBuffer(stream_lectura);
 }
 void operacion_LOCALIZED_POKEMON(Cliente* cliente, Paquete* paquete)
 {
-	DATOS_LOCALIZED_POKEMON_ID* datos = malloc(sizeof(DATOS_LOCALIZED_POKEMON_ID));
-	if(!Deserializar_LOCALIZED_POKEMON_ID(paquete, datos)) log_error(logger, "Error al intentar deserializar el mensaje.");
+	Stream* stream_lectura = Stream_CrearLecturaPaquete(paquete);
+	Deserializar_uint32(stream_lectura);
+	DATOS_LOCALIZED_POKEMON* datos = malloc(sizeof(DATOS_LOCALIZED_POKEMON));
+	*datos = Deserializar_LOCALIZED_POKEMON(stream_lectura);
 
-	if(necesito_especie_pokemon(datos->pokemon) && !esta_localizada(datos->pokemon))
+	char* pokemon = datos->pokemon;
+
+	if(necesito_especie_pokemon(pokemon) && !esta_localizada(pokemon))
 		agregar_interrupcion(LOCALIZED_POKEMON, datos);
+
+	Stream_DestruirConBuffer(stream_lectura);
 }
 void operacion_ASIGNACION_ID(Cliente* cliente, Paquete* paquete)
 {
 	DATOS_ID_MENSAJE datos;
-	if(!Deserializar_ID_MENSAJE(paquete, &datos)) log_error(logger, "Error al intentar deserializar el mensaje.");
+	if(!DeserializarM_ID_MENSAJE(paquete, &datos)) log_error(logger, "Error al intentar deserializar el mensaje.");
 
 	uint32_t* id_mensaje = malloc(sizeof(uint32_t));
 	*id_mensaje = datos.id;
@@ -58,13 +72,13 @@ void operacion_ASIGNACION_ID(Cliente* cliente, Paquete* paquete)
 }
 void operacion_CONECTADO(Cliente* cliente, Paquete* paquete)
 {
-	Deserializar_BROKER_CONECTADO(paquete, &datos_conexion);
+	DeserializarM_BROKER_CONECTADO(paquete, &datos_conexion);
 
 	BROKER_DATOS_SUSCRIBIRSE datos_broker;
 	datos_broker.cola = (CodigoDeCola) (cliente->info);
-	int tamanio_datos_broker = 0;
-	void* buffer = Serializar_BROKER_SUSCRIBIRSE(&datos_broker, &tamanio_datos_broker);
-	Socket_Enviar(BROKER_SUSCRIBIRSE, buffer, tamanio_datos_broker, cliente->socket);
+	Stream* stream = SerializarM_BROKER_SUSCRIBIRSE(&datos_broker);
+
+	Socket_Enviar(BROKER_SUSCRIBIRSE, stream->base, stream->tamanio, cliente->socket);
 	free(cliente->info);
 }
 
@@ -131,11 +145,8 @@ void solicitar_pokemons_para_objetivo_global()
 	for(int i=0;i<pokemons_necesarios->elements_count;i++)
 	{
 		char* especie_pokemon = ((Pokemon*) list_get(pokemons_necesarios, i))->especie;
-		uint32_t* largo = malloc(sizeof(uint32_t));
-		*largo = strlen(especie_pokemon);
 
 		DATOS_GET_POKEMON* datos = malloc(sizeof(DATOS_GET_POKEMON));
-		datos->largoPokemon = *largo;
 		datos->pokemon = especie_pokemon;
 
 		EnviarMensaje(crear_cliente_de_broker(Eventos_Crear0()), GET_POKEMON, datos, (Serializador) &Serializar_GET_POKEMON);

@@ -10,5 +10,6 @@ typedef struct
 	CodigoDeCola cola;
 }Datos_Suscripcion;
 
+Cliente* crear_cliente_de_broker(Eventos* eventos);
 void conectarse_y_suscribirse_a_colas();
 void solicitar_pokemons_para_objetivo_global();

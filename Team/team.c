@@ -59,17 +59,24 @@ static void inicializar_datos()
 
 static void esperar_fin_de_ciclo() { pthread_mutex_lock(&mutex_team); }
 
+static void solicitar_pokemons_para_objetivo_global_test()
+{
+	agregar_pokemon_a_mapa("Pikachu", (Posicion*) crear_posicion("2|3"));
+	agregar_pokemon_a_mapa("Squirtle", (Posicion*)  crear_posicion("0|0"));
+	agregar_pokemon_a_mapa("Charmander", (Posicion*) crear_posicion("6|7"));
+
+}
+
 //-----------HILO PRINCIPAL-----------//
 int main()
 {
 	inicializar_datos();
 	obtener_entrenadores();
 	identificar_objetivo_global();
-	solicitar_pokemons_para_objetivo_global();
-	conectarse_y_suscribirse_a_colas();
+	solicitar_pokemons_para_objetivo_global_test();
+	//solicitar_pokemons_para_objetivo_global();
+	//conectarse_y_suscribirse_a_colas();
 	//TODO: conectarse_con_gameboy();
-
-	interrupcion_TERMINAR(NULL);
 
 	while(true)
 	{

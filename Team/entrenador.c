@@ -1,6 +1,8 @@
 #include "team.h"
 #include "pokemon.h"
 #include "entrenador.h"
+#include "suscripcion.h"
+#include "../Utils/net.h"
 #include "../Utils/dictionaryInt.h"
 #include <stdlib.h>
 #include <unistd.h>
@@ -17,15 +19,6 @@ t_dictionaryInt* diccionario_colas;
 static void ciclo(Entrenador* entrenador);
 static void inicializar_diccionario_acciones();
 static void inicializar_diccionario_colas();
-//-----------POSICION-----------//
-Posicion* crear_posicion(char* string_posicion)
-{
-	Posicion* posicion = malloc(sizeof(Posicion));
-	posicion->posX = string_posicion[0]-'0';
-	posicion->posY = string_posicion[2]-'0';
-
-	return posicion;
-}
 
 //-----------ENTRENADOR-----------//
 Entrenador* crear_entrenador(char* posicion, char* pokemons_atrapados, char* pokemons_objetivo, int ID)
@@ -35,6 +28,7 @@ Entrenador* crear_entrenador(char* posicion, char* pokemons_atrapados, char* pok
 	entrenador->posicion = crear_posicion(posicion);
 	entrenador->pokemons_atrapados = crear_lista_pokemon(pokemons_atrapados);
 	entrenador->pokemons_objetivo = crear_lista_pokemon(pokemons_objetivo);
+	entrenador->datos_acciones = list_create();
 	entrenador->esta_disponible = true;
 	entrenador->id_mensaje_espera = NULL;
 	entrenador->ID=ID;
@@ -89,6 +83,8 @@ void destruir_entrenador(void* entrenador_void)
 	free(entrenador);
 }
 
+Posicion* obtener_posicion_entrenador(void* entrenador) { return ((Entrenador*) entrenador)->posicion; }
+
 void asignar_id_mensaje_espera(Entrenador* entrenador, uint* nuevo_id)
 {
 	free(entrenador->id_mensaje_espera);
@@ -116,8 +112,16 @@ void sacar_de_cola_actual(Entrenador* entrenador)
 	{
 		t_list* cola = cola_actual(entrenador);
 
-		for(int i=0;i<cola->elements_count;i++)
-			if(entrenador->ID == ((Entrenador*) list_get(cola, i))->ID) list_remove_and_destroy_element(cola, i, &destruir_entrenador);
+		bool lo_saco = false;
+
+		for(int i=0;!lo_saco && i<cola->elements_count;i++)
+		{
+			if(entrenador->ID == ((Entrenador*) list_get(cola, i))->ID)
+			{
+				list_remove(cola, i);
+				lo_saco = true;
+			}
+		}
 	}
 }
 
@@ -127,8 +131,9 @@ void cambiar_estado_a(Entrenador* entrenador, Estado_Entrenador estado)
 	if(estado==EXEC)
 		entrenador_EXEC = entrenador;
 	else
-		list_add(cola_BLOCKED, entrenador);
+		list_add(dictionaryInt_get(diccionario_colas, estado), entrenador);
 	entrenador->estado = estado;
+
 }
 
 bool puede_seguir_atrapando_pokemons(Entrenador* entrenador) { return entrenador->pokemons_atrapados->elements_count < entrenador->pokemons_objetivo->elements_count; }
@@ -174,9 +179,9 @@ Entrenador* entrenador_mas_cercano(t_list* lista_entrenadores, Posicion* posicio
 	return entrenador;
 }
 
-t_list* entrenadores_disponibles()
+t_list* obtener_entrenadores_disponibles()
 {
-	t_list* entrenadores_disponibles = cola_NEW;
+	t_list* entrenadores_disponibles = list_duplicate(cola_NEW);
 	list_add_all(entrenadores_disponibles, list_filter(cola_BLOCKED, &esta_disponible));
 	return entrenadores_disponibles;
 }
@@ -191,7 +196,7 @@ void obtener_entrenadores()
 	char** pokemons_atrapados = config_get_array_value(config,"POKEMON_ENTRENADORES");
 	char** pokemons_objetivo = config_get_array_value(config,"OBJETIVOS_ENTRENADORES");
 
-	int cantidad_entrenadores = 3; //TODO calcular length de vector cualquiera
+	int cantidad_entrenadores = 2; //TODO calcular length de vector cualquiera
 
 	for(int i = 0; i<cantidad_entrenadores; i++)
 		list_add(cola_NEW, crear_entrenador(posiciones[i], pokemons_atrapados[i], pokemons_objetivo[i],i+1));
@@ -223,7 +228,17 @@ void fallo_captura_pokemon(Entrenador* entrenador)
 	agregar_pokemon(pokemons_necesarios, (char*) (datos_accion_actual(entrenador)->info));
 	habilitar_entrenador(entrenador);
 }
-void ejecutar_entrenador_actual() { if(entrenador_EXEC!=NULL) pthread_mutex_unlock(&(entrenador_EXEC->mutex)); }
+
+void ejecutar_entrenador_actual()
+{
+	if(entrenador_EXEC!=NULL)
+		pthread_mutex_unlock(&(entrenador_EXEC->mutex));
+	else
+	{
+		sleep((unsigned) config_get_array_value(config,"RETARDO_CICLO_CPU"));
+		pthread_mutex_unlock(&(mutex_team));
+	}
+}
 
 t_list* pokemons_que_tiene_y_no_necesita(Entrenador* entrenador)
 {
@@ -339,18 +354,20 @@ static void mover_una_casilla_hacia(Entrenador* entrenador)
 		siguiente_accion(entrenador);
 }
 
-static void capturar_pokemon(Entrenador* entrenador)
+static void capturar_pokemon(void* entrenador_void)
 {
+	Entrenador* entrenador = entrenador_void;
+
 	char* especie_pokemon_a_atrapar = datos_accion_actual(entrenador)->info;
 	uint32_t* largo = malloc(sizeof(uint32_t));
 	*largo = strlen(especie_pokemon_a_atrapar);
 
 	DATOS_CATCH_POKEMON* datos = malloc(sizeof(DATOS_GET_POKEMON));
-	datos->largoPokemon = *largo;
 	datos->pokemon = especie_pokemon_a_atrapar;
-	datos->posicion = entrenador->posicion;
+	datos->posicion = *(entrenador->posicion);
 
-	EnviarMensaje(crear_cliente_de_broker(Eventos_Crear0()), GET_POKEMON, datos, (Serializador) &Serializar_CATCH_POKEMON);
+	Cliente* cliente = crear_cliente_de_broker(Eventos_Crear0());
+	EnviarMensaje(cliente, GET_POKEMON, datos, (Serializador) &SerializarM_CATCH_POKEMON);
 
 	log_info(logger, "El entrenador %d intenta atrapar un %s en la posicion (%d,%d)", entrenador->ID, especie_pokemon_a_atrapar, entrenador->posicion->posX, entrenador->posicion->posY);
 }
@@ -370,7 +387,7 @@ static void inicializar_diccionario_acciones()
 //-----------DICCIONARIO DE COLAS-----------//
 static void inicializar_diccionario_colas()
 {
-	diccionario_acciones = dictionaryInt_create();
+	diccionario_colas = dictionaryInt_create();
 	dictionaryInt_put(diccionario_colas, NEW, cola_NEW);
 	dictionaryInt_put(diccionario_colas, READY, cola_READY);
 	dictionaryInt_put(diccionario_colas, BLOCKED, cola_BLOCKED);

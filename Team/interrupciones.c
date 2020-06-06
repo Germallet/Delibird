@@ -1,4 +1,3 @@
-#include "team.h"
 #include "pokemon.h"
 #include "entrenador.h"
 #include "planificacion.h"
@@ -66,28 +65,11 @@ void interrupcion_APPEARED_POKEMON(void* dato)
 }
 void interrupcion_LOCALIZED_POKEMON(void* dato)
 {
-	DATOS_LOCALIZED_POKEMON_ID* datos = dato;
+	DATOS_LOCALIZED_POKEMON* datos = dato;
 	for(int i=0;i<datos->cantidad;i++)
 			agregar_pokemon_a_mapa(datos->pokemon, &datos->posiciones[i]);
 	se_localizo(datos->pokemon);
 	free(datos);
-}
-void interrupcion_TERMINAR(void* dato)
-{
-	if(logger != NULL) log_destroy(logger);
-	if(config != NULL) config_destroy(config);
-
-	if(entrenador_EXEC!=NULL) destruir_entrenador(entrenador_EXEC);
-	list_destroy_and_destroy_elements(cola_NEW, &destruir_entrenador);
-	list_destroy_and_destroy_elements(cola_READY, &destruir_entrenador);
-	list_destroy_and_destroy_elements(cola_BLOCKED, &destruir_entrenador);
-	list_destroy_and_destroy_elements(cola_EXIT, &destruir_entrenador);
-
-	list_destroy_and_destroy_elements(cola_INTERRUPCIONES, &destruir_interrupcion);
-	list_destroy_and_destroy_elements(pokemons_necesarios, &destruir_pokemon);
-	list_destroy_and_destroy_elements(pokemons_mapa, &destruir_pokemon);
-
-	exit(0);
 }
 
 //-----------DICCIONARIO DE INTERRUPCIONES-----------//
@@ -97,5 +79,4 @@ void inicializar_diccionario_interrupciones()
 	dictionaryInt_put(diccionario_interrupciones, I_CAUGHT_POKEMON, &interrupcion_CAUGHT_POKEMON);
 	dictionaryInt_put(diccionario_interrupciones, I_APPEARED_POKEMON, &interrupcion_APPEARED_POKEMON);
 	dictionaryInt_put(diccionario_interrupciones, I_LOCALIZED_POKEMON, &interrupcion_LOCALIZED_POKEMON);
-	dictionaryInt_put(diccionario_interrupciones, I_TERMINAR, &interrupcion_TERMINAR);
 }

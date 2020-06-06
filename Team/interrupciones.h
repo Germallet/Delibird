@@ -7,7 +7,6 @@ typedef enum
 	I_CAUGHT_POKEMON = 1,
 	I_APPEARED_POKEMON = 2,
 	I_LOCALIZED_POKEMON = 3,
-	I_TERMINAR = 4
 }Tipo_Interrupcion;
 
 typedef struct
@@ -20,7 +19,7 @@ typedef void (*Interrupcion)(void*);
 
 typedef struct
 {
-	DATOS_CAUGHT_POKEMON_ID* recibidos;
+	DATOS_CAUGHT_POKEMON* recibidos;
 	Entrenador* entrenador;
 }datos_interrupcion_CAUGHT_POKEMON;
 
@@ -31,5 +30,3 @@ void agregar_interrupcion(Tipo_Interrupcion tipo, void* info);
 void inicializar_interrupciones();
 void ejecutar_interrupcion();
 bool hay_interrupciones_para_ejecutar();
-
-void interrupcion_TERMINAR(void* dato); //TODO Sacar

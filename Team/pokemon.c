@@ -1,4 +1,5 @@
 #include "pokemon.h"
+#include "posicion.h"
 #include "entrenador.h"
 #include <string.h>
 #include <stdlib.h>
@@ -106,6 +107,21 @@ Pokemon* tomar_pokemon(t_list* lista_pokemon, char* especie_pokemon)
 	return tomo_pokemon ? pokemon : NULL;
 }
 
+bool es_mismo_pokemon_mapa(Pokemon_Mapa* pokemon_1, Pokemon_Mapa* pokemon_2)
+{ return (strcmp(pokemon_1->especie, pokemon_2->especie)==0) && es_misma_posicion(pokemon_1->posicion, pokemon_2->posicion); }
+
+void sacar_pokemon_de_mapa(Pokemon_Mapa* pokemon)
+{
+	for(int i=0;i<pokemons_mapa->elements_count;i++)
+		if(es_mismo_pokemon_mapa(pokemon, (Pokemon_Mapa*) list_get(pokemons_mapa, i))) list_remove(pokemons_mapa, i);
+}
+
+void se_asigno_para_capturar(Pokemon_Mapa* pokemon)
+{
+	tomar_pokemon(pokemons_necesarios, pokemon->especie);
+	sacar_pokemon_de_mapa(pokemon);
+}
+
 bool esta_localizada(char* especie_pokemon)
 {
 	bool es_misma_especie(void* especie) { return strcmp((char*) especie, especie_pokemon)==0;	}
@@ -132,48 +148,50 @@ void identificar_objetivo_global() // identifica especies y cantidades para comp
 }
 
 //-----------PLANIFICACION-----------//
-void pokemon_y_entrenador_mas_cercanos_entre_si(char* especie_pokemon, Pokemon_Mapa* pokemon, void* entrenador)
+int obtener_entrenador_disponible_mas_cercano(Pokemon_Mapa* pokemon, Entrenador** entrenador_mas_cercano) // Retorna la distancia al entrenador
 {
-	bool es_especie_que_busco(void* pokemon) { return strcmp(((Pokemon_Mapa*) pokemon)->especie, especie_pokemon)==0; }
+	t_list* entrenadores_disponibles = obtener_entrenadores_disponibles();
+	if(list_is_empty(entrenadores_disponibles)) return -1;
+
+	t_list* distancias_a_entrenadores = list_map(entrenadores_disponibles, (void*) &obtener_posicion_entrenador);
+
+	int indice;
+	int distancia = distancia_menor(pokemon->posicion, distancias_a_entrenadores, &indice);
+
+	*entrenador_mas_cercano = list_get(entrenadores_disponibles, indice);
+
+	list_destroy(entrenadores_disponibles);
+
+	return distancia;
+}
+
+void pokemon_y_entrenador_mas_cercanos_entre_si(char* especie_pokemon, Pokemon_Mapa** pokemon, void** entrenador)
+{
+	bool es_especie_que_busco(void* pokemon_que_busco) { return strcmp(((Pokemon_Mapa*) pokemon_que_busco)->especie, especie_pokemon)==0; }
 
 	t_list* pokemons_que_busco = list_filter(pokemons_mapa, &es_especie_que_busco);
 
-	if(list_is_empty(pokemons_que_busco))
+	if(!list_is_empty(pokemons_que_busco))
 	{
-		pokemon=NULL;
-		entrenador=NULL;
-	}
-	else
-	{
-		pokemon = (Pokemon_Mapa*) pokemons_que_busco->head->data;
-		entrenador = entrenador_mas_cercano(entrenadores_disponibles(), pokemon->posicion);
-	}
-
-	int distancia_entre(Posicion* posicion1, Posicion* posicion2) { return abs(posicion2->posX-posicion1->posX)+abs(posicion2->posY-posicion1->posY); }
-
-	void pokemon_y_entrenador_mas_cercano_entre_dos(Pokemon_Mapa* pokemon_1, Pokemon_Mapa* pokemon_2, Pokemon_Mapa* pokemon_cercano, Entrenador* entrenador_cercano)
-	{
-		Entrenador* entrenador_1 = entrenador_mas_cercano(entrenadores_disponibles(), pokemon_1->posicion);
-		Entrenador* entrenador_2 = entrenador_mas_cercano(entrenadores_disponibles(), pokemon_2->posicion);
-
-		int distancia_1 = distancia_entre(pokemon_1->posicion, entrenador_1->posicion);
-		int distancia_2 = distancia_entre(pokemon_2->posicion, entrenador_2->posicion);
-
-		if(distancia_1>distancia_2)
+		*pokemon = (Pokemon_Mapa*) list_remove(pokemons_que_busco, 0);
+		int distancia = obtener_entrenador_disponible_mas_cercano(*pokemon, (Entrenador**) entrenador);
+		Pokemon_Mapa* pokemon_pivot = NULL;
+		Entrenador* entrenador_pivot = NULL;
+		int nueva_distancia;
+		for(int i=1; i < pokemons_que_busco->elements_count;i++)
 		{
-			pokemon_cercano = pokemon_2;
-			entrenador_cercano = entrenador_2;
-		}
-		else
-		{
-			pokemon_cercano = pokemon_1;
-			entrenador_cercano = entrenador_1;
+			pokemon_pivot = list_get(pokemons_que_busco, i);
+			nueva_distancia = obtener_entrenador_disponible_mas_cercano(pokemon_pivot, (Entrenador**) entrenador_pivot);
+			if(nueva_distancia<distancia)
+			{
+				destruir_pokemon_mapa(*pokemon);
+				*pokemon = pokemon_pivot;
+				*entrenador = entrenador_pivot;
+				distancia = nueva_distancia;
+			}
 		}
 	}
-
-	for(int i=1; i < pokemons_mapa->elements_count;i++)
-		pokemon_y_entrenador_mas_cercano_entre_dos(pokemon, list_get(pokemons_mapa,i), pokemon, entrenador);
-
+	list_destroy(pokemons_que_busco);
 }
 
 void borrar_especie_de_mapa(char* especie)
