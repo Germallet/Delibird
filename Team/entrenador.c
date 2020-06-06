@@ -337,7 +337,7 @@ static void ciclo(Entrenador* entrenador)
 	{
 		pthread_mutex_lock(&(entrenador->mutex));
 		((Accion) dictionaryInt_get(diccionario_acciones, datos_accion_actual(entrenador)->tipo_accion)) (entrenador);
-		sleep((unsigned) config_get_array_value(config,"RETARDO_CICLO_CPU"));
+		sleep((unsigned) config_get_int_value(config,"RETARDO_CICLO_CPU"));
 		pthread_mutex_unlock(&(mutex_team));
 	}
 }
