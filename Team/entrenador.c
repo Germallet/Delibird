@@ -182,7 +182,9 @@ Entrenador* entrenador_mas_cercano(t_list* lista_entrenadores, Posicion* posicio
 t_list* obtener_entrenadores_disponibles()
 {
 	t_list* entrenadores_disponibles = list_duplicate(cola_NEW);
-	list_add_all(entrenadores_disponibles, list_filter(cola_BLOCKED, &esta_disponible));
+	t_list* entrenadores_bloqueados_disponibles = list_filter(cola_BLOCKED, &esta_disponible);
+	list_add_all(entrenadores_disponibles, entrenadores_bloqueados_disponibles);
+	list_destroy(entrenadores_bloqueados_disponibles);
 	return entrenadores_disponibles;
 }
 
@@ -200,6 +202,10 @@ void obtener_entrenadores()
 
 	for(int i = 0; i<cantidad_entrenadores; i++)
 		list_add(cola_NEW, crear_entrenador(posiciones[i], pokemons_atrapados[i], pokemons_objetivo[i],i+1));
+
+	free(posiciones);
+	free(pokemons_atrapados);
+	free(pokemons_objetivo);
 }
 
 void capturo_pokemon(Entrenador* entrenador)

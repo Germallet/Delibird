@@ -8,7 +8,13 @@ bool hay_entrenador_en_ejecucion() { return entrenador_EXEC != NULL; }
 bool hay_entrenadores_READY() { return !list_is_empty(cola_READY); }
 bool hay_pokemons_para_atrapar() { return !list_is_empty(pokemons_mapa); }
 bool necesitamos_pokemons() { return !list_is_empty(pokemons_necesarios); }
-bool hay_entrenadores_disponibles() { return !list_is_empty(obtener_entrenadores_disponibles()); }
+bool hay_entrenadores_disponibles()
+{
+	t_list* disponibles = obtener_entrenadores_disponibles();
+	bool respuesta = !list_is_empty(disponibles);
+	list_destroy(disponibles);
+	return respuesta;
+}
 
 void planificar_atrapar_pokemon()
 {

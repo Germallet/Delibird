@@ -161,6 +161,7 @@ int obtener_entrenador_disponible_mas_cercano(Pokemon_Mapa* pokemon, Entrenador*
 	*entrenador_mas_cercano = list_get(entrenadores_disponibles, indice);
 
 	list_destroy(entrenadores_disponibles);
+	list_destroy(distancias_a_entrenadores);
 
 	return distancia;
 }
