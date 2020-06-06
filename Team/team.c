@@ -64,7 +64,6 @@ static void solicitar_pokemons_para_objetivo_global_test()
 	agregar_pokemon_a_mapa("Pikachu", (Posicion*) crear_posicion("2|3"));
 	agregar_pokemon_a_mapa("Squirtle", (Posicion*)  crear_posicion("0|0"));
 	agregar_pokemon_a_mapa("Charmander", (Posicion*) crear_posicion("6|7"));
-
 }
 
 //-----------HILO PRINCIPAL-----------//

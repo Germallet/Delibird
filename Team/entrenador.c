@@ -45,6 +45,8 @@ Entrenador* crear_entrenador(char* posicion, char* pokemons_atrapados, char* pok
 void cargar_accion(Entrenador* entrenador, Tipo_Accion tipo ,void* info)
 {
 	Datos_Accion* datos_accion = malloc(sizeof(Datos_Accion));
+	datos_accion->tipo_accion = tipo;
+	datos_accion->info = info;
 	list_add(entrenador->datos_acciones, datos_accion);
 }
 
