@@ -306,6 +306,8 @@ bool hay_entrenadores_que_pueden_intercambiar()
 	for(int i=1;!hay && i<entrenadores_en_deadlock->elements_count;i++)
 		if(tienen_pokemons_para_intercambiar(entrenador_pivot, list_get(entrenadores_en_deadlock, i))) hay = true;
 
+	list_destroy(entrenadores_en_deadlock);
+
 	return hay;
 }
 
@@ -384,8 +386,10 @@ static void capturar_pokemon(void* entrenador_void)
 	if(cliente != NULL)
 		EnviarMensaje(cliente, GET_POKEMON, datos, (Serializador) &SerializarM_CATCH_POKEMON);
 	else
+	{
 		capturo_pokemon(entrenador);
-
+		free(datos);
+	}
 }
 static void intercambiar_pokemon(Entrenador* entrenador) {}
 static void terminar(Entrenador* entrenador) { pthread_exit(NULL); }

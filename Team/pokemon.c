@@ -40,6 +40,8 @@ t_list* crear_lista_pokemon(char* pokemons)
 	for(int i=0;i<cantidad_pokemons;i++)
 		if(array_pokemons[i]!=NULL) agregar_pokemon(lista_pokemon, array_pokemons[i]);
 
+	free(array_pokemons);
+
 	return lista_pokemon;
 }
 
