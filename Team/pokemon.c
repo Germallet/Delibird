@@ -75,7 +75,8 @@ void agregar_pokemon(t_list* lista_pokemon, char* especie_pokemon)
 void agregar_pokemon_a_mapa(char* especie_pokemon, Posicion* posicion)
 {
 	Pokemon_Mapa* pokemon = malloc(sizeof(Pokemon_Mapa));
-	pokemon->especie = especie_pokemon;
+	pokemon->especie = malloc(strlen(especie_pokemon));
+	strcpy(pokemon->especie, especie_pokemon);
 	pokemon->posicion = posicion;
 	list_add(pokemons_mapa, pokemon);
 }
