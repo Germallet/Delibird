@@ -187,7 +187,6 @@ void pokemon_y_entrenador_mas_cercanos_entre_si(char* especie_pokemon, Pokemon_M
 			nueva_distancia = obtener_entrenador_disponible_mas_cercano(pokemon_pivot, (Entrenador**) entrenador_pivot);
 			if(nueva_distancia<distancia)
 			{
-				destruir_pokemon_mapa(*pokemon);
 				*pokemon = pokemon_pivot;
 				*entrenador = entrenador_pivot;
 				distancia = nueva_distancia;

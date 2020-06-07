@@ -373,8 +373,6 @@ static void capturar_pokemon(void* entrenador_void)
 	Entrenador* entrenador = entrenador_void;
 
 	char* especie_pokemon_a_atrapar = datos_accion_actual(entrenador)->info;
-	uint32_t* largo = malloc(sizeof(uint32_t));
-	*largo = strlen(especie_pokemon_a_atrapar);
 
 	DATOS_CATCH_POKEMON* datos = malloc(sizeof(DATOS_GET_POKEMON));
 	datos->pokemon = especie_pokemon_a_atrapar;
