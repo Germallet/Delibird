@@ -143,18 +143,31 @@ bool esta_en_deadlock(void* entrenador) { return ((Entrenador*) entrenador)->est
 
 Datos_Accion* datos_accion_actual(Entrenador* entrenador) {	return list_get(entrenador->datos_acciones, entrenador->indice_accion_actual); }
 
+bool necesito_pokemon(Entrenador* entrenador, char* especie_pokemon)
+{
+	bool es_misma_especie(void* especie) { return strcmp((char*) especie, especie_pokemon)==0; }
+	return list_any_satisfy(entrenador->pokemons_objetivo, &es_misma_especie);
+}
+
+bool tengo_pokemon(Entrenador* entrenador, char* especie_pokemon)
+{
+	bool es_misma_especie(void* especie) { return strcmp((char*) especie, especie_pokemon)==0; }
+	return list_any_satisfy(entrenador->pokemons_atrapados, &es_misma_especie);
+}
+
 bool tiene_todos_sus_pokemons(Entrenador* entrenador)
 {
-	t_list* pokemons_pivot = list_duplicate(entrenador->pokemons_atrapados);
+	bool atrapo_los_que_necesita(void* especie_pokemon_void)
+	{
+		bool atrape_los_necesarios = false;
+		char* especie_pokemon = especie_pokemon_void;
+		if(cantidad_de_pokemon_en_lista(entrenador->pokemons_atrapados,especie_pokemon) == cantidad_de_pokemon_en_lista(entrenador->pokemons_objetivo,especie_pokemon))
+			atrape_los_necesarios = true;
 
-	for(int i=0;i<entrenador->pokemons_objetivo->elements_count;i++)
-		destruir_pokemon(tomar_pokemon(pokemons_pivot, ((Pokemon*) list_get(entrenador->pokemons_objetivo, i))->especie));
+		return atrape_los_necesarios;
+	}
 
-	bool tiene_todos_los_pokemons = list_is_empty(pokemons_pivot);
-
-	list_destroy_and_destroy_elements(pokemons_pivot, &destruir_pokemon);
-
-	return tiene_todos_los_pokemons;
+	return list_all_satisfy(entrenador->pokemons_atrapados, &atrapo_los_que_necesita);
 }
 
 static void siguiente_accion(Entrenador* entrenador) { entrenador->indice_accion_actual++; }
@@ -249,6 +262,7 @@ void ejecutar_entrenador_actual()
 		pthread_mutex_unlock(&(entrenador_EXEC->mutex));
 	else
 	{
+		log_info(logger, "IDLE");
 		sleep((unsigned) config_get_int_value(config,"RETARDO_CICLO_CPU"));
 		pthread_mutex_unlock(&(mutex_team));
 	}
@@ -345,7 +359,7 @@ static void ciclo(Entrenador* entrenador)
 	{
 		pthread_mutex_lock(&(entrenador->mutex));
 		((Accion) dictionaryInt_get(diccionario_acciones, datos_accion_actual(entrenador)->tipo_accion)) (entrenador);
-		sleep((unsigned) config_get_int_value(config,"RETARDO_CICLO_CPU"));
+		sleep((unsigned) config_get_int_value(config,"RETARDO_CICLO_CPU")/2);
 		pthread_mutex_unlock(&(mutex_team));
 	}
 }
@@ -359,12 +373,12 @@ static void mover_una_casilla_hacia(Entrenador* entrenador)
 	uint32_t y_objetivo = ((Posicion*) datos_accion_actual(entrenador)->info)->posY;
 
 	if(x_actual != x_objetivo) // Si no esta en x se acerca una pos a x
-		entrenador->posicion->posX = x_actual + (x_objetivo-x_actual>0 ? 1 : -1 );
+		entrenador->posicion->posX = x_actual + (x_objetivo>x_actual ? 1 : -1 );
 
 	else if(y_actual != y_objetivo) // Si no esta en y se acerca una pos a y
-		entrenador->posicion->posY = y_actual + (y_objetivo-y_actual>0 ? 1 : -1 );
+		entrenador->posicion->posY = y_actual + (y_objetivo>y_actual ? 1 : -1 );
 
-	log_info(logger, "El entrenador %d se movio a la posicion (%d,%d)", entrenador->ID, entrenador->posicion->posX, entrenador->posicion->posY);
+	log_info(logger, "El entrenador %d se movio a la posicion (%d,%d), hacia (%d,%d)", entrenador->ID, entrenador->posicion->posX, entrenador->posicion->posY, x_objetivo, y_objetivo);
 
 	if(entrenador->posicion->posX==x_objetivo && entrenador->posicion->posY==y_objetivo)
 		siguiente_accion(entrenador);

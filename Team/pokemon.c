@@ -92,6 +92,20 @@ bool tiene_pokemon(t_list* lista_pokemon, char* especie_pokemon)
 	return false;
 }
 
+int cantidad_de_pokemon_en_lista(t_list* lista_pokemon, char* especie_pokemon)
+{
+	Pokemon* pokemon;
+	int cantidad = 0;
+
+	for(int i=0;i<lista_pokemon->elements_count;i++)
+	{
+		pokemon = ((Pokemon*) list_get(lista_pokemon, i));
+		if(strcmp(pokemon->especie, especie_pokemon)==0)
+			cantidad=pokemon->cantidad;
+	}
+	return cantidad;
+}
+
 Pokemon* tomar_pokemon(t_list* lista_pokemon, char* especie_pokemon)
 {
 	Pokemon* pokemon;
@@ -106,7 +120,6 @@ Pokemon* tomar_pokemon(t_list* lista_pokemon, char* especie_pokemon)
 			tomo_pokemon = true;
 		}
 	}
-
 	return tomo_pokemon ? pokemon : NULL;
 }
 
