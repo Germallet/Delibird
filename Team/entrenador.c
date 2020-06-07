@@ -212,7 +212,9 @@ void obtener_entrenadores()
 
 void capturo_pokemon(Entrenador* entrenador)
 {
-	agregar_pokemon(entrenador->pokemons_atrapados, (char*) (datos_accion_actual(entrenador)->info));
+	char* especie_pokemon_atrapada = datos_accion_actual(entrenador)->info;
+	agregar_pokemon(entrenador->pokemons_atrapados, especie_pokemon_atrapada);
+	log_info(logger, "El entrenador %d atrapo un %s en la posicion (%d,%d)", entrenador->ID, especie_pokemon_atrapada, entrenador->posicion->posX, entrenador->posicion->posY);
 	resetear_acciones(entrenador);
 
 	if(puede_seguir_atrapando_pokemons(entrenador))
@@ -247,7 +249,7 @@ void ejecutar_entrenador_actual()
 		pthread_mutex_unlock(&(entrenador_EXEC->mutex));
 	else
 	{
-		sleep((unsigned) config_get_array_value(config,"RETARDO_CICLO_CPU"));
+		sleep((unsigned) config_get_int_value(config,"RETARDO_CICLO_CPU"));
 		pthread_mutex_unlock(&(mutex_team));
 	}
 }
@@ -357,10 +359,10 @@ static void mover_una_casilla_hacia(Entrenador* entrenador)
 	uint32_t y_objetivo = ((Posicion*) datos_accion_actual(entrenador)->info)->posY;
 
 	if(x_actual != x_objetivo) // Si no esta en x se acerca una pos a x
-		entrenador->posicion->posX = x_actual + (x_objetivo-x_actual/abs(x_objetivo-x_actual));
+		entrenador->posicion->posX = x_actual + ((x_objetivo-x_actual)/abs(x_objetivo-x_actual));
 
 	else if(y_actual != y_objetivo) // Si no esta en y se acerca una pos a y
-		entrenador->posicion->posY = y_actual + (y_objetivo-y_actual/abs(y_objetivo-y_actual));
+		entrenador->posicion->posY = y_actual + ((y_objetivo-y_actual)/abs(y_objetivo-y_actual));
 
 	log_info(logger, "El entrenador %d se movio a la posicion (%d,%d)", entrenador->ID, entrenador->posicion->posX, entrenador->posicion->posY);
 
@@ -386,7 +388,6 @@ static void capturar_pokemon(void* entrenador_void)
 	}
 	else
 		capturo_pokemon(entrenador);
-
 }
 static void intercambiar_pokemon(Entrenador* entrenador) {}
 static void terminar(Entrenador* entrenador) { pthread_exit(NULL); }

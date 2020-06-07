@@ -62,8 +62,8 @@ static void esperar_fin_de_ciclo() { pthread_mutex_lock(&mutex_team); }
 static void solicitar_pokemons_para_objetivo_global_test()
 {
 	agregar_pokemon_a_mapa("Pikachu", (Posicion*) crear_posicion("2|3"));
-	agregar_pokemon_a_mapa("Squirtle", (Posicion*)  crear_posicion("0|0"));
 	agregar_pokemon_a_mapa("Charmander", (Posicion*) crear_posicion("6|7"));
+	agregar_pokemon_a_mapa("Squirtle", (Posicion*)  crear_posicion("0|0"));
 }
 
 //-----------HILO PRINCIPAL-----------//
@@ -85,31 +85,6 @@ int main()
 		esperar_fin_de_ciclo();
 	}
 }
-
-/*
- 	////////////////////////////////////////////////////
-
-	log_info(logger,"Los pokemon objetivo del team son (%d especies):", pokemons_necesarios->elements_count);
-	for(int i =0; i<pokemons_necesarios->elements_count;i++)
-	{
-		Pokemon* pokemon_actual = ((Pokemon*) list_get(pokemons_necesarios, i));
-		log_info(logger,"%s (%d)", pokemon_actual->especie, pokemon_actual->cantidad);
-	}
-
-	log_info(logger,"Hay %d entrenadores en la cola NEW", cola_NEW->elements_count);
-	for(int i =0; i<cola_NEW->elements_count;i++)
-		log_info(logger,"el entrenador %d esta en la posicion %d,%d", ((Entrenador*) (list_get(cola_NEW,i)))->ID, ((Entrenador*) (list_get(cola_NEW,i)))->posicion->posX, ((Entrenador*) (list_get(cola_NEW,i)))->posicion->posY);
-
-	Posicion* posicion = malloc(sizeof(Posicion));
-	posicion->posX=5;
-	posicion->posY=7;
-
-	int id_mas_cercano = entrenador_mas_cercano(cola_NEW, posicion)->ID;
-
-	log_info(logger, "el entrenador mas cercano a la posicion %d,%d es el entrenador %d", posicion->posX, posicion->posY, id_mas_cercano);
-
-	////////////////////////////////////////////////////
-*/
 
 
 
