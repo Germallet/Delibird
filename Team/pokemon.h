@@ -22,6 +22,7 @@ t_list* crear_lista_pokemon(char* pokemons);
 Pokemon* tomar_pokemon(t_list* lista_pokemon, char* especie_pokemon);
 void agregar_pokemon(t_list* lista_pokemon, char* especie_pokemon);
 void destruir_pokemon(void* pokemon_void);
+void destruir_pokemon_mapa(void* pokemon_void);
 void identificar_objetivo_global();
 char* una_especie_que_necesito_y_esta_en_mapa();
 void se_asigno_para_capturar(Pokemon_Mapa* pokemon);

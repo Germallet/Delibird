@@ -7,7 +7,7 @@
 bool hay_entrenador_en_ejecucion() { return entrenador_EXEC != NULL; }
 bool hay_entrenadores_READY() { return !list_is_empty(cola_READY); }
 bool hay_pokemons_para_atrapar() { return !list_is_empty(pokemons_mapa); }
-bool necesitamos_pokemons() { return list_is_empty(pokemons_necesarios); }
+bool necesitamos_pokemons() { return !list_is_empty(pokemons_necesarios); }
 bool hay_entrenadores_disponibles()
 {
 	t_list* disponibles = obtener_entrenadores_disponibles();
@@ -48,6 +48,8 @@ void planificar_intercambiar_pokemon()
 
 void terminar_team()
 {
+	log_info(logger, "GAME OVER.");
+
 	if(logger != NULL) log_destroy(logger);
 	if(config != NULL) config_destroy(config);
 
@@ -59,7 +61,7 @@ void terminar_team()
 
 	list_destroy_and_destroy_elements(cola_INTERRUPCIONES, &destruir_interrupcion);
 	list_destroy_and_destroy_elements(pokemons_necesarios, &destruir_pokemon);
-	list_destroy_and_destroy_elements(pokemons_mapa, &destruir_pokemon);
+	list_destroy_and_destroy_elements(pokemons_mapa, &destruir_pokemon_mapa);
 
 	exit(0);
 }
@@ -74,8 +76,4 @@ void planificar_entrenador_si_es_necesario()
 		cambiar_estado_a(tomar_entrenador(cola_READY), EXEC);
 	if(!hay_entrenador_en_ejecucion() && !necesitamos_pokemons())
 		terminar_team();
-	/*
-	if(!hay_entrenador_en_ejecucion && !hay_entrenadores_READY)
-		ESPERAR UN CICLO;
-	*/
 }

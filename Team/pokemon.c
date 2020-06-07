@@ -25,6 +25,7 @@ void destruir_pokemon(void* pokemon) { free(pokemon); }
 
 void destruir_pokemon_mapa(void* pokemon)
 {
+	free(((Pokemon_Mapa*) pokemon)->especie);
 	free(((Pokemon_Mapa*) pokemon)->posicion);
 	free(pokemon);
 }
@@ -32,14 +33,22 @@ void destruir_pokemon_mapa(void* pokemon)
 //-----------LISTA POKEMON-----------//
 t_list* crear_lista_pokemon(char* pokemons)
 {
+	if(strlen(pokemons) == 0)
+		return list_create();
+
 	t_list* lista_pokemon = list_create();
 
+	int cantidad_pokemons = 1;
+	for(int i=0;pokemons[i]!='\0';i++)
+			cantidad_pokemons += pokemons[i] == '|';
+
 	char** array_pokemons = string_split(pokemons, "|");
-	int cantidad_pokemons = 3; //TODO calcular length de vector cualquiera
 
 	for(int i=0;i<cantidad_pokemons;i++)
+	{
 		if(array_pokemons[i]!=NULL) agregar_pokemon(lista_pokemon, array_pokemons[i]);
-
+		free(array_pokemons[i]);
+	}
 	free(array_pokemons);
 
 	return lista_pokemon;
@@ -95,15 +104,14 @@ bool tiene_pokemon(t_list* lista_pokemon, char* especie_pokemon)
 int cantidad_de_pokemon_en_lista(t_list* lista_pokemon, char* especie_pokemon)
 {
 	Pokemon* pokemon;
-	int cantidad = 0;
 
 	for(int i=0;i<lista_pokemon->elements_count;i++)
 	{
 		pokemon = ((Pokemon*) list_get(lista_pokemon, i));
 		if(strcmp(pokemon->especie, especie_pokemon)==0)
-			cantidad=pokemon->cantidad;
+			return pokemon->cantidad;
 	}
-	return cantidad;
+	 return 0;
 }
 
 Pokemon* tomar_pokemon(t_list* lista_pokemon, char* especie_pokemon)
@@ -159,6 +167,17 @@ void identificar_objetivo_global() // identifica especies y cantidades para comp
 			Pokemon* pokemon_actual = ((Pokemon*) list_get(entrenador_actual->pokemons_objetivo, j));
 			for(int cantidad_pokemon=0; cantidad_pokemon<pokemon_actual->cantidad;cantidad_pokemon++)
 				agregar_pokemon(pokemons_necesarios,pokemon_actual->especie);
+		}
+
+	}
+	for(int i = 0; i<cola_NEW->elements_count;i++)
+	{
+		Entrenador* entrenador_actual = ((Entrenador*) list_get(cola_NEW, i));
+		for(int j = 0; j<entrenador_actual->pokemons_atrapados->elements_count;j++)
+		{
+			Pokemon* pokemon_actual = ((Pokemon*) list_get(entrenador_actual->pokemons_atrapados, j));
+			for(int cantidad_pokemon=0; cantidad_pokemon<pokemon_actual->cantidad;cantidad_pokemon++)
+				tomar_pokemon(pokemons_necesarios,pokemon_actual->especie);
 		}
 	}
 }
