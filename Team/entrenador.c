@@ -359,10 +359,10 @@ static void mover_una_casilla_hacia(Entrenador* entrenador)
 	uint32_t y_objetivo = ((Posicion*) datos_accion_actual(entrenador)->info)->posY;
 
 	if(x_actual != x_objetivo) // Si no esta en x se acerca una pos a x
-		entrenador->posicion->posX = x_actual + ((x_objetivo-x_actual)/abs(x_objetivo-x_actual));
+		entrenador->posicion->posX = x_actual + (x_objetivo-x_actual>0 ? 1 : -1 );
 
 	else if(y_actual != y_objetivo) // Si no esta en y se acerca una pos a y
-		entrenador->posicion->posY = y_actual + ((y_objetivo-y_actual)/abs(y_objetivo-y_actual));
+		entrenador->posicion->posY = y_actual + (y_objetivo-y_actual>0 ? 1 : -1 );
 
 	log_info(logger, "El entrenador %d se movio a la posicion (%d,%d)", entrenador->ID, entrenador->posicion->posX, entrenador->posicion->posY);
 
