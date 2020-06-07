@@ -25,7 +25,10 @@ void planificar_atrapar_pokemon()
 
 	deshabilitar_entrenador(entrenador);
 
-	cargar_accion(entrenador, MOVER, pokemon->posicion);
+	Posicion* posicion = malloc(sizeof(Posicion));
+	*posicion = pokemon->posicion;
+
+	cargar_accion(entrenador, MOVER, posicion);
 	cargar_accion(entrenador, CAPTURAR_POKEMON, pokemon->especie);
 
 	cambiar_estado_a(entrenador, READY); // METER ORDENADO PARA SJF ACA
@@ -40,7 +43,10 @@ void planificar_intercambiar_pokemon()
 
 	obtener_entrenadores_que_pueden_intercambiar(entrenador_1, entrenador_2);
 
-	cargar_accion(entrenador_1, MOVER, entrenador_2->posicion);
+	Posicion* posicion = malloc(sizeof(Posicion));
+	*posicion = entrenador_2->posicion;
+
+	cargar_accion(entrenador_1, MOVER, posicion);
 	cargar_accion(entrenador_1, INTERCAMBIAR_POKEMON, entrenador_2);
 
 	cambiar_estado_a(entrenador_1, READY);  // METER ORDENADO PARA SJF ACA

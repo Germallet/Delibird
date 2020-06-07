@@ -21,12 +21,15 @@ Pokemon* crear_pokemon(char* especie)
 	return pokemon;
 }
 
-void destruir_pokemon(void* pokemon) { free(pokemon); }
+void destruir_pokemon(void* pokemon)
+{
+	free(((Pokemon*) pokemon)->especie);
+	free(pokemon);
+}
 
 void destruir_pokemon_mapa(void* pokemon)
 {
 	free(((Pokemon_Mapa*) pokemon)->especie);
-	free(((Pokemon_Mapa*) pokemon)->posicion);
 	free(pokemon);
 }
 
@@ -82,7 +85,7 @@ void agregar_pokemon(t_list* lista_pokemon, char* especie_pokemon)
 		list_add(lista_pokemon, nuevo_pokemon());
 }
 
-void agregar_pokemon_a_mapa(char* especie_pokemon, Posicion* posicion)
+void agregar_pokemon_a_mapa(char* especie_pokemon, Posicion posicion)
 {
 	Pokemon_Mapa* pokemon = malloc(sizeof(Pokemon_Mapa));
 	pokemon->especie = malloc(strlen(especie_pokemon)+1);
@@ -138,7 +141,7 @@ bool es_mismo_pokemon_mapa(Pokemon_Mapa* pokemon_1, Pokemon_Mapa* pokemon_2)
 void sacar_pokemon_de_mapa(Pokemon_Mapa* pokemon)
 {
 	for(int i=0;i<pokemons_mapa->elements_count;i++)
-		if(es_mismo_pokemon_mapa(pokemon, (Pokemon_Mapa*) list_get(pokemons_mapa, i))) list_remove(pokemons_mapa, i);
+		if(es_mismo_pokemon_mapa(pokemon, (Pokemon_Mapa*) list_get(pokemons_mapa, i))) list_remove_and_destroy_element(pokemons_mapa, i, &destruir_pokemon_mapa);
 }
 
 void se_asigno_para_capturar(Pokemon_Mapa* pokemon)

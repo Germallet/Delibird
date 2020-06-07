@@ -1,5 +1,6 @@
 #include "team.h"
 #include "pokemon.h"
+#include "posicion.h"
 #include "entrenador.h"
 #include "suscripcion.h"
 #include "../Utils/net.h"
@@ -43,7 +44,7 @@ Entrenador* crear_entrenador(char* posicion, char* pokemons_atrapados, char* pok
 	return entrenador;
 }
 
-void cargar_accion(Entrenador* entrenador, Tipo_Accion tipo ,void* info)
+void cargar_accion(Entrenador* entrenador, Tipo_Accion tipo , void* info)
 {
 	Datos_Accion* datos_accion = malloc(sizeof(Datos_Accion));
 	datos_accion->tipo_accion = tipo;
@@ -75,7 +76,6 @@ void destruir_entrenador(void* entrenador_void)
 {
 	Entrenador* entrenador = (Entrenador*) entrenador_void;
 	free(entrenador->id_mensaje_espera);
-	free(entrenador->posicion);
 	list_destroy_and_destroy_elements(entrenador->pokemons_atrapados, &destruir_pokemon);
 	list_destroy_and_destroy_elements(entrenador->pokemons_objetivo, &destruir_pokemon);
 
@@ -86,7 +86,7 @@ void destruir_entrenador(void* entrenador_void)
 	free(entrenador);
 }
 
-Posicion* obtener_posicion_entrenador(void* entrenador) { return ((Entrenador*) entrenador)->posicion; }
+Posicion obtener_posicion_entrenador(void* entrenador) { return ((Entrenador*) entrenador)->posicion; }
 
 void asignar_id_mensaje_espera(Entrenador* entrenador, uint* nuevo_id)
 {
@@ -146,19 +146,19 @@ Datos_Accion* datos_accion_actual(Entrenador* entrenador) {	return list_get(entr
 
 bool necesito_pokemon(Entrenador* entrenador, char* especie_pokemon)
 {
-	bool es_misma_especie(void* especie) { return strcmp((char*) especie, especie_pokemon)==0; }
+	bool es_misma_especie(void* especie) { return strcmp(((Pokemon*) especie)->especie, especie_pokemon)==0; }
 	return list_any_satisfy(entrenador->pokemons_objetivo, &es_misma_especie);
 }
 
 bool tengo_pokemon(Entrenador* entrenador, char* especie_pokemon)
 {
-	bool es_misma_especie(void* especie) { return strcmp((char*) especie, especie_pokemon)==0; }
+	bool es_misma_especie(void* especie) { return strcmp(((Pokemon*) especie)->especie, especie_pokemon)==0; }
 	return list_any_satisfy(entrenador->pokemons_atrapados, &es_misma_especie);
 }
 
 bool tiene_todas_las_especies_que_necesita(Entrenador* entrenador)
 {
-	bool entrenador_tiene_pokemon(void* especie) { return tengo_pokemon(entrenador, (char*) especie); }
+	bool entrenador_tiene_pokemon(void* especie) { return tengo_pokemon(entrenador, ((Pokemon*) especie)->especie); }
 	return list_all_satisfy(entrenador->pokemons_objetivo, &entrenador_tiene_pokemon);
 }
 
@@ -184,7 +184,7 @@ static void siguiente_accion(Entrenador* entrenador) { entrenador->indice_accion
 //-----------LISTA ENTRENADORES-----------//
 Entrenador* tomar_entrenador(t_list* lista_entrenadores) { return list_remove(lista_entrenadores, 0); }
 
-Entrenador* entrenador_mas_cercano(t_list* lista_entrenadores, Posicion* posicion_llegada)
+Entrenador* entrenador_mas_cercano(t_list* lista_entrenadores, Posicion posicion_llegada)
 {
 	if(list_is_empty(lista_entrenadores))
 		return NULL;
@@ -192,8 +192,6 @@ Entrenador* entrenador_mas_cercano(t_list* lista_entrenadores, Posicion* posicio
 		return lista_entrenadores->head->data;
 
 	Entrenador* entrenador = lista_entrenadores->head->data;
-
-	int distancia_entre(Posicion* posicion1, Posicion* posicion2) { return abs(posicion2->posX-posicion1->posX)+abs(posicion2->posY-posicion1->posY); }
 
 	Entrenador* entrenador_mas_cercano_entre_dos(Entrenador* entrenador1, Entrenador* entrenador2)
 	{ return (distancia_entre(entrenador1->posicion, posicion_llegada) > distancia_entre(entrenador2->posicion, posicion_llegada))? entrenador2 : entrenador1; }
@@ -235,7 +233,6 @@ void obtener_entrenadores()
 		free(pokemons_objetivo[i]);
 	}
 
-	free(entrenadores);
 	free(posiciones);
 	free(pokemons_atrapados);
 	free(pokemons_objetivo);
@@ -245,7 +242,7 @@ void capturo_pokemon(Entrenador* entrenador)
 {
 	char* especie_pokemon_atrapada = datos_accion_actual(entrenador)->info;
 	agregar_pokemon(entrenador->pokemons_atrapados, especie_pokemon_atrapada);
-	log_info(logger, "El entrenador %d atrapo un %s en la posicion (%d,%d)", entrenador->ID, especie_pokemon_atrapada, entrenador->posicion->posX, entrenador->posicion->posY);
+	log_info(logger, "El entrenador %d atrapo un %s en la posicion (%d,%d)", entrenador->ID, especie_pokemon_atrapada, entrenador->posicion.posX, entrenador->posicion.posY);
 	resetear_acciones(entrenador);
 
 	if(puede_seguir_atrapando_pokemons(entrenador))
@@ -323,6 +320,9 @@ bool tienen_pokemons_para_intercambiar(Entrenador* entrenador_1, Entrenador* ent
 
 	bool se_encontro_algun_pokemon_intercambiable = (entrenador_1->info != NULL) || (entrenador_2->info != NULL);
 
+	list_destroy(pokemons_que_le_sobran_a_entrenador_1);
+	list_destroy(pokemons_que_le_sobran_a_entrenador_2);
+
 	return se_encontro_algun_pokemon_intercambiable;
 }
 
@@ -384,21 +384,21 @@ static void ciclo(Entrenador* entrenador)
 
 static void mover_una_casilla_hacia(Entrenador* entrenador)
 {
-	uint32_t x_actual = entrenador->posicion->posX;
-	uint32_t y_actual = entrenador->posicion->posY;
+	uint32_t x_actual = entrenador->posicion.posX;
+	uint32_t y_actual = entrenador->posicion.posY;
 
 	uint32_t x_objetivo = ((Posicion*) datos_accion_actual(entrenador)->info)->posX;
 	uint32_t y_objetivo = ((Posicion*) datos_accion_actual(entrenador)->info)->posY;
 
 	if(x_actual != x_objetivo) // Si no esta en x se acerca una pos a x
-		entrenador->posicion->posX = x_actual + (x_objetivo>x_actual ? 1 : -1 );
+		entrenador->posicion.posX = x_actual + (x_objetivo>x_actual ? 1 : -1 );
 
 	else if(y_actual != y_objetivo) // Si no esta en y se acerca una pos a y
-		entrenador->posicion->posY = y_actual + (y_objetivo>y_actual ? 1 : -1 );
+		entrenador->posicion.posY = y_actual + (y_objetivo>y_actual ? 1 : -1 );
 
-	log_info(logger, "El entrenador %d se movio a la posicion (%d,%d), hacia (%d,%d)", entrenador->ID, entrenador->posicion->posX, entrenador->posicion->posY, x_objetivo, y_objetivo);
+	log_info(logger, "El entrenador %d se movio a la posicion (%d,%d), hacia (%d,%d)", entrenador->ID, entrenador->posicion.posX, entrenador->posicion.posY, x_objetivo, y_objetivo);
 
-	if(entrenador->posicion->posX==x_objetivo && entrenador->posicion->posY==y_objetivo)
+	if(entrenador->posicion.posX==x_objetivo && entrenador->posicion.posY==y_objetivo)
 		siguiente_accion(entrenador);
 }
 
@@ -407,14 +407,14 @@ static void capturar_pokemon(void* entrenador_void)
 	Entrenador* entrenador = entrenador_void;
 	char* especie_pokemon_a_atrapar = datos_accion_actual(entrenador)->info;
 
-	log_info(logger, "El entrenador %d intenta atrapar un %s en la posicion (%d,%d)", entrenador->ID, especie_pokemon_a_atrapar, entrenador->posicion->posX, entrenador->posicion->posY);
+	log_info(logger, "El entrenador %d intenta atrapar un %s en la posicion (%d,%d)", entrenador->ID, especie_pokemon_a_atrapar, entrenador->posicion.posX, entrenador->posicion.posY);
 
 	Cliente* cliente = crear_cliente_de_broker(Eventos_Crear0());
 	if(cliente != NULL)
 	{
 		DATOS_CATCH_POKEMON* datos = malloc(sizeof(DATOS_GET_POKEMON));
 		datos->pokemon = especie_pokemon_a_atrapar;
-		datos->posicion = *(entrenador->posicion);
+		datos->posicion = entrenador->posicion;
 
 		EnviarMensaje(cliente, GET_POKEMON, datos, (Serializador) &SerializarM_CATCH_POKEMON);
 	}

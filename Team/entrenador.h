@@ -33,7 +33,7 @@ typedef struct
 typedef struct
 {
 	int ID;
-	Posicion* posicion;
+	Posicion posicion;
 	t_list* pokemons_atrapados;
 	t_list* pokemons_objetivo;
 	Estado_Entrenador estado;
@@ -55,9 +55,8 @@ typedef void (*Accion)(Entrenador*);
 Entrenador* crear_entrenador(char* posicion, char* pokemons_atrapados, char* pokemons_objetivo, int ID);
 void destruir_entrenador(void* entrenador_void);
 Entrenador* tomar_entrenador(t_list* lista_entrenadores);
-Posicion* obtener_posicion_entrenador(void* entrenador);
-Entrenador* entrenador_mas_cercano(t_list* lista_entrenadores, Posicion* posicion_llegada);
-Posicion* crear_posicion(char* string_posicion);
+Posicion obtener_posicion_entrenador(void* entrenador);
+Entrenador* entrenador_mas_cercano(t_list* lista_entrenadores, Posicion posicion_llegada);
 bool tienen_pokemons_para_intercambiar(Entrenador* entrenador_1, Entrenador* entrenador_2);
 bool hay_entrenadores_que_pueden_intercambiar();
 void obtener_entrenadores_que_pueden_intercambiar(Entrenador* entrenador_1, Entrenador* entrenador_2);
@@ -72,5 +71,6 @@ void habilitar_entrenador(Entrenador* entrenador);
 void deshabilitar_entrenador(Entrenador* entrenador);
 void cambiar_estado_a(Entrenador* entrenador, Estado_Entrenador estado);
 t_list* obtener_entrenadores_disponibles();
-
+bool tiene_la_cantidad_necesaria_de_cada_especie(Entrenador* entrenador);
+bool tiene_todas_las_especies_que_necesita(Entrenador* entrenador);
 

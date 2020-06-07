@@ -60,14 +60,14 @@ void interrupcion_CAUGHT_POKEMON(void* dato)
 void interrupcion_APPEARED_POKEMON(void* dato)
 {
 	DATOS_APPEARED_POKEMON* datos = dato;
-	agregar_pokemon_a_mapa(datos->pokemon, &(datos->posicion));
+	agregar_pokemon_a_mapa(datos->pokemon, datos->posicion);
 	free(datos);
 }
 void interrupcion_LOCALIZED_POKEMON(void* dato)
 {
 	DATOS_LOCALIZED_POKEMON* datos = dato;
 	for(int i=0;i<datos->cantidad;i++)
-			agregar_pokemon_a_mapa(datos->pokemon, &datos->posiciones[i]);
+		agregar_pokemon_a_mapa(datos->pokemon, datos->posiciones[i]);
 	se_localizo(datos->pokemon);
 	free(datos);
 }
