@@ -10,19 +10,16 @@
 
 t_log* logger;
 
-typedef struct{
-	char directory;
-} DatosDirectorio;
-
 typedef struct {
-	DatosDirectorio directory;
+	char directory;
 	uint32_t size;
 	uint32_t* blocks;
 	char open;
 } DatosArchivosPokemon;
 
 void conectarse();
-void reconexion(Cliente* clienteBroker);
+void reconexion();
+void tallGrass_init();
 void TerminarProgramaConError(char* error);
 void TerminarPrograma(t_log* logger, t_config* config);
 void EsperarHilos();

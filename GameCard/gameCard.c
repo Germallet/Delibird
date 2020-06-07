@@ -1,5 +1,9 @@
 #include "gameCard.h"
 #include "mensajes.h"
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+
 //#include <fuse.h>
 //
 //#define D_FILE_OFFSET_BITS 64
@@ -23,7 +27,9 @@ int main()
 {
 	logger = log_create("gameCard.log", "GameCard", true, LOG_LEVEL_INFO);
 	config = config_create("gameCard.config");
+
 	log_info(logger, "Bienvenido a la GameCard!");
+
 	char* miIp = config_get_string_value(config,"IP_GAMECARD");
 	int miPuerto = config_get_int_value(config,"PUERTO_GAMECARD");
 
@@ -40,6 +46,8 @@ int main()
 
 	//EN ALGUN LADO METER UN FORK PARA TENER VARIOS PROCESO GAME CARD
 
+	tallGrass_init();
+
 	log_info(logger,puntoMontaje);
 	log_info(logger,"/s",tiempoReintentoConexion);
 	log_info(logger,"/s",tiempoReintentoOperacion);
@@ -47,6 +55,17 @@ int main()
 
 	TerminarPrograma(logger,config);
 	return 0;
+}
+
+void tallGrass_init() {
+
+	struct stat buf;
+
+	char* puntoMontaje = config_get_string_value(config,"PUNTO_MONTAJE_TALLGRASS");
+
+	if (stat(puntoMontaje, &buf) == -1) {
+		mkdir(puntoMontaje, 0700);
+	}
 }
 
 void conectarse() {
