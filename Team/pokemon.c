@@ -71,7 +71,8 @@ void agregar_pokemon(t_list* lista_pokemon, char* especie_pokemon)
 	Pokemon* nuevo_pokemon()
 	{
 		Pokemon* nuevo_pokemon = malloc(sizeof(Pokemon));
-		nuevo_pokemon->especie = especie_pokemon;
+		nuevo_pokemon->especie = malloc(strlen(especie_pokemon)+1);
+		strcpy(nuevo_pokemon->especie, especie_pokemon);
 		nuevo_pokemon->cantidad = 1;
 
 		return nuevo_pokemon;
@@ -156,7 +157,7 @@ bool esta_localizada(char* especie_pokemon)
 void se_localizo(char* especie_pokemon) { list_add(especies_localizadas, especie_pokemon); }
 
 //-----------TEAM-----------//
-void identificar_objetivo_global() // identifica especies y cantidades para completar el objetivo global
+void identificar_objetivo_global()
 {
 	pokemons_necesarios = list_create();
 	for(int i =0; i<cola_NEW->elements_count;i++)

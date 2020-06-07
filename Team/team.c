@@ -71,18 +71,11 @@ int main()
 {
 	inicializar_datos();
 	obtener_entrenadores();
-
-	log_info(logger,"Pikachu == %s = TRUE", list_get(((Entrenador*) list_get(cola_NEW, 0))->pokemons_atrapados, 0));
-
 	identificar_objetivo_global();
 	solicitar_pokemons_para_objetivo_global_test();
 	//solicitar_pokemons_para_objetivo_global();
 	//conectarse_y_suscribirse_a_colas();
 	//TODO: conectarse_con_gameboy();
-
-	log_info(logger, "necesitamos %d %s", cantidad_de_pokemon_en_lista(pokemons_necesarios, "Pikachu"), "Pikachu");
-	log_info(logger, "necesitamos %d %s", cantidad_de_pokemon_en_lista(pokemons_necesarios, "Charmander"), "Charmander");
-	log_info(logger, "necesitamos %d %s", cantidad_de_pokemon_en_lista(pokemons_necesarios, "Squirtle"), "Squirtle");
 
 	while(true)
 	{

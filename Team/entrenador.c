@@ -7,7 +7,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <commons/string.h>
-#define MULTIPLICADOR_TIEMPO 2
+#define MULTIPLICADOR_TIEMPO 0.1
 
 Entrenador* entrenador_EXEC;
 t_list* cola_NEW;
@@ -291,7 +291,7 @@ t_list* pokemons_que_tiene_y_no_necesita(Entrenador* entrenador)
 	t_list* pokemons_de_mas = list_duplicate(entrenador->pokemons_atrapados);
 
 	for(int i=0;i<entrenador->pokemons_objetivo->elements_count;i++)
-		destruir_pokemon(tomar_pokemon(pokemons_de_mas, ((Pokemon*) list_get(entrenador->pokemons_objetivo, i))->especie));
+		tomar_pokemon(pokemons_de_mas, ((Pokemon*) list_get(entrenador->pokemons_objetivo, i))->especie);
 
 	return pokemons_de_mas;
 }
