@@ -107,6 +107,7 @@ void Operacion_GET_POKEMON(DATOS_GET_POKEMON* datos) {
 	log_info(logger,"llego");
 	//TODO hacer lo que se tenga que hacer con el GET_POKEMON
 	// HAY QUE MANDARLE AL BROKER UN MENSAJE DE LOCALIZED
+
 }
 
 void EnviarID(Cliente* cliente, uint32_t identificador)
@@ -117,5 +118,20 @@ void EnviarID(Cliente* cliente, uint32_t identificador)
 	EnviarMensaje(cliente, BROKER_ACK, id_mensaje, (void*) &SerializarM_ID_MENSAJE);
 
 	free(id_mensaje);
+
+}
+
+
+void Enviar_APPEARED_POKEMON(/*PARAMETROS*/) {
+
+}
+
+
+void Enviar_CAUGHT_POKEMON(/*PARAMETROS*/) {
+
+}
+
+
+void Enviar_LOCALIZED_POKEMON(/*PARAMETROS*/) {
 
 }
