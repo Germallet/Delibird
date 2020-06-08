@@ -27,9 +27,11 @@ void planificar_atrapar_pokemon()
 
 	Posicion* posicion = malloc(sizeof(Posicion));
 	*posicion = pokemon->posicion;
-
 	cargar_accion(entrenador, MOVER, posicion);
-	cargar_accion(entrenador, CAPTURAR_POKEMON, pokemon->especie);
+
+	char* especie = malloc(strlen(pokemon->especie)+1);
+	strcpy(especie, pokemon->especie);
+	cargar_accion(entrenador, CAPTURAR_POKEMON, especie);
 
 	cambiar_estado_a(entrenador, READY); // METER ORDENADO PARA SJF ACA
 

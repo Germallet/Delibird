@@ -35,6 +35,7 @@ Entrenador* crear_entrenador(char* posicion, char* pokemons_atrapados, char* pok
 	entrenador->id_mensaje_espera = NULL;
 	entrenador->ID=ID;
 	entrenador->estado=NEW;
+	entrenador->indice_accion_actual = 0;
 
 	pthread_mutex_init(&(entrenador->mutex), NULL);
 	pthread_mutex_lock(&(entrenador->mutex));
@@ -86,7 +87,7 @@ void destruir_entrenador(void* entrenador_void)
 	free(entrenador);
 }
 
-Posicion obtener_posicion_entrenador(void* entrenador) { return ((Entrenador*) entrenador)->posicion; }
+Posicion* obtener_posicion_entrenador(void* entrenador) { return &(((Entrenador*) entrenador)->posicion); }
 
 void asignar_id_mensaje_espera(Entrenador* entrenador, uint* nuevo_id)
 {

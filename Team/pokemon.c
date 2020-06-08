@@ -140,8 +140,8 @@ bool es_mismo_pokemon_mapa(Pokemon_Mapa* pokemon_1, Pokemon_Mapa* pokemon_2)
 
 void sacar_pokemon_de_mapa(Pokemon_Mapa* pokemon)
 {
-	for(int i=0;i<pokemons_mapa->elements_count;i++)
-		if(es_mismo_pokemon_mapa(pokemon, (Pokemon_Mapa*) list_get(pokemons_mapa, i))) list_remove_and_destroy_element(pokemons_mapa, i, &destruir_pokemon_mapa);
+	bool es_mismo_pokemon_mapa2(Pokemon_Mapa* pokemon_2) { return es_mismo_pokemon_mapa(pokemon, pokemon_2); }
+	list_remove_and_destroy_by_condition(pokemons_mapa, (bool(*)(void*))(&es_mismo_pokemon_mapa2), &destruir_pokemon_mapa);
 }
 
 void se_asigno_para_capturar(Pokemon_Mapa* pokemon)
@@ -162,7 +162,6 @@ void se_localizo(char* especie_pokemon) { list_add(especies_localizadas, especie
 //-----------TEAM-----------//
 void identificar_objetivo_global()
 {
-	pokemons_necesarios = list_create();
 	for(int i =0; i<cola_NEW->elements_count;i++)
 	{
 		Entrenador* entrenador_actual = ((Entrenador*) list_get(cola_NEW, i));

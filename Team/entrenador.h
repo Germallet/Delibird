@@ -55,7 +55,7 @@ typedef void (*Accion)(Entrenador*);
 Entrenador* crear_entrenador(char* posicion, char* pokemons_atrapados, char* pokemons_objetivo, int ID);
 void destruir_entrenador(void* entrenador_void);
 Entrenador* tomar_entrenador(t_list* lista_entrenadores);
-Posicion obtener_posicion_entrenador(void* entrenador);
+Posicion* obtener_posicion_entrenador(void* entrenador);
 Entrenador* entrenador_mas_cercano(t_list* lista_entrenadores, Posicion posicion_llegada);
 bool tienen_pokemons_para_intercambiar(Entrenador* entrenador_1, Entrenador* entrenador_2);
 bool hay_entrenadores_que_pueden_intercambiar();
