@@ -1,12 +1,7 @@
 #include "gameCard.h"
 #include "mensajes.h"
-#include <sys/types.h>
-#include <sys/stat.h>
 #include <unistd.h>
-
-//#include <fuse.h>
-//
-//#define D_FILE_OFFSET_BITS 64
+#include "archivos.h"
 
 t_config* config;
 
@@ -15,6 +10,8 @@ Eventos* eventos;
 Cliente* clienteBroker;
 
 t_bitarray* bitmap;
+
+NodoArbol* raiz;
 /*
  * TODO ESTRUCTURA DE LOS ARCHIVOS METADATA
  * TODO BITMAP
@@ -46,7 +43,7 @@ int main()
 
 	//EN ALGUN LADO METER UN FORK PARA TENER VARIOS PROCESO GAME CARD
 
-	tallGrass_init();
+	tallGrass_init(puntoMontaje);
 
 	log_info(logger,puntoMontaje);
 	log_info(logger,"/s",tiempoReintentoConexion);
@@ -57,15 +54,9 @@ int main()
 	return 0;
 }
 
-void tallGrass_init() {
-
-	struct stat buf;
-
-	char* puntoMontaje = config_get_string_value(config,"PUNTO_MONTAJE_TALLGRASS");
-
-	if (stat(puntoMontaje, &buf) == -1) {
-		mkdir(puntoMontaje, 0700);
-	}
+void tallGrass_init(char* puntoMontaje) {
+	crearDirectorio(puntoMontaje);
+	raiz = arbol_init(puntoMontaje);
 }
 
 void conectarse() {

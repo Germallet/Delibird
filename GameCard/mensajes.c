@@ -61,8 +61,18 @@ void Recibir_NEW_POKEMON(Cliente* cliente, Paquete* paqueteRecibido) {
 
 void Operacion_NEW_POKEMON(DATOS_NEW_POKEMON* datos) {
 	log_info(logger,"llego");
+	/*
+	 * ver si el directorio del tipo de pokemon ya esta en nuestro fs
+	 * si esta => fijarse si ya hay uno de esos pokemones en esas coords
+	 * 			si hay => sumarle uno a lo de despues del =
+	 * 			si no hay => fijarse si hay espacio en el ultimo bloque que queda para agregar una linea mas
+	 * 						si hay => agregar la linea (posX - posY) = 1
+	 * 						si no hay => pedir otro bloque y agregar la linea
+	 * si no esta => armar el directorio de ese tipo de pokemon y adentro poner los datos (metadata, bloques, coords, etc.)
+	 */
 	//TODO hacer lo que se tenga que hacer con el NEW_POKEMON
 	// HAY QUE MANDARLE AL BROKER UN MENSAJE DE APPEARED
+	Enviar_APPEARED_POKEMON(/*PARAMETROS*/);
 }
 
 void Recibir_CATCH_POKEMON(Cliente* cliente, Paquete* paqueteRecibido) {
@@ -84,6 +94,7 @@ void Operacion_CATCH_POKEMON(DATOS_CATCH_POKEMON* datos) {
 	log_info(logger,"llego");
 	//TODO hacer lo que se tenga que hacer con el CATCH_POKEMON
 	// HAY QUE MANDARLE AL BROKER UN MENSAJE DE CAUGHT
+	Enviar_CAUGHT_POKEMON(/*PARAMETROS*/);
 }
 
 void Recibir_GET_POKEMON(Cliente* cliente, Paquete* paqueteRecibido) {
@@ -99,7 +110,6 @@ void Recibir_GET_POKEMON(Cliente* cliente, Paquete* paqueteRecibido) {
 	pthread_t thread;
 	pthread_create(&thread, NULL, (void*) Operacion_GET_POKEMON,&datos);
 	pthread_detach(thread);
-
 }
 
 void Operacion_GET_POKEMON(DATOS_GET_POKEMON* datos) {
@@ -107,7 +117,7 @@ void Operacion_GET_POKEMON(DATOS_GET_POKEMON* datos) {
 	log_info(logger,"llego");
 	//TODO hacer lo que se tenga que hacer con el GET_POKEMON
 	// HAY QUE MANDARLE AL BROKER UN MENSAJE DE LOCALIZED
-
+	Enviar_LOCALIZED_POKEMON(/*PARAMETROS*/);
 }
 
 void EnviarID(Cliente* cliente, uint32_t identificador)
@@ -118,7 +128,6 @@ void EnviarID(Cliente* cliente, uint32_t identificador)
 	EnviarMensaje(cliente, BROKER_ACK, id_mensaje, (void*) &SerializarM_ID_MENSAJE);
 
 	free(id_mensaje);
-
 }
 
 
