@@ -21,22 +21,23 @@ bool esDirectorio(char* path) {
 	return sonIguales(directory,"Y");
 }
 
-void crearDirectorio(char* path) {
+void crearDirectorio(char* path, NodoArbol* padre) {
 
-	if (existeDirectorio(path)) {
-
-	} else {
-		mkdir(path, 0700);
-		agregarAlArbol(crearNodo(last(string_split(path,"/"))));
-		string_append(&path,"/metadata.bin");
-		FILE* metadata = fopen(path,"wb+");
-		fputs("DIRECTORY=Y\n",metadata);
-	}
+	mkdir(path, 0700);
+	agregarHijo(padre,crearNodo(last(string_split(path,"/"))));
+	string_append(&path,"/metadata.bin");
+	FILE* metadata = fopen(path,"wb+");
+	fputs("DIRECTORY=Y\n",metadata);
 }
 
-bool existeDirectorio(char* path) {
-	struct stat buf;
-	return stat(path, &buf) != -1;
+// TODO hacer bien toodo esto que esta mal
+void crearFS(char* puntoMontaje, NodoArbol* raiz) {
+	mkdir(puntoMontaje, 0700);
+	string_append(&puntoMontaje,"/metadata.bin");
+	FILE* metadata = fopen(puntoMontaje, "wb+");
+	crearDirectorio("/home/utnso/desktop/tall-grass/Files",raiz);
+	crearDirectorio("/home/utnso/desktop/tall-grass/Blocks",raiz);
+	crearDirectorio("/home/utnso/desktop/tall-grass/Metadata",raiz);
 }
 
 void crearArchivo(char* path) {

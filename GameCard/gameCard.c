@@ -55,8 +55,19 @@ int main()
 }
 
 void tallGrass_init(char* puntoMontaje) {
-	crearDirectorio(puntoMontaje);
+
 	raiz = arbol_init(puntoMontaje);
+
+	if (existeDirectorio(puntoMontaje)) {
+
+	} else {
+		crearFS(puntoMontaje, raiz);
+	}
+}
+
+bool existeDirectorio(char* path) {
+	struct stat buf;
+	return stat(path, &buf) != -1;
 }
 
 void conectarse() {

@@ -6,10 +6,6 @@ NodoArbol* arbol_init(char* puntoMontaje) {
 	return raiz;
 }
 
-void agregarAlArbol(NodoArbol* nodo) {
-
-}
-
 NodoArbol* crearNodo(char* nombre) {
 	NodoArbol* nodo;
 	nodo->nombre = nombre;
@@ -19,5 +15,4 @@ NodoArbol* crearNodo(char* nombre) {
 
 void agregarHijo(NodoArbol* padre, NodoArbol* hijo) {
 	list_add(padre->hijos, &hijo);
-	agregarAlArbol(hijo);
 }

@@ -18,3 +18,4 @@ void crearDirectorio(char* path);
 void TerminarProgramaConError(char* error);
 void TerminarPrograma(t_log* logger, t_config* config);
 void EsperarHilos();
+bool existeDirectorio(char* path)

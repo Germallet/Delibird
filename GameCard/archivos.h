@@ -14,5 +14,4 @@ typedef struct {
 bool sonIguales(char* a, char* b);
 bool estaAbierto(char* path);
 bool esDirectorio(char* path);
-bool existeDirectorio(char* path);
 void crearArchivo(char* path);
