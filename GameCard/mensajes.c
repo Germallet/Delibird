@@ -61,6 +61,26 @@ void Recibir_NEW_POKEMON(Cliente* cliente, Paquete* paqueteRecibido) {
 
 void Operacion_NEW_POKEMON(DATOS_NEW_POKEMON* datos) {
 	log_info(logger,"llego");
+
+	char* pathPokemon = encontrarPokemon(datos->pokemon);
+
+	if(pathPokemon == NULL)
+		pathPokemon = crearPokemon(datos->pokemon);
+
+	FILE* pokemon = fopen(pathPokemon,"ab+");
+
+	//VER QUE NADIE ESTE ABRIENDO EL ARCHIVO
+//	char* bloques = bloquesPokemon(pokemon);
+
+//	char* datosArchivos = leerBlocks(bloques);
+
+	char* bloquesPorConfig = leerBlocksPorConfig(pathPokemon);
+
+//	DatosBloques* datosArchivos = convertirDatos(bloques);
+//
+//	agregarCantidadEnPosicion(datosArchivos,datos->posicion,datos->cantidad);
+//
+//	escribirDatos(datosArchivos,pokemon); //ACA SE AGREGARIAN MAS BLOQUES
 	/*
 	 * ver si el directorio del tipo de pokemon ya esta en nuestro fs
 	 * si esta => fijarse si ya hay uno de esos pokemones en esas coords
@@ -72,7 +92,9 @@ void Operacion_NEW_POKEMON(DATOS_NEW_POKEMON* datos) {
 	 */
 	//TODO hacer lo que se tenga que hacer con el NEW_POKEMON
 	// HAY QUE MANDARLE AL BROKER UN MENSAJE DE APPEARED
-	Enviar_APPEARED_POKEMON(/*PARAMETROS*/);
+	Enviar_APPEARED_POKEMON(datos);
+
+	fclose(pokemon);
 }
 
 void Recibir_CATCH_POKEMON(Cliente* cliente, Paquete* paqueteRecibido) {
@@ -131,16 +153,16 @@ void EnviarID(Cliente* cliente, uint32_t identificador)
 }
 
 
-void Enviar_APPEARED_POKEMON(/*PARAMETROS*/) {
+void Enviar_APPEARED_POKEMON(DATOS_NEW_POKEMON* datos) {
+	DATOS_APPEARED_POKEMON* datosAEnviar;
+}
+
+
+void Enviar_CAUGHT_POKEMON(DATOS_CATCH_POKEMON* datos) {
 
 }
 
 
-void Enviar_CAUGHT_POKEMON(/*PARAMETROS*/) {
-
-}
-
-
-void Enviar_LOCALIZED_POKEMON(/*PARAMETROS*/) {
+void Enviar_LOCALIZED_POKEMON(DATOS_GET_POKEMON* datos,Posicion* posiciones) {
 
 }

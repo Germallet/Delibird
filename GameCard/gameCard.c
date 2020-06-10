@@ -59,7 +59,7 @@ void tallGrass_init(char* puntoMontaje) {
 	raiz = crearNodo(puntoMontaje);
 
 	if (existeDirectorio(puntoMontaje)) {
-		incorparFileSystem(puntoMontaje);
+//		incorparFileSystem(puntoMontaje);
 
 	} else {
 		mkdir(puntoMontaje, 0700);
@@ -72,13 +72,29 @@ void tallGrass_init(char* puntoMontaje) {
 
 bool existePokemon(char* nombre) {
 
-	NodoArbol* dirPokemon = raiz->hijos->head;
+	NodoArbol* dirPokemon = directorioFiles();
 
 	bool esIgual(char* nombre2) {
 		return sonIguales(nombre,nombre2);
 	}
 
-	return list_any_satisfy(dirPokemon->hijos,&esIgual);
+	return list_any_satisfy(dirPokemon->hijos,(void*)&esIgual);
+}
+
+
+char* pathFiles() {
+
+	char* ptoDeMontaje = raiz->nombre;
+
+	NodoArbol* files = malloc(sizeof(NodoArbol));
+	files = directorioFiles();
+	string_append(&ptoDeMontaje,files->nombre);
+
+	return ptoDeMontaje;
+}
+
+NodoArbol* directorioFiles() {
+	return (NodoArbol*) list_get(raiz->hijos,0);
 }
 
 void conectarse() {

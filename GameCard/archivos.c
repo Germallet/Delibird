@@ -1,6 +1,5 @@
 #include "archivos.h"
-#include <sys/types.h>
-#include <sys/stat.h>
+
 
 t_config* config;
 
@@ -94,16 +93,105 @@ bool existeDirectorio(char* path) {
 	return stat(path, &buf) != -1;
 }
 
-void crearPokemon(char* nombre) {
+char* crearPokemon(char* nombre) {
 
-	if(existePokemon(nombre)){
+	crearNodo(nombre);
 
-	} else {
+	char* pathF = pathFiles();
 
-	}
+	string_append(&pathF, nombre);
+
+	crearMetadataPokemon(pathF);
+
+	return pathF;
 }
 
-void existePokemon(char* nombre) {
+void crearMetadataPokemon(char* path,int size) {
+	string_append(&path,"/metadata.bin");
+
+	FILE* metadata = fopen(path,"wb+");
+
+	fputs("DIRECTORY=N\n",metadata);
+	fputs("SIZE=256\n",metadata);
+	fputs("BLOCKS=[]\n",metadata);
+	fputs("OPEN=N\n",metadata);
+
+	fclose(metadata);
+}
+
+char* encontrarPokemon(char* nombre) {
+	char* path = pathFiles();
+
+	bool esIgual(char* nombre2) {
+		return sonIguales(nombre,nombre2);
+	}
+
+//	NodoArbol* pokemon = list_find(dirPokemon->hijos,(void*)&esIgual);
+
+	string_append(&path,"/");
+	string_append(&path,nombre);
+	string_append(&path,"/metadata.bin");
+
+	return path;
+}
+
+//void bloquesPokemon(FILE* pokemon) {
+//	config = config_create(pokemon);
+//	char* directory = config_get_string_value(config,"DIRECTORY");
+//
+//}
+
+//char leerDirectory(FILE* file) {
+//	char* directory;
+//	fgetc(directory,10,file);
+//
+//	return directory[10];
+//}
+//
+//uint32_t leerSize(FILE* file) {
+//	char* size;
+//
+//	fseek(file,11,0);
+//
+//	fgets(size,);
+//}
+
+char* leerBlocks(FILE* file) {
+
+	char* blocks;
+	char a = fgetc(file);
+	int acum = 0;
+	int acum2 = 0;
+
+	while(a != '['){
+		a = fgetc(file);
+		acum++;
+	}
+
+	while(a != ']'){
+		a = fgetc(file);
+		acum2++;
+	}
+
+	fseek(file,acum,0);
+
+	char* bloques = malloc(acum2-acum);
+
+	bloques = fgets(blocks,acum2-acum,file);
+
+	string_split(fgets(blocks,acum2-acum,file),",");
+
+	return bloques;
+}
+
+char* leerBlocksPorConfig(char* path) {
+
+	t_config* pokemon = config_create(path);
+
+	return config_get_string_value(pokemon,"BLOCKS");
+}
+
+void agregarCantidadEnPosicion(DatosBloques* pokemon,Posicion pos, uint32_t cantidad) {
 
 }
 

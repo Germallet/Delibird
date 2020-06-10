@@ -1,7 +1,7 @@
 #include "arbol.h"
 
 NodoArbol* crearNodo(char* nombre) {
-	NodoArbol* nodo;
+	NodoArbol* nodo = malloc(sizeof(NodoArbol));
 	nodo->nombre = nombre;
 	nodo->hijos = list_create();
 	return nodo;
