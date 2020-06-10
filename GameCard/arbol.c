@@ -1,11 +1,5 @@
 #include "arbol.h"
 
-NodoArbol* arbol_init(char* puntoMontaje) {
-	NodoArbol* raiz;
-	raiz->nombre = puntoMontaje;
-	return raiz;
-}
-
 NodoArbol* crearNodo(char* nombre) {
 	NodoArbol* nodo;
 	nodo->nombre = nombre;

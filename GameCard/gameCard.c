@@ -56,18 +56,29 @@ int main()
 
 void tallGrass_init(char* puntoMontaje) {
 
-	raiz = arbol_init(puntoMontaje);
+	raiz = crearNodo(puntoMontaje);
 
 	if (existeDirectorio(puntoMontaje)) {
+		incorparFileSystem(puntoMontaje);
 
 	} else {
-		crearFS(puntoMontaje, raiz);
+		mkdir(puntoMontaje, 0700);
+
+		crearDirectorioFiles(raiz);
+		crearDirectorioBlocks(raiz);
+		crearDirectorioMetadata(raiz,bitmap);
 	}
 }
 
-bool existeDirectorio(char* path) {
-	struct stat buf;
-	return stat(path, &buf) != -1;
+bool existePokemon(char* nombre) {
+
+	NodoArbol* dirPokemon = raiz->hijos->head;
+
+	bool esIgual(char* nombre2) {
+		return sonIguales(nombre,nombre2);
+	}
+
+	return list_any_satisfy(dirPokemon->hijos,&esIgual);
 }
 
 void conectarse() {

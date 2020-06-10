@@ -6,5 +6,5 @@ typedef struct {
 	t_list* hijos;
 } NodoArbol;
 
-void arbol_init(char* puntoMontaje);
-void agregarAlArbol(char* nombre);
+NodoArbol* crearNodo(char* puntoMontaje);
+void agregarHijo(NodoArbol* padre, NodoArbol* hijo);
