@@ -12,12 +12,13 @@ Cliente* clienteBroker;
 t_bitarray* bitmap;
 
 NodoArbol* raiz;
+
 /*
- * TODO ESTRUCTURA DE LOS ARCHIVOS METADATA
  * TODO BITMAP
  * TODO HACER FUNCIONES PARA LEER, ESCRIBIR, BUSCAR EL ARCHIVO, VERIFICAR SI SE PUEDE ABRIR, OBTENER POSICIONES Y CANTIDADES DE ARCHIVO
  * TODO ELIMINAR CANTIDADES Y POSICIONES DE ARCHIVO
- * TODO HACER FILESYSTEM
+ *
+ *
  */
 
 int main()
@@ -41,14 +42,7 @@ int main()
 
 	EsperarHilos();
 
-	//EN ALGUN LADO METER UN FORK PARA TENER VARIOS PROCESO GAME CARD
-
 	tallGrass_init(puntoMontaje);
-
-	log_info(logger,puntoMontaje);
-	log_info(logger,"/s",tiempoReintentoConexion);
-	log_info(logger,"/s",tiempoReintentoOperacion);
-	log_info(logger,"/s",tiempoRetardoOperacion);
 
 	TerminarPrograma(logger,config);
 	return 0;
@@ -65,8 +59,13 @@ void tallGrass_init(char* puntoMontaje) {
 		mkdir(puntoMontaje, 0700);
 
 		crearDirectorioFiles(raiz);
+
 		crearDirectorioBlocks(raiz);
-		crearDirectorioMetadata(raiz,bitmap);
+
+		int size = config_get_int_value(config,"BLOCK_SIZE");
+		int blocks = config_get_int_value(config,"BLOCKS");
+		char* magicNumber = config_get_string_value(config,"MAGIC_NUMBER");
+		crearDirectorioMetadata(raiz,bitmap,size,blocks,magicNumber);
 	}
 }
 
@@ -81,20 +80,28 @@ bool existePokemon(char* nombre) {
 	return list_any_satisfy(dirPokemon->hijos,(void*)&esIgual);
 }
 
+NodoArbol* encontrarPokemon(char* nombre) {
 
-char* pathFiles() {
+	NodoArbol* nodoFiles = directorioFiles();
 
-	char* ptoDeMontaje = raiz->nombre;
+	bool esIgual(char* nombre2) {
+		return sonIguales(nombre,nombre2);
+	}
 
-	NodoArbol* files = malloc(sizeof(NodoArbol));
-	files = directorioFiles();
-	string_append(&ptoDeMontaje,files->nombre);
+	return list_find(nodoFiles->hijos,(void*)&esIgual);
+}
 
-	return ptoDeMontaje;
+char* pathDeNodo(NodoArbol* nodo) {
+	if (nodo->padre == NULL) return nodo->nombre;
+	return strcat(pathDeNodo(nodo),nodo->nombre);
 }
 
 NodoArbol* directorioFiles() {
 	return (NodoArbol*) list_get(raiz->hijos,0);
+}
+
+NodoArbol* directorioBlocks() {
+	return (NodoArbol*) list_get(raiz->hijos,1);
 }
 
 void conectarse() {
@@ -108,7 +115,9 @@ void conectarse() {
 	SuscribirseColas(clienteBroker);
 }
 
-void reconexion() { if (clienteBroker == NULL) conectarse(); }
+void reconexion() {
+	if (clienteBroker == NULL) conectarse();
+}
 
 void EsperarHilos()
 {

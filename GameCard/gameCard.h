@@ -21,5 +21,5 @@ void TerminarProgramaConError(char* error);
 void TerminarPrograma(t_log* logger, t_config* config);
 void EsperarHilos();
 bool existePokemon(char* nombre);
-char* pathFiles();
 NodoArbol* directorioFiles();
+char* pathDeNodo(NodoArbol* nodo);
