@@ -238,14 +238,14 @@ DATOS_CATCH_POKEMON_ID* convertir_CATCH_POKEMON_ID(int cantParametros, char* par
 //./GameBoy BROKER CAUGHT_POKEMON bool ID
 //    1        2        3          4    5
 //    0        1        2          3    4
-DATOS_CAUGHT_POKEMON* convertir_CAUGHT_POKEMON_ID(int cantParametros, char* parametros[])
+DATOS_CAUGHT_POKEMON_ID* convertir_CAUGHT_POKEMON_ID(int cantParametros, char* parametros[])
 {
 	if (cantParametros != 5) TerminarProgramaConError("MANDAME BIEN LOS PARAMETROS, SABANDIJA");
 
-	DATOS_CAUGHT_POKEMON* datos = malloc(sizeof(DATOS_CAUGHT_POKEMON));
+	DATOS_CAUGHT_POKEMON_ID* datos = malloc(sizeof(DATOS_CAUGHT_POKEMON_ID));
 
 	datos->idCorrelativa = strtol(parametros[3], NULL, 10);
-	datos->capturado = strtol(parametros[4], NULL, 10);
+	datos->datos.capturado = sonIguales(parametros[4], "OK") ? 1 : 0;
 
 	return datos;
 }

@@ -47,12 +47,11 @@ typedef struct {
 
 // CAUGHT_POKEMON
 typedef struct {
-	uint32_t idCorrelativa;
 	uint32_t capturado;
 } DATOS_CAUGHT_POKEMON;
 typedef struct {
 	DATOS_CAUGHT_POKEMON datos;
-	uint32_t id;
+	uint32_t idCorrelativa;
 } DATOS_CAUGHT_POKEMON_ID;
 
 // GET_POKEMON

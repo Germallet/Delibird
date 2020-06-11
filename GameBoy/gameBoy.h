@@ -42,7 +42,7 @@ DATOS_APPEARED_POKEMON* convertir_APPEARED_POKEMON(int cantParametros, char* par
 DATOS_APPEARED_POKEMON_ID* convertir_APPEARED_POKEMON_ID(int cantParametros, char* parametros[]);
 DATOS_CATCH_POKEMON* convertir_CATCH_POKEMON(int cantParametros, char* parametros[]);
 DATOS_CATCH_POKEMON_ID* convertir_CATCH_POKEMON_ID(int cantParametros, char* parametros[]);
-DATOS_CAUGHT_POKEMON* convertir_CAUGHT_POKEMON_ID(int cantParametros, char* parametros[]);
+DATOS_CAUGHT_POKEMON_ID* convertir_CAUGHT_POKEMON_ID(int cantParametros, char* parametros[]);
 DATOS_GET_POKEMON* convertir_GET_POKEMON(int cantParametros, char* parametros[]);
 DATOS_GET_POKEMON_ID* convertir_GET_POKEMON_ID(int cantParametros, char* parametros[]);
 

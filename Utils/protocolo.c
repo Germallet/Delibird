@@ -51,14 +51,14 @@ Stream* SerializarM_CATCH_POKEMON_ID( DATOS_CATCH_POKEMON_ID* datos)
 // CAUGHT_POKEMON
 Stream* SerializarM_CAUGHT_POKEMON(DATOS_CAUGHT_POKEMON* datos)
 {
-	Stream* stream = Stream_CrearEscrituraNueva(sizeof(uint32_t)*2);
+	Stream* stream = Stream_CrearEscrituraNueva(sizeof(uint32_t));
 	Serializar_CAUGHT_POKEMON(stream, datos);
 	return stream;
 }
 Stream* SerializarM_CAUGHT_POKEMON_ID(DATOS_CAUGHT_POKEMON_ID* datos)
 {
-	Stream* stream = Stream_CrearEscrituraNueva(sizeof(uint32_t)*3);
-	Serializar_uint32(stream, datos->id);
+	Stream* stream = Stream_CrearEscrituraNueva(sizeof(uint32_t)*2);
+	Serializar_uint32(stream, datos->idCorrelativa);
 	Serializar_CAUGHT_POKEMON(stream, &(datos->datos));
 	return stream;
 }
@@ -184,37 +184,37 @@ char* CodigoDeOperacionAString(CodigoDeOperacion codigoDeOperacion)
 
 char* DatosAString_NEW_POKEMON(DATOS_NEW_POKEMON* datos)
 {
-	char* mensaje = malloc(50);
-	snprintf(mensaje, 50, "NEW_POKEMON: {pokemon: '%s', cantidad: %d}", datos->pokemon, datos->cantidad);
+	char* mensaje = malloc(80);
+	snprintf(mensaje, 80, "NEW_POKEMON: {pokemon: '%s', cantidad: %d}", datos->pokemon, datos->cantidad);
 	return mensaje;
 }
 char* DatosAString_APPEARED_POKEMON(DATOS_APPEARED_POKEMON* datos)
 {
-	char* mensaje = malloc(50);
-	snprintf(mensaje, 50, "APPEARED_POKEMON: {pokemon: '%s', posicion: (%d, %d)}", datos->pokemon, datos->posicion.posX, datos->posicion.posY);
+	char* mensaje = malloc(80);
+	snprintf(mensaje, 80, "APPEARED_POKEMON: {pokemon: '%s', posicion: (%d, %d)}", datos->pokemon, datos->posicion.posX, datos->posicion.posY);
 	return mensaje;
 }
 char* DatosAString_CATCH_POKEMON(DATOS_CATCH_POKEMON* datos)
 {
-	char* mensaje = malloc(50);
-	snprintf(mensaje, 50, "CATCH_POKEMON: {pokemon: '%s', posicion: (%d, %d)}", datos->pokemon, datos->posicion.posX, datos->posicion.posY);
+	char* mensaje = malloc(80);
+	snprintf(mensaje, 80, "CATCH_POKEMON: {pokemon: '%s', posicion: (%d, %d)}", datos->pokemon, datos->posicion.posX, datos->posicion.posY);
 	return mensaje;
 }
 char* DatosAString_CAUGHT_POKEMON(DATOS_CAUGHT_POKEMON* datos)
 {
-	char* mensaje = malloc(50);
-	snprintf(mensaje, 50, "CAUGHT_POKEMON: {capturado: %d}", datos->capturado);
+	char* mensaje = malloc(80);
+	snprintf(mensaje, 80, "CAUGHT_POKEMON: {capturado: %s}", datos->capturado == 1 ? "OK" : "FAIL");
 	return mensaje;
 }
 char* DatosAString_GET_POKEMON(DATOS_GET_POKEMON* datos)
 {
-	char* mensaje = malloc(50);
-	snprintf(mensaje, 50, "GET_POKEMON: {pokemon: '%s'}", datos->pokemon);
+	char* mensaje = malloc(80);
+	snprintf(mensaje, 80, "GET_POKEMON: {pokemon: '%s'}", datos->pokemon);
 	return mensaje;
 }
 char* DatosAString_LOCALIZED_POKEMON(DATOS_LOCALIZED_POKEMON* datos)
 {
-	char* mensaje = malloc(50);
-	snprintf(mensaje, 50, "LOCALIZED_POKEMON: {pokemon: '%s', cantidad: %d}", datos->pokemon, datos->cantidad);
+	char* mensaje = malloc(80);
+	snprintf(mensaje, 80, "LOCALIZED_POKEMON: {pokemon: '%s', cantidad: %d}", datos->pokemon, datos->cantidad);
 	return mensaje;
 }
