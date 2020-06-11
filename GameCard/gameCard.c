@@ -1,12 +1,7 @@
 #include "gameCard.h"
 #include "mensajes.h"
-#include <sys/types.h>
-#include <sys/stat.h>
 #include <unistd.h>
-
-//#include <fuse.h>
-//
-//#define D_FILE_OFFSET_BITS 64
+#include "archivos.h"
 
 t_config* config;
 
@@ -15,6 +10,8 @@ Eventos* eventos;
 Cliente* clienteBroker;
 
 t_bitarray* bitmap;
+
+NodoArbol* raiz;
 /*
  * TODO ESTRUCTURA DE LOS ARCHIVOS METADATA
  * TODO BITMAP
@@ -46,7 +43,7 @@ int main()
 
 	//EN ALGUN LADO METER UN FORK PARA TENER VARIOS PROCESO GAME CARD
 
-	tallGrass_init();
+	tallGrass_init(puntoMontaje);
 
 	log_info(logger,puntoMontaje);
 	log_info(logger,"/s",tiempoReintentoConexion);
@@ -57,15 +54,47 @@ int main()
 	return 0;
 }
 
-void tallGrass_init() {
+void tallGrass_init(char* puntoMontaje) {
 
-	struct stat buf;
+	raiz = crearNodo(puntoMontaje);
 
-	char* puntoMontaje = config_get_string_value(config,"PUNTO_MONTAJE_TALLGRASS");
+	if (existeDirectorio(puntoMontaje)) {
+//		incorparFileSystem(puntoMontaje);
 
-	if (stat(puntoMontaje, &buf) == -1) {
+	} else {
 		mkdir(puntoMontaje, 0700);
+
+		crearDirectorioFiles(raiz);
+		crearDirectorioBlocks(raiz);
+		crearDirectorioMetadata(raiz,bitmap);
 	}
+}
+
+bool existePokemon(char* nombre) {
+
+	NodoArbol* dirPokemon = directorioFiles();
+
+	bool esIgual(char* nombre2) {
+		return sonIguales(nombre,nombre2);
+	}
+
+	return list_any_satisfy(dirPokemon->hijos,(void*)&esIgual);
+}
+
+
+char* pathFiles() {
+
+	char* ptoDeMontaje = raiz->nombre;
+
+	NodoArbol* files = malloc(sizeof(NodoArbol));
+	files = directorioFiles();
+	string_append(&ptoDeMontaje,files->nombre);
+
+	return ptoDeMontaje;
+}
+
+NodoArbol* directorioFiles() {
+	return (NodoArbol*) list_get(raiz->hijos,0);
 }
 
 void conectarse() {
