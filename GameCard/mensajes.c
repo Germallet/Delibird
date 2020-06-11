@@ -51,45 +51,50 @@ void Recibir_NEW_POKEMON(Cliente* cliente, Paquete* paqueteRecibido) {
 
 	if (stream->error)
 		log_error(logger,"Error al deserializar NEW_POKEMON");
-	else
+	else {
+		log_info(logger,"Tu mensaje llego correctamente");
 		EnviarID(cliente,id);
-
-	pthread_t thread;
-	pthread_create(&thread, NULL, (void*) Operacion_NEW_POKEMON,&datos);
-	pthread_detach(thread);
+		pthread_t thread;
+		pthread_create(&thread, NULL, (void*) Operacion_NEW_POKEMON,&datos);
+		pthread_detach(thread);
+	}
 }
 
+/*
+ * ver si el directorio del tipo de pokemon ya esta en nuestro fs
+ * si esta => fijarse si ya hay uno de esos pokemones en esas coords
+ * 			si hay => sumarle uno a lo de despues del =
+ * 			si no hay => fijarse si hay espacio en el ultimo bloque que queda para agregar una linea mas
+ * 						si hay => agregar la linea (posX - posY) = 1
+ * 						si no hay => pedir otro bloque y agregar la linea
+ * si no esta => armar el directorio de ese tipo de pokemon y adentro poner los datos (metadata, bloques, coords, etc.)
+ */
+
 void Operacion_NEW_POKEMON(DATOS_NEW_POKEMON* datos) {
-	log_info(logger,"llego");
 
-	char* pathPokemon = encontrarPokemon(datos->pokemon);
+	NodoArbol* nodoPokemon = encontrarPokemon(datos->pokemon);
 
-	if(pathPokemon == NULL)
-		pathPokemon = crearPokemon(datos->pokemon);
+	if(nodoPokemon == NULL) {
+		nodoPokemon = crearPokemon(datos->pokemon);
+		agregarNodo(directorioFiles(),nodoPokemon);
+	}
 
-	FILE* pokemon = fopen(pathPokemon,"ab+");
+	FILE* filePokemon = fopen(strcat(pathDeNodo(nodoPokemon),"/metadata.bin"),"ab+");
 
-	//VER QUE NADIE ESTE ABRIENDO EL ARCHIVO
-//	char* bloques = bloquesPokemon(pokemon);
+	//TODO VER QUE NADIE ESTE ABRIENDO EL ARCHIVO
 
-//	char* datosArchivos = leerBlocks(bloques);
+	int cantBloques = 0;
 
-	char* bloquesPorConfig = leerBlocksPorConfig(pathPokemon);
+	int* bloques = leerBlocks(pathDeNodo(nodoPokemon), &cantBloques);
 
-//	DatosBloques* datosArchivos = convertirDatos(bloques);
-//
+	for (int i = 0; i < cantBloques; i++) {
+		bloque = buscarBloque[i];
+	}
+
 //	agregarCantidadEnPosicion(datosArchivos,datos->posicion,datos->cantidad);
 //
 //	escribirDatos(datosArchivos,pokemon); //ACA SE AGREGARIAN MAS BLOQUES
-	/*
-	 * ver si el directorio del tipo de pokemon ya esta en nuestro fs
-	 * si esta => fijarse si ya hay uno de esos pokemones en esas coords
-	 * 			si hay => sumarle uno a lo de despues del =
-	 * 			si no hay => fijarse si hay espacio en el ultimo bloque que queda para agregar una linea mas
-	 * 						si hay => agregar la linea (posX - posY) = 1
-	 * 						si no hay => pedir otro bloque y agregar la linea
-	 * si no esta => armar el directorio de ese tipo de pokemon y adentro poner los datos (metadata, bloques, coords, etc.)
-	 */
+
 	//TODO hacer lo que se tenga que hacer con el NEW_POKEMON
 	// HAY QUE MANDARLE AL BROKER UN MENSAJE DE APPEARED
 	Enviar_APPEARED_POKEMON(datos);
