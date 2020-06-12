@@ -62,9 +62,9 @@ static void esperar_fin_de_ciclo() { pthread_mutex_lock(&mutex_team); }
 
 static void solicitar_pokemons_para_objetivo_global_test()
 {
-	agregar_pokemon_a_mapa("Pikachu", crear_posicion("2|3"));
-	agregar_pokemon_a_mapa("Charmander", crear_posicion("6|7"));
 	agregar_pokemon_a_mapa("Squirtle", crear_posicion("0|0"));
+	agregar_pokemon_a_mapa("Charmander", crear_posicion("6|7"));
+	agregar_pokemon_a_mapa("Pikachu", crear_posicion("2|3"));
 }
 
 //-----------HILO PRINCIPAL-----------//

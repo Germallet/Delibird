@@ -8,20 +8,14 @@ bool hay_entrenador_en_ejecucion() { return entrenador_EXEC != NULL; }
 bool hay_entrenadores_READY() { return !list_is_empty(cola_READY); }
 bool hay_pokemons_para_atrapar() { return !list_is_empty(pokemons_mapa); }
 bool necesitamos_pokemons() { return !list_is_empty(pokemons_necesarios); }
-bool hay_entrenadores_disponibles()
-{
-	t_list* disponibles = obtener_entrenadores_disponibles();
-	bool respuesta = !list_is_empty(disponibles);
-	list_destroy(disponibles);
-	return respuesta;
-}
+bool hay_entrenadores_disponibles_para_atrapar() { return list_any_satisfy(cola_BLOCKED, &puede_planificarse_para_atrapar) || !list_is_empty(cola_NEW); }
 
 void planificar_atrapar_pokemon()
 {
 	Entrenador* entrenador = NULL;
 	Pokemon_Mapa* pokemon = NULL;
 
-	pokemon_y_entrenador_mas_cercanos_entre_si(una_especie_que_necesito_y_esta_en_mapa(), &pokemon, (void**) &entrenador);
+	pokemon_y_entrenador_mas_cercanos_entre_si(&pokemon, (void**) &entrenador);
 
 	deshabilitar_entrenador(entrenador);
 
@@ -38,20 +32,27 @@ void planificar_atrapar_pokemon()
 	se_asigno_para_capturar(pokemon);
 }
 
-void planificar_intercambiar_pokemon()
+void planificar_intercambiar_pokemon_si_es_posible()
 {
 	Entrenador* entrenador_1 = NULL;
 	Entrenador* entrenador_2 = NULL;
 
-	obtener_entrenadores_que_pueden_intercambiar(entrenador_1, entrenador_2);
+	obtener_entrenadores_que_pueden_intercambiar(&entrenador_1, &entrenador_2);
 
-	Posicion* posicion = malloc(sizeof(Posicion));
-	*posicion = entrenador_2->posicion;
+	if(entrenador_1 != NULL && entrenador_2 != NULL)
+	{
+		Posicion* posicion = malloc(sizeof(Posicion));
+		*posicion = entrenador_2->posicion;
 
-	cargar_accion(entrenador_1, MOVER, posicion);
-	cargar_accion(entrenador_1, INTERCAMBIAR_POKEMON, entrenador_2);
+		cargar_accion(entrenador_1, MOVER, posicion);
+		cargar_accion(entrenador_1, INTERCAMBIAR_POKEMON_EN_PROGRESO, entrenador_2);
+		cargar_accion(entrenador_1, INTERCAMBIAR_POKEMON_EN_PROGRESO, entrenador_2);
+		cargar_accion(entrenador_1, INTERCAMBIAR_POKEMON_EN_PROGRESO, entrenador_2);
+		cargar_accion(entrenador_1, INTERCAMBIAR_POKEMON_EN_PROGRESO, entrenador_2);
+		cargar_accion(entrenador_1, INTERCAMBIAR_POKEMON_FINALIZADO, entrenador_2);
 
-	cambiar_estado_a(entrenador_1, READY);  // METER ORDENADO PARA SJF ACA
+		cambiar_estado_a(entrenador_1, READY);  // METER ORDENADO PARA SJF ACA
+	}
 }
 
 void terminar_team()
@@ -62,9 +63,9 @@ void terminar_team()
 	if(config != NULL) config_destroy(config);
 
 	if(entrenador_EXEC!=NULL) destruir_entrenador(entrenador_EXEC);
-	list_destroy_and_destroy_elements(cola_NEW, &destruir_entrenador);
-	list_destroy_and_destroy_elements(cola_READY, &destruir_entrenador);
-	list_destroy_and_destroy_elements(cola_BLOCKED, &destruir_entrenador);
+	list_destroy(cola_NEW);
+	list_destroy(cola_READY);
+	list_destroy(cola_BLOCKED);
 	list_destroy_and_destroy_elements(cola_EXIT, &destruir_entrenador);
 
 	list_destroy_and_destroy_elements(cola_INTERRUPCIONES, &destruir_interrupcion);
@@ -76,10 +77,10 @@ void terminar_team()
 
 void planificar_entrenador_si_es_necesario()
 {
-	while(hay_pokemons_para_atrapar() && hay_entrenadores_disponibles())
+	while(hay_pokemons_para_atrapar() && hay_entrenadores_disponibles_para_atrapar())
 		planificar_atrapar_pokemon();
-	while(hay_entrenadores_que_pueden_intercambiar())
-		planificar_intercambiar_pokemon();
+	if(hay_entrenadores_que_podrian_intercambiar())
+		planificar_intercambiar_pokemon_si_es_posible();
 	if(!hay_entrenador_en_ejecucion() && hay_entrenadores_READY())
 		cambiar_estado_a(tomar_entrenador(cola_READY), EXEC);
 	if(!hay_entrenador_en_ejecucion() && !necesitamos_pokemons())

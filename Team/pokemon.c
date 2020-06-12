@@ -105,6 +105,14 @@ bool tiene_pokemon(t_list* lista_pokemon, char* especie_pokemon)
 	return false;
 }
 
+int cantidad_de_pokemons_en_lista(t_list* lista_pokemon)
+{
+	int cantidad = 0;
+	for(int i=0;i<lista_pokemon->elements_count;i++)
+		cantidad = cantidad + ((Pokemon*) list_get(lista_pokemon, i))->cantidad;
+	return cantidad;
+}
+
 int cantidad_de_pokemon_en_lista(t_list* lista_pokemon, char* especie_pokemon)
 {
 	Pokemon* pokemon;
@@ -129,6 +137,23 @@ Pokemon* tomar_pokemon(t_list* lista_pokemon, char* especie_pokemon)
 		{
 			pokemon->cantidad--;
 			if(pokemon->cantidad==0) list_remove_and_destroy_element(lista_pokemon, i, &destruir_pokemon);
+			tomo_pokemon = true;
+		}
+	}
+	return tomo_pokemon ? pokemon : NULL;
+}
+
+Pokemon* tomar_pokemon_sin_destruir(t_list* lista_pokemon, char* especie_pokemon)
+{
+	Pokemon* pokemon;
+	bool tomo_pokemon = false;
+	for(int i=0;i<lista_pokemon->elements_count && !tomo_pokemon;i++)
+	{
+		pokemon = ((Pokemon*) list_get(lista_pokemon, i));
+		if(strcmp(pokemon->especie, especie_pokemon)==0)
+		{
+			pokemon->cantidad--;
+			if(pokemon->cantidad==0) list_remove(lista_pokemon, i);
 			tomo_pokemon = true;
 		}
 	}
@@ -188,7 +213,7 @@ void identificar_objetivo_global()
 //-----------PLANIFICACION-----------//
 int obtener_entrenador_disponible_mas_cercano(Pokemon_Mapa* pokemon, Entrenador** entrenador_mas_cercano) // Retorna la distancia al entrenador
 {
-	t_list* entrenadores_disponibles = obtener_entrenadores_disponibles();
+	t_list* entrenadores_disponibles = obtener_entrenadores_disponibles_para_atrapar();
 	if(list_is_empty(entrenadores_disponibles)) return -1;
 
 	t_list* distancias_a_entrenadores = list_map(entrenadores_disponibles, (void*) &obtener_posicion_entrenador);
@@ -196,7 +221,9 @@ int obtener_entrenador_disponible_mas_cercano(Pokemon_Mapa* pokemon, Entrenador*
 	int indice;
 	int distancia = distancia_menor(pokemon->posicion, distancias_a_entrenadores, &indice);
 
-	*entrenador_mas_cercano = list_get(entrenadores_disponibles, indice);
+	Entrenador* entrenador_test = list_get(entrenadores_disponibles, indice);
+
+	*entrenador_mas_cercano = entrenador_test;
 
 	list_destroy(entrenadores_disponibles);
 	list_destroy(distancias_a_entrenadores);
@@ -204,23 +231,21 @@ int obtener_entrenador_disponible_mas_cercano(Pokemon_Mapa* pokemon, Entrenador*
 	return distancia;
 }
 
-void pokemon_y_entrenador_mas_cercanos_entre_si(char* especie_pokemon, Pokemon_Mapa** pokemon, void** entrenador)
+void pokemon_y_entrenador_mas_cercanos_entre_si(Pokemon_Mapa** pokemon, void** entrenador)
 {
-	bool es_especie_que_busco(void* pokemon_que_busco) { return strcmp(((Pokemon_Mapa*) pokemon_que_busco)->especie, especie_pokemon)==0; }
+	t_list* pokemons_que_necesito = list_filter(pokemons_mapa, (void*) &necesito_pokemon_mapa);
 
-	t_list* pokemons_que_busco = list_filter(pokemons_mapa, &es_especie_que_busco);
-
-	if(!list_is_empty(pokemons_que_busco))
+	if(!list_is_empty(pokemons_que_necesito))
 	{
-		*pokemon = (Pokemon_Mapa*) list_remove(pokemons_que_busco, 0);
+		*pokemon = (Pokemon_Mapa*) list_remove(pokemons_que_necesito, 0);
 		int distancia = obtener_entrenador_disponible_mas_cercano(*pokemon, (Entrenador**) entrenador);
 		Pokemon_Mapa* pokemon_pivot = NULL;
 		Entrenador* entrenador_pivot = NULL;
 		int nueva_distancia;
-		for(int i=1; i < pokemons_que_busco->elements_count;i++)
+		for(int i=1; i < pokemons_que_necesito->elements_count;i++)
 		{
-			pokemon_pivot = list_get(pokemons_que_busco, i);
-			nueva_distancia = obtener_entrenador_disponible_mas_cercano(pokemon_pivot, (Entrenador**) entrenador_pivot);
+			pokemon_pivot = list_get(pokemons_que_necesito, i);
+			nueva_distancia = obtener_entrenador_disponible_mas_cercano(pokemon_pivot, (Entrenador**) &entrenador_pivot);
 			if(nueva_distancia<distancia)
 			{
 				*pokemon = pokemon_pivot;
@@ -229,7 +254,7 @@ void pokemon_y_entrenador_mas_cercanos_entre_si(char* especie_pokemon, Pokemon_M
 			}
 		}
 	}
-	list_destroy(pokemons_que_busco);
+	list_destroy(pokemons_que_necesito);
 }
 
 void borrar_especie_de_mapa(char* especie)
@@ -259,6 +284,13 @@ t_list* especies_en_mapa()
 	return especies_en_mapa;
 }
 char* una_especie_que_necesito_y_esta_en_mapa() { return ((Pokemon_Mapa*) list_get(pokemons_mapa, 0))->especie; }
+
+char* especie_con_entrenador_mas_cercano()
+{
+
+	return ((Pokemon_Mapa*) list_get(pokemons_mapa, 0))->especie;
+}
+
 bool necesito_especie_pokemon(char* especie) { return tiene_pokemon(pokemons_necesarios, especie); }
 bool necesito_pokemon_mapa(Pokemon_Mapa* pokemon) { return necesito_especie_pokemon(pokemon->especie); }
 
