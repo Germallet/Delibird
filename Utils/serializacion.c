@@ -55,13 +55,11 @@ DATOS_CATCH_POKEMON Deserializar_CATCH_POKEMON(Stream* stream)
 // CAUGHT_POKEMON
 void Serializar_CAUGHT_POKEMON(Stream* stream, DATOS_CAUGHT_POKEMON* datos)
 {
-	Serializar_uint32(stream, datos->idCorrelativa);
 	Serializar_uint32(stream, datos->capturado);
 }
 DATOS_CAUGHT_POKEMON Deserializar_CAUGHT_POKEMON(Stream* stream)
 {
 	DATOS_CAUGHT_POKEMON datos;
-	datos.idCorrelativa = Deserializar_uint32(stream);
 	datos.capturado = Deserializar_uint32(stream);
 	return datos;
 }

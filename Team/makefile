@@ -1,4 +1,4 @@
-TARGET = Team
+TARGET = team
 LIBS = -L./../Utils -lutils -lcommons -lpthread
 CC = gcc
 CFLAGS = -g -Wall
