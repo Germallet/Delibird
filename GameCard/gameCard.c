@@ -19,7 +19,6 @@ NodoArbol* raiz;
  * TODO ELIMINAR CANTIDADES Y POSICIONES DE ARCHIVO
  * TODO SINCRONIZAR TOODO
  * TODO ESCRIBIR EN LOS ARCHIVOS
- *
  */
 
 int main()
@@ -37,16 +36,16 @@ int main()
 	int tiempoReintentoOperacion = config_get_int_value(config,"TIEMPO_DE_REINTENTO_OPERACION");
 	int tiempoRetardoOperacion = config_get_int_value(config,"TIEMPO_RETARDO_OPERACION");
 
-	log_info(logger,"%s",tiempoReintentoOperacion);
-	log_info(logger,"%s",tiempoRetardoOperacion);
+	log_info(logger,string_itoa(tiempoReintentoOperacion));
+	log_info(logger,string_itoa(tiempoRetardoOperacion));
+
+	tallGrass_init(puntoMontaje);
 
 	CrearHiloTimer(-1,tiempoReintentoConexion,&reconexion,NULL);
 
 	SocketEscucha(miIp, miPuerto);
 
 	EsperarHilos();
-
-	tallGrass_init(puntoMontaje);
 
 	TerminarPrograma(logger,config);
 	return 0;
@@ -100,12 +99,46 @@ char* pathDeNodo(NodoArbol* nodo) {
 	return strcat(pathDeNodo(nodo),nodo->nombre);
 }
 
+//TODO Recorrer mejor esto
+
 NodoArbol* directorioFiles() {
 	return (NodoArbol*) list_get(raiz->hijos,0);
 }
 
 NodoArbol* directorioBlocks() {
 	return (NodoArbol*) list_get(raiz->hijos,1);
+}
+
+NodoArbol* directorioMetadata() {
+	return (NodoArbol*) list_get(raiz->hijos,2);
+}
+
+char* pedirBloque() {
+
+	int block = buscarPosicionLibre();
+
+	if(block == -1) return "error";
+
+	return string_itoa(block);
+}
+
+int buscarPosicionLibre() {
+
+	int i = 0;
+
+	while (bitarray_test_bit(bitmap,i))
+		i++;
+
+	bitarray_set_bit(bitmap,i);
+
+	if (i == bitmap->size)
+		return -1;
+
+	FILE* file = fopen(pathMetadataBinDe(pathDeNodo(directorioMetadata()), "/bitmap.bin"),"wb+"); //TODO VER COMO ESCRIBIR UN SOLO BIT
+	fwrite(bitmap->bitarray,bitmap->size,1,file);
+	fclose(file);
+
+	return i;
 }
 
 void conectarse() {

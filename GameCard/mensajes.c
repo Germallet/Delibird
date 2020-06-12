@@ -95,9 +95,7 @@ void Operacion_NEW_POKEMON(DATOS_NEW_POKEMON* datos) {
 	posYCant.pos.posX = datos->posicion.posX;
 	posYCant.pos.posY = datos->posicion.posY;
 
-	agregarCantidadEnPosicion(bloquesConvertidos,posYCant,bloques);
-
-//	escribirDatos(datosArchivos,pokemon); //ACA SE AGREGARIAN MAS BLOQUES
+	agregarCantidadEnPosicion(bloquesConvertidos,posYCant,bloques,64);
 
 	Enviar_APPEARED_POKEMON(datos);
 

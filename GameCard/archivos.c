@@ -171,7 +171,7 @@ void crearBitmap(char* path, t_bitarray* bitmap, int cantBlocks) {
 //	fclose(fBM);
 //}
 
-void agregarCantidadEnPosicion(t_list* pokemon, DatosBloques posYCant, int* bloques) {
+void agregarCantidadEnPosicion(t_list* pokemon, DatosBloques posYCant, int* bloques, int size) {
 
 	DatosBloques* posicion = malloc(sizeof(DatosBloques));
 	posicion = encontrarPosicion(pokemon,posYCant.pos);
@@ -191,12 +191,43 @@ void agregarCantidadEnPosicion(t_list* pokemon, DatosBloques posYCant, int* bloq
 		fclose(bloque);
 	} else {
 		posicion->cantidad += posYCant.cantidad;
-		escribirListaEnArchivo(pokemon);
+		escribirListaEnArchivo(pokemon,size,bloques);
 	}
 }
 
-void escribirListaEnArchivo(t_list* pokemon) {
-//	todo
+int escribirListaEnArchivo(t_list* pokemon, int size, int* bloques) {
+	char* cadenaGrande = string_new();
+
+	int cantPokemon = list_size(pokemon);
+
+	for (int i = 0; i < cantPokemon; i++) {
+		DatosBloques* pok = list_get(pokemon,i);
+		string_append(&cadenaGrande,string_itoa(pok->pos.posX));
+		string_append(&cadenaGrande,"-");
+		string_append(&cadenaGrande,string_itoa(pok->pos.posY));
+		string_append(&cadenaGrande,"=");
+		string_append(&cadenaGrande,string_itoa(pok->cantidad));
+		string_append(&cadenaGrande,"\n");
+	}
+
+	cantPokemon = strlen(cadenaGrande);
+
+	int i = 0;
+	while((void*) bloques[i] != NULL) {
+		FILE* f = fopen(pathMetadataBinDe(pathDeNodo(directorioBlocks()),string_itoa(bloques[i])),"wb+");
+		fwrite(cadenaGrande,size,1,f);
+		cadenaGrande = string_substring_from(cadenaGrande, size);
+	}
+
+	while(strlen(cadenaGrande) > 0) {
+		char* nuevoBloque = pedirBloque();
+		//AGREGAR A BLOQUES
+		FILE* f = fopen(pathMetadataBinDe(pathDeNodo(directorioBlocks()),nuevoBloque),"wb+");
+		fwrite(cadenaGrande,size,1,f);
+		cadenaGrande = string_substring_from(cadenaGrande, size);
+	}
+
+	return cantPokemon;
 }
 
 DatosBloques* encontrarPosicion(t_list* pokemon, Posicion pos) {

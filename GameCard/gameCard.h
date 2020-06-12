@@ -28,3 +28,6 @@ NodoArbol* encontrarPokemon(char* nombre);
 NodoArbol* directorioFiles();
 NodoArbol* directorioBlocks();
 char* pathDeNodo(NodoArbol* nodo);
+char* pedirBloque();
+NodoArbol* directorioMetadata();
+int buscarPosicionLibre();
