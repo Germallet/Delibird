@@ -87,19 +87,21 @@ void Operacion_NEW_POKEMON(DATOS_NEW_POKEMON* datos) {
 
 	int* bloques = leerBlocks(pathDeNodo(nodoPokemon), &cantBloques);
 
-	for (int i = 0; i < cantBloques; i++) {
-		bloque = buscarBloque[i];
-	}
+	t_list* bloquesConvertidos = convertirBloques(bloques,cantBloques);
 
-//	agregarCantidadEnPosicion(datosArchivos,datos->posicion,datos->cantidad);
-//
+	DatosBloques posYCant;
+
+	posYCant.cantidad = datos->cantidad;
+	posYCant.pos.posX = datos->posicion.posX;
+	posYCant.pos.posY = datos->posicion.posY;
+
+	agregarCantidadEnPosicion(bloquesConvertidos,posYCant,bloques);
+
 //	escribirDatos(datosArchivos,pokemon); //ACA SE AGREGARIAN MAS BLOQUES
 
-	//TODO hacer lo que se tenga que hacer con el NEW_POKEMON
-	// HAY QUE MANDARLE AL BROKER UN MENSAJE DE APPEARED
 	Enviar_APPEARED_POKEMON(datos);
 
-	fclose(pokemon);
+	fclose(filePokemon);
 }
 
 void Recibir_CATCH_POKEMON(Cliente* cliente, Paquete* paqueteRecibido) {
@@ -159,7 +161,7 @@ void EnviarID(Cliente* cliente, uint32_t identificador)
 
 
 void Enviar_APPEARED_POKEMON(DATOS_NEW_POKEMON* datos) {
-	DATOS_APPEARED_POKEMON* datosAEnviar;
+
 }
 
 
