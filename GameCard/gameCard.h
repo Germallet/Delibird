@@ -15,6 +15,7 @@
 #include <errno.h>
 
 t_log* logger;
+Cliente* clienteBroker;
 
 void conectarse();
 void reconexion();
@@ -28,6 +29,7 @@ NodoArbol* encontrarPokemon(char* nombre);
 NodoArbol* directorioFiles();
 NodoArbol* directorioBlocks();
 char* pathDeNodo(NodoArbol* nodo);
-char* pedirBloque();
+int pedirBloque();
 NodoArbol* directorioMetadata();
 int buscarPosicionLibre();
+NodoArbol* directorio(char* str);

@@ -15,15 +15,24 @@ typedef struct {
 	uint32_t cantidad;
 } DatosBloques;
 
-bool sonIguales(char* a, char* b);
-bool estaAbierto(char* path);
-bool esDirectorio(char* path);
-int* leerBlocks(char* path, int* cantBloques);
+char* pathMetadataBinDe(char* path, char* nombreArchivo);
+char* posicionAString(DatosBloques* d);
+t_list* convertirBloques(t_list* bloques, int cantBloques);
+t_list* interpretarCadena(char* cadenaDatos, int cantBloques, int size);
+
 char* leerOpen(char* path);
 int leerSize(char* path);
 char* leerDirectorio(char* path);
+char* leerBlocksPorConfig(char* path);
+char* leerArchivos(t_list* bloques, int cantBloques, int size);
+t_list* leerBlocks(char* path, int* cantBloques);
+
+bool sonIguales(char* a, char* b);
+bool estaAbierto(char* path);
+bool esDirectorio(char* path);
 bool existeDirectorio(char* path);
 short existeArchivo(char *path);
+
 void crearBitmap(char* path, t_bitarray* bitmap, int cantBlocks);
 void crearArchivo(char* path);
 void crearDirectorioFiles(NodoArbol* arbol);
@@ -31,15 +40,20 @@ void crearDirectorioBlocks(NodoArbol* padre, int blocks);
 void crearDirectorioMetadata(NodoArbol* padre, t_bitarray* bitmap, int size, int blocks, char* magicNumber);
 void crearBloques(int blocks);
 void crearBitmap(char* path, t_bitarray* bitmap, int cantBlocks);
-void crearMetadataPokemon(char* path);
-void last(void** lista, void* valorRetorno);
+
 NodoArbol* crearPokemon(char* nombre);
-void agregarCantidadEnPosicion(t_list* pokemon, DatosBloques posYCant, int* bloques, int size);
-int escribirListaEnArchivo(t_list* pokemon, int size, int* bloques);
-char* leerBlocksPorConfig(char* path);
-t_list* convertirBloques(int* bloques, int cantBloques);
-char* leerArchivos(int* bloques, int cantBloques, int size);
-t_list* interpretarCadena(char* cadenaDatos, int cantBloques, int size);
+void crearMetadataPokemon(char* path);
+
 DatosBloques* encontrarPosicion(t_list* pokemon, Posicion pos);
-int escribirListaEnArchivo(t_list* pokemon, int size, int* bloques);
-char* pathMetadataBinDe(char* path, char* nombreArchivo);
+
+void agregarCantidadEnPosicion(t_list* pokemon, DatosBloques posYCant, t_list* numerosBloques, int size);
+int escribirListaEnArchivo(t_list* pokemon, int size, t_list* numerosBloques);
+
+
+
+
+
+
+
+
+//void last(void** lista, void* valorRetorno);

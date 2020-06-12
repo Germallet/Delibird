@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <commons/collections/list.h>
+#include <commons/string.h>
 
 typedef struct {
 	char* nombre;

@@ -36,8 +36,8 @@ int main()
 	int tiempoReintentoOperacion = config_get_int_value(config,"TIEMPO_DE_REINTENTO_OPERACION");
 	int tiempoRetardoOperacion = config_get_int_value(config,"TIEMPO_RETARDO_OPERACION");
 
-	log_info(logger,string_itoa(tiempoReintentoOperacion));
-	log_info(logger,string_itoa(tiempoRetardoOperacion));
+	log_info(logger,"%d",tiempoReintentoOperacion);
+	log_info(logger,"%d",tiempoRetardoOperacion);
 
 	tallGrass_init(puntoMontaje);
 
@@ -94,32 +94,81 @@ NodoArbol* encontrarPokemon(char* nombre) {
 	return list_find(nodoFiles->hijos,(void*)&esIgual);
 }
 
+//char* pathDeNodo(NodoArbol* nodo) {
+//	NodoArbol* padre = nodo->padre;
+//	NodoArbol* abuelo = padre->padre;
+//
+//	char* str = string_new();
+//
+//	if(abuelo == NULL) {
+//		string_append(&str,padre->nombre);
+//		string_append(&str,nodo->nombre);
+//		return str;
+//	}
+//
+//	if(abuelo->padre == NULL) {
+//		string_append(&str,abuelo->nombre);
+//		string_append(&str,padre->nombre);
+//		string_append(&str,nodo->nombre);
+//		return str;
+//	}
+//	return str;
+//}
+
 char* pathDeNodo(NodoArbol* nodo) {
-	if (nodo->padre == NULL) return nodo->nombre;
-	return strcat(pathDeNodo(nodo),nodo->nombre);
+	char* pal = string_new();
+
+	if(nodo->padre == NULL)
+		return nodo->nombre;
+
+	pal = nodo->nombre;
+
+	char* pal2 = string_new();
+	pal2 = pathDeNodo(nodo->padre);
+
+	string_append(&pal2,pal);
+
+	return pal2;
 }
 
 //TODO Recorrer mejor esto
 
+NodoArbol* directorio(char* str) {
+
+	int i = 0;
+
+	NodoArbol* node = (NodoArbol*) list_get(raiz->hijos,i);
+	char* nombre = node->nombre;
+
+	while (!sonIguales(str,nombre)){
+		i++;
+		node = list_get(raiz->hijos,i);
+		nombre = node->nombre;
+	}
+
+	return list_get(raiz->hijos,i);
+}
+
 NodoArbol* directorioFiles() {
-	return (NodoArbol*) list_get(raiz->hijos,0);
+	return directorio("/Files");
 }
 
 NodoArbol* directorioBlocks() {
-	return (NodoArbol*) list_get(raiz->hijos,1);
+	return directorio("/Blocks");
 }
 
 NodoArbol* directorioMetadata() {
-	return (NodoArbol*) list_get(raiz->hijos,2);
+	return directorio("/Metadata");
 }
 
-char* pedirBloque() {
+
+int pedirBloque() {
 
 	int block = buscarPosicionLibre();
 
-	if(block == -1) return "error";
+	if(block == -1) return -1;
 
-	return string_itoa(block);
+	return block;
 }
 
 int buscarPosicionLibre() {
@@ -149,10 +198,10 @@ void conectarse() {
 	eventos = Eventos_Crear0();
 	clienteBroker = CrearCliente(ipBroker,puertoBroker,eventos);
 
-	SuscribirseColas(clienteBroker);
+	if(clienteBroker != NULL) SuscribirseColas(clienteBroker);
 }
 
-void reconexion() {
+void reconexion(void* hello) {
 	if (clienteBroker == NULL) conectarse();
 }
 

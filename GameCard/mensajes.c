@@ -14,7 +14,6 @@ void SuscribirseColas(Cliente* cliente) {
 		free(cliente->info);
 		TerminarProgramaConError("ERROR EN CONEXION CON EL BROKER");
 	}
-
 }
 
 void SocketEscucha(char* ip, int puerto) {
@@ -47,7 +46,9 @@ void ConexionColas(Cliente* cliente, Paquete* paquete) {
 void Recibir_NEW_POKEMON(Cliente* cliente, Paquete* paqueteRecibido) {
 	Stream* stream = Stream_CrearLecturaPaquete(paqueteRecibido);
 	uint32_t id = Deserializar_uint32(stream);
-	DATOS_NEW_POKEMON datos = Deserializar_NEW_POKEMON(stream);
+	DATOS_NEW_POKEMON_ID datos;
+	datos.datos = Deserializar_NEW_POKEMON(stream);
+	datos.id = id;
 
 	if (stream->error)
 		log_error(logger,"Error al deserializar NEW_POKEMON");
@@ -70,12 +71,12 @@ void Recibir_NEW_POKEMON(Cliente* cliente, Paquete* paqueteRecibido) {
  * si no esta => armar el directorio de ese tipo de pokemon y adentro poner los datos (metadata, bloques, coords, etc.)
  */
 
-void Operacion_NEW_POKEMON(DATOS_NEW_POKEMON* datos) {
+void Operacion_NEW_POKEMON(DATOS_NEW_POKEMON_ID* datos) {
 
-	NodoArbol* nodoPokemon = encontrarPokemon(datos->pokemon);
+	NodoArbol* nodoPokemon = encontrarPokemon(datos->datos.pokemon);
 
 	if(nodoPokemon == NULL) {
-		nodoPokemon = crearPokemon(datos->pokemon);
+		nodoPokemon = crearPokemon(datos->datos.pokemon);
 		agregarNodo(directorioFiles(),nodoPokemon);
 	}
 
@@ -85,21 +86,24 @@ void Operacion_NEW_POKEMON(DATOS_NEW_POKEMON* datos) {
 
 	int cantBloques = 0;
 
-	int* bloques = leerBlocks(pathDeNodo(nodoPokemon), &cantBloques);
+	t_list* numerosBloques = leerBlocks(pathDeNodo(nodoPokemon), &cantBloques);
 
-	t_list* bloquesConvertidos = convertirBloques(bloques,cantBloques);
+	t_list* bloquesConvertidos = convertirBloques(numerosBloques,cantBloques);
 
 	DatosBloques posYCant;
 
-	posYCant.cantidad = datos->cantidad;
-	posYCant.pos.posX = datos->posicion.posX;
-	posYCant.pos.posY = datos->posicion.posY;
+	posYCant.cantidad = datos->datos.cantidad;
+	posYCant.pos.posX = datos->datos.posicion.posX;
+	posYCant.pos.posY = datos->datos.posicion.posY;
 
-	agregarCantidadEnPosicion(bloquesConvertidos,posYCant,bloques,64);
+	agregarCantidadEnPosicion(bloquesConvertidos,posYCant,numerosBloques,64);
 
 	Enviar_APPEARED_POKEMON(datos);
 
 	fclose(filePokemon);
+
+	list_destroy_and_destroy_elements(numerosBloques,&free);
+	list_destroy_and_destroy_elements(bloquesConvertidos,&free);
 }
 
 void Recibir_CATCH_POKEMON(Cliente* cliente, Paquete* paqueteRecibido) {
@@ -158,8 +162,14 @@ void EnviarID(Cliente* cliente, uint32_t identificador)
 }
 
 
-void Enviar_APPEARED_POKEMON(DATOS_NEW_POKEMON* datos) {
+void Enviar_APPEARED_POKEMON(DATOS_NEW_POKEMON_ID* datos) {
+	DATOS_APPEARED_POKEMON* datosEnviar = malloc(sizeof(DATOS_APPEARED_POKEMON));
 
+	datosEnviar->idCorrelativa = datos->id;
+	datosEnviar->pokemon = datos->datos.pokemon;
+	datosEnviar->posicion = datos->datos.posicion;
+
+	EnviarMensaje(clienteBroker, APPEARED_POKEMON, datosEnviar, (void*) &SerializarM_APPEARED_POKEMON);
 }
 
 

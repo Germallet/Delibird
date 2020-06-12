@@ -22,7 +22,7 @@ bool esDirectorio(char* path) {
 	return sonIguales(leerDirectorio(path),"Y");
 }
 
-int* leerBlocks(char* path, int* cantBloques) {
+t_list* leerBlocks(char* path, int* cantBloques) {
 
 	t_config* pokemon = config_create(path);
 
@@ -32,9 +32,12 @@ int* leerBlocks(char* path, int* cantBloques) {
 
 	while (listaBloques[*cantBloques] != NULL) (*cantBloques)++;
 
-	int* listaARetornar = malloc(*cantBloques);
+	t_list* listaARetornar = list_create();
 
-	for (int i = 0; i < *cantBloques; i++) listaARetornar[i] = strtol(listaBloques[i],NULL,10);
+	for (int i = 0; i < *cantBloques; i++) {
+		int elem = strtol(listaBloques[i],NULL,10);
+		list_add(listaARetornar,&elem);
+	}
 
 	return listaARetornar;
 }
@@ -90,35 +93,41 @@ char* pathMetadataBinDe(char* path, char* nombreArchivo) {
 
 void crearDirectorioFiles(NodoArbol* arbol) {
 
-	char* aux = arbol->nombre;
+	char* aux = string_new();
+	string_append(&aux,arbol->nombre);
 	string_append(&aux,"/Files");
 
 	mkdir(aux, 0700);
 
-	agregarNodo(arbol,crearNodo("/Files"));
+	agregarNodo(arbol,crearNodo("Files"));
 
 	string_append(&aux,"/metadata.bin");
 	FILE* metadata = fopen(aux,"wb+");
 	fputs("DIRECTORY=Y\n",metadata);
 	fclose(metadata);
+	free(aux);
 }
 
 void crearDirectorioBlocks(NodoArbol* padre, int blocks) {
 
-	char* aux = padre->nombre;
+	char* aux = string_new();
+	string_append(&aux,padre->nombre);
 	string_append(&aux,"/Blocks");
 
 	mkdir(aux, 0700);
 
-	agregarNodo(padre,crearNodo("/Blocks"));
+	agregarNodo(padre,crearNodo("Blocks"));
 
 	crearBloques(blocks);
+
+	free(aux);
 }
 
 void crearBloques(int blocks) {
 	for (int i = 0; i < blocks; i++) {
 		char* nroBloque = string_itoa(i);
-		char* pathBloque = pathDeNodo(directorioBlocks());
+		char* pathBloque = string_new();
+		string_append(&pathBloque,"/home/utnso/Escritorio/tall-grass/Blocks"); //TODO
 		string_append(&pathBloque,"/");
 		string_append(&pathBloque,nroBloque);
 		string_append(&pathBloque,".bin");
@@ -131,14 +140,17 @@ void crearBloques(int blocks) {
 
 void crearDirectorioMetadata(NodoArbol* padre, t_bitarray* bitmap, int size, int blocks, char* magicNumber) {
 
-	char* aux = padre->nombre;
+	char* aux = string_new();
+	string_append(&aux,padre->nombre);
 	string_append(&aux,"/Metadata");
 
 	mkdir(aux, 0700);
 
-	agregarNodo(padre,crearNodo("/Metadata"));
+	agregarNodo(padre,crearNodo("Metadata"));
 
-	crearBitmap(aux,bitmap,blocks);
+	char* aux2 = aux;
+
+	crearBitmap(aux2,bitmap,blocks);
 
 	string_append(&aux,"/metadata.bin");
 	FILE* metadata = fopen(aux,"wb+");
@@ -146,32 +158,26 @@ void crearDirectorioMetadata(NodoArbol* padre, t_bitarray* bitmap, int size, int
 	fprintf(metadata,"BLOCKS=%d\n",blocks);
 	fprintf(metadata,"MAGIC_NUMBER=%s\n",magicNumber);
 	fclose(metadata);
+
+	free(aux);
+	free(aux2);
 }
 
 void crearBitmap(char* path, t_bitarray* bitmap, int cantBlocks) {
 
-	if (existeArchivo(path)) {
-
-	} else {
+//	if (existeArchivo(path)) {
+//
+//	} else {
 		bitmap = bitarray_create_with_mode(string_repeat('\0',cantBlocks), (size_t) cantBlocks, LSB_FIRST);
 
 		string_append(&path,"/bitmap.bin");
 		FILE* fBitmap = fopen(path,"wb+");
-		fwrite(bitmap->bitarray,cantBlocks,1,fBitmap);
+		fwrite(bitmap->bitarray,bitmap->size,1,fBitmap);
 		fclose(fBitmap);
-	}
+//	}
 }
 
-//void agregarBloqueOcupado(t_bitarray* bitmap, int nroBlock) {
-//	bitarray_set_bit(bitmap,nroBlock);
-//
-//	FILE* fBM = fopen("/home/utnso/desktop/tall-grass/Metadata/bitmap.bin","ab+");
-//	fseek(fBM,nroBlock,0);
-//	fputs("1",fBM);
-//	fclose(fBM);
-//}
-
-void agregarCantidadEnPosicion(t_list* pokemon, DatosBloques posYCant, int* bloques, int size) {
+void agregarCantidadEnPosicion(t_list* pokemon, DatosBloques posYCant, t_list* numerosBloques, int size) {
 
 	DatosBloques* posicion = malloc(sizeof(DatosBloques));
 	posicion = encontrarPosicion(pokemon,posYCant.pos);
@@ -179,53 +185,66 @@ void agregarCantidadEnPosicion(t_list* pokemon, DatosBloques posYCant, int* bloq
 	if(posicion == NULL) {
 		list_add(pokemon,&posYCant);
 
-		int valorRetorno = 0;
-		last((void*) bloques,&valorRetorno);
+		int* valorRetorno = list_get(numerosBloques,list_size(numerosBloques));
+//		last((void*) bloques,&valorRetorno); //TODO VER ACA
 
-		char* path = pathMetadataBinDe(pathDeNodo(directorioBlocks()),string_itoa(valorRetorno));
+		char* path = pathMetadataBinDe("/home/utnso/Escritorio/tall-grass/Blocks",string_itoa(*valorRetorno));
+
+		free(valorRetorno);
 
 		FILE* bloque = fopen(path,"ab+");
 
-			//todo
+//		char* cadena = posicionAString(&posYCant);
 
 		fclose(bloque);
 	} else {
 		posicion->cantidad += posYCant.cantidad;
-		escribirListaEnArchivo(pokemon,size,bloques);
+		escribirListaEnArchivo(pokemon,size,numerosBloques);
 	}
 }
 
-int escribirListaEnArchivo(t_list* pokemon, int size, int* bloques) {
+char* posicionAString(DatosBloques* d) {
+	char* cadena = string_new();
+
+	string_append(&cadena,string_itoa(d->pos.posX));
+	string_append(&cadena,"-");
+	string_append(&cadena,string_itoa(d->pos.posY));
+	string_append(&cadena,"=");
+	string_append(&cadena,string_itoa(d->cantidad));
+	string_append(&cadena,"\n");
+	return cadena;
+}
+
+int escribirListaEnArchivo(t_list* pokemon, int size, t_list* numerosBloques) {
 	char* cadenaGrande = string_new();
 
 	int cantPokemon = list_size(pokemon);
 
 	for (int i = 0; i < cantPokemon; i++) {
 		DatosBloques* pok = list_get(pokemon,i);
-		string_append(&cadenaGrande,string_itoa(pok->pos.posX));
-		string_append(&cadenaGrande,"-");
-		string_append(&cadenaGrande,string_itoa(pok->pos.posY));
-		string_append(&cadenaGrande,"=");
-		string_append(&cadenaGrande,string_itoa(pok->cantidad));
-		string_append(&cadenaGrande,"\n");
+		char* cadena = posicionAString(pok);
+		string_append(&cadenaGrande,cadena);
 	}
 
 	cantPokemon = strlen(cadenaGrande);
 
 	int i = 0;
-	while((void*) bloques[i] != NULL) {
-		FILE* f = fopen(pathMetadataBinDe(pathDeNodo(directorioBlocks()),string_itoa(bloques[i])),"wb+");
+	while((void*) list_get(numerosBloques,i) != NULL) {
+		int* a = list_get(numerosBloques,i);
+		FILE* f = fopen(pathMetadataBinDe("/home/utnso/Escritorio/tall-grass/Blocks",string_itoa(*a)),"wb+");
 		fwrite(cadenaGrande,size,1,f);
 		cadenaGrande = string_substring_from(cadenaGrande, size);
 	}
 
 	while(strlen(cadenaGrande) > 0) {
-		char* nuevoBloque = pedirBloque();
-		//AGREGAR A BLOQUES
-		FILE* f = fopen(pathMetadataBinDe(pathDeNodo(directorioBlocks()),nuevoBloque),"wb+");
+		int nuevoBloque = pedirBloque();
+		list_add(numerosBloques,&nuevoBloque);
+		FILE* f = fopen(pathMetadataBinDe("/home/utnso/Escritorio/tall-grass/Blocks",string_itoa(nuevoBloque)),"wb+");
 		fwrite(cadenaGrande,size,1,f);
 		cadenaGrande = string_substring_from(cadenaGrande, size);
 	}
+
+	free(cadenaGrande);
 
 	return cantPokemon;
 }
@@ -243,7 +262,9 @@ NodoArbol* crearPokemon(char* nombre) {
 
 	NodoArbol* nodo = crearNodo(nombre);
 
-	char* pathNodo = pathDeNodo(nodo);
+	char* pathNodo = string_new();
+	string_append(&pathNodo,"/home/utnso/Escritorio/tall-grass/Blocks");
+	string_append(&pathNodo,nodo->nombre);
 
 	crearMetadataPokemon(pathNodo);
 
@@ -266,7 +287,7 @@ void crearMetadataPokemon(char* path) {
 	fclose(metadata);
 }
 
-t_list* convertirBloques(int* bloques, int cantBloques) {
+t_list* convertirBloques(t_list* bloques, int cantBloques) {
 	t_list* datos = list_create();
 	char* datosArchivo = string_new();
 	datosArchivo = leerArchivos(bloques,cantBloques,64); //TODO arreglar 64 hardcodeado
@@ -274,12 +295,14 @@ t_list* convertirBloques(int* bloques, int cantBloques) {
 	return datos;
 }
 
-char* leerArchivos(int* bloques, int cantBloques, int size) {
+char* leerArchivos(t_list* bloques, int cantBloques, int size) {
 	char* datos = string_new();
 
 	for(int i = 0; i < cantBloques; i++) {
 
-		char* path = pathMetadataBinDe(pathDeNodo(directorioBlocks()),string_itoa(bloques[i]));
+		int* bloque = list_get(bloques,i);
+
+		char* path = pathMetadataBinDe("/home/utnso/Escritorio/tall-grass/Blocks",string_itoa(*bloque)); //TODO SACAR
 
 		FILE* f = fopen(path,"rb+");
 
@@ -338,5 +361,8 @@ t_list* interpretarCadena(char* cadenaDatos, int cantBloques, int size) {
 		list_add(datos,datosLeidos);
 	}
 
+	free(cant);
+	free(posY);
+	free(posX);
 	return datos;
 }
