@@ -15,8 +15,6 @@ typedef struct {
 	uint32_t cantidad;
 } DatosBloques;
 
-
-
 bool sonIguales(char* a, char* b);
 bool estaAbierto(char* path);
 bool esDirectorio(char* path);
@@ -43,3 +41,4 @@ char* leerArchivos(int* bloques, int cantBloques, int size);
 t_list* interpretarCadena(char* cadenaDatos, int cantBloques, int size);
 DatosBloques* encontrarPosicion(t_list* pokemon, Posicion pos);
 void escribirListaEnArchivo(t_list* pokemon);
+char* pathMetadataBinDe(char* path, char* nombreArchivo);

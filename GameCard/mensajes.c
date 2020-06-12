@@ -99,8 +99,6 @@ void Operacion_NEW_POKEMON(DATOS_NEW_POKEMON* datos) {
 
 //	escribirDatos(datosArchivos,pokemon); //ACA SE AGREGARIAN MAS BLOQUES
 
-	//TODO hacer lo que se tenga que hacer con el NEW_POKEMON
-	// HAY QUE MANDARLE AL BROKER UN MENSAJE DE APPEARED
 	Enviar_APPEARED_POKEMON(datos);
 
 	fclose(filePokemon);

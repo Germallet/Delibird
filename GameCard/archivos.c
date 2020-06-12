@@ -5,7 +5,7 @@ t_config* config;
 void last(void** lista, void* valorRetorno) {
 	int acumulador = 0;
 	while (lista[acumulador] != NULL) acumulador++;
-	if (acumulador == 0) valorRetorno = (void*) -1; //TODO manehar ejsotoo bien el erorro
+	if (acumulador == 0) valorRetorno = (void*) -1;
 	valorRetorno = (void*) lista[acumulador];
 }
 
@@ -79,6 +79,13 @@ short existeArchivo(char *path) {
   if (fd < 0) return 0;
   close(fd);
   return 1;
+}
+
+char* pathMetadataBinDe(char* path, char* nombreArchivo) {
+	string_append(&path,"/");
+	string_append(&path,nombreArchivo);
+	string_append(&path,".bin");
+	return path;
 }
 
 void crearDirectorioFiles(NodoArbol* arbol) {
@@ -175,11 +182,7 @@ void agregarCantidadEnPosicion(t_list* pokemon, DatosBloques posYCant, int* bloq
 		int valorRetorno = 0;
 		last((void*) bloques,&valorRetorno);
 
-		char* path = pathDeNodo(directorioBlocks());
-
-		string_append(&path,"/");
-		string_append(&path,string_itoa(valorRetorno));
-		string_append(&path,".bin");
+		char* path = pathMetadataBinDe(pathDeNodo(directorioBlocks()),string_itoa(valorRetorno));
 
 		FILE* bloque = fopen(path,"ab+");
 
@@ -245,11 +248,7 @@ char* leerArchivos(int* bloques, int cantBloques, int size) {
 
 	for(int i = 0; i < cantBloques; i++) {
 
-		char* path = pathDeNodo(directorioBlocks());
-
-		string_append(&path,"/");
-		string_append(&path,string_itoa(bloques[i]));
-		string_append(&path,".bin");
+		char* path = pathMetadataBinDe(pathDeNodo(directorioBlocks()),string_itoa(bloques[i]));
 
 		FILE* f = fopen(path,"rb+");
 
