@@ -7,7 +7,7 @@ typedef struct
 	int tiempo;
 	void* info;
 	void (*evento)(void*);
-	pthread_t* thread;
+	pthread_t thread;
 	pthread_mutex_t mxHiloTimer;
 } HiloTimer;
 

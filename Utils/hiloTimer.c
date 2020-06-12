@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-static void EjecucionTimer(HiloTimer* hiloTimer)
+void EjecucionTimer(HiloTimer* hiloTimer)
 {
 	pthread_mutex_lock(&(hiloTimer->mxHiloTimer));
 	if (hiloTimer->evento != NULL && hiloTimer->repeticiones != 0)
@@ -29,9 +29,9 @@ HiloTimer* CrearHiloTimer(int repeticiones, unsigned int tiempo, void (*evento)(
 	nuevoHilo->tiempo = tiempo;
 	nuevoHilo->info = info;
 	nuevoHilo->evento = evento;
-	pthread_create(nuevoHilo->thread, NULL, (void*)EjecucionTimer, nuevoHilo);
-	pthread_detach(*(nuevoHilo->thread));
 	pthread_mutex_init(&(nuevoHilo->mxHiloTimer), NULL);
+	pthread_create(&(nuevoHilo->thread), NULL, &EjecucionTimer, nuevoHilo);
+	pthread_detach(nuevoHilo->thread);
 	return nuevoHilo;
 }
 
