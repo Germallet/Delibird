@@ -226,6 +226,9 @@ void crearMetadataPokemon(char* path) {
 	fputs("BLOCKS=[]\n",metadata);
 	fputs("OPEN=N\n",metadata);
 
+	// TODO asignar bloque y escribirlo con lo que tenga que venir
+
+
 	fclose(metadata);
 }
 
