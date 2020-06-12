@@ -15,9 +15,10 @@ NodoArbol* raiz;
 
 /*
  * TODO BITMAP
- * TODO HACER FUNCIONES PARA LEER, ESCRIBIR, BUSCAR EL ARCHIVO, VERIFICAR SI SE PUEDE ABRIR, OBTENER POSICIONES Y CANTIDADES DE ARCHIVO
+ * TODO VERIFICAR SI SE PUEDE ABRIR
  * TODO ELIMINAR CANTIDADES Y POSICIONES DE ARCHIVO
- *
+ * TODO SINCRONIZAR TOODO
+ * TODO ESCRIBIR EN LOS ARCHIVOS
  *
  */
 
@@ -35,6 +36,9 @@ int main()
 	int tiempoReintentoConexion = config_get_int_value(config,"TIEMPO_DE_REINTENTO_CONEXION");
 	int tiempoReintentoOperacion = config_get_int_value(config,"TIEMPO_DE_REINTENTO_OPERACION");
 	int tiempoRetardoOperacion = config_get_int_value(config,"TIEMPO_RETARDO_OPERACION");
+
+	log_info(logger,"%s",tiempoReintentoOperacion);
+	log_info(logger,"%s",tiempoRetardoOperacion);
 
 	CrearHiloTimer(-1,tiempoReintentoConexion,&reconexion,NULL);
 
@@ -60,11 +64,11 @@ void tallGrass_init(char* puntoMontaje) {
 
 		crearDirectorioFiles(raiz);
 
-		crearDirectorioBlocks(raiz);
-
 		int size = config_get_int_value(config,"BLOCK_SIZE");
 		int blocks = config_get_int_value(config,"BLOCKS");
 		char* magicNumber = config_get_string_value(config,"MAGIC_NUMBER");
+
+		crearDirectorioBlocks(raiz,blocks);
 		crearDirectorioMetadata(raiz,bitmap,size,blocks,magicNumber);
 	}
 }
