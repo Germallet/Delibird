@@ -3,15 +3,7 @@
 #include <unistd.h>
 #include "archivos.h"
 
-t_config* config;
-
 Eventos* eventos;
-
-Cliente* clienteBroker;
-
-t_bitarray* bitmap;
-
-NodoArbol* raiz;
 
 /*
  * TODO BITMAP
@@ -61,14 +53,10 @@ void tallGrass_init(char* puntoMontaje) {
 	} else {
 		mkdir(puntoMontaje, 0700);
 
-		crearDirectorioFiles(raiz);
+		crearDirectorioFiles();
 
-		int size = config_get_int_value(config,"BLOCK_SIZE");
-		int blocks = config_get_int_value(config,"BLOCKS");
-		char* magicNumber = config_get_string_value(config,"MAGIC_NUMBER");
-
-		crearDirectorioBlocks(raiz,blocks);
-		crearDirectorioMetadata(raiz,bitmap,size,blocks,magicNumber);
+		crearDirectorioBlocks(config_get_int_value(config,"BLOCKS"));
+		crearDirectorioMetadata(config_get_int_value(config,"BLOCK_SIZE"),config_get_int_value(config,"BLOCKS"),config_get_string_value(config,"MAGIC_NUMBER"));
 	}
 }
 
@@ -94,29 +82,8 @@ NodoArbol* encontrarPokemon(char* nombre) {
 	return list_find(nodoFiles->hijos,(void*)&esIgual);
 }
 
-//char* pathDeNodo(NodoArbol* nodo) {
-//	NodoArbol* padre = nodo->padre;
-//	NodoArbol* abuelo = padre->padre;
-//
-//	char* str = string_new();
-//
-//	if(abuelo == NULL) {
-//		string_append(&str,padre->nombre);
-//		string_append(&str,nodo->nombre);
-//		return str;
-//	}
-//
-//	if(abuelo->padre == NULL) {
-//		string_append(&str,abuelo->nombre);
-//		string_append(&str,padre->nombre);
-//		string_append(&str,nodo->nombre);
-//		return str;
-//	}
-//	return str;
-//}
-
 char* pathDeNodo(NodoArbol* nodo) {
-	char* pal = string_new();
+	char* pal;
 
 	if(nodo->padre == NULL)
 		return nodo->nombre;
@@ -128,25 +95,32 @@ char* pathDeNodo(NodoArbol* nodo) {
 
 	string_append(&pal2,pal);
 
+	free(pal);
+
 	return pal2;
+}
+
+char* pathPtoMnt() {
+	return config_get_string_value(config,"PUNTO_MONTAJE_TALLGRASS");
+}
+
+char* pathPokemon(char* nombre) {
+	char* path = string_new();
+	string_append(&path,raiz->nombre);
+	string_append(&path,"/Files/");
+	string_append(&path,nombre);
+	string_append(&path,"/metadata.bin");
+	return path;
 }
 
 //TODO Recorrer mejor esto
 
-NodoArbol* directorio(char* str) {
-
-	int i = 0;
-
-	NodoArbol* node = (NodoArbol*) list_get(raiz->hijos,i);
-	char* nombre = node->nombre;
-
-	while (!sonIguales(str,nombre)){
-		i++;
-		node = list_get(raiz->hijos,i);
-		nombre = node->nombre;
+NodoArbol* directorio(char* nombre) {
+	for (int i = 0; i < list_size(raiz->hijos); i++) {
+		NodoArbol* hijo = list_get(raiz->hijos,i);
+		if (hijo->nombre == nombre) return hijo;
 	}
-
-	return list_get(raiz->hijos,i);
+	return NULL;
 }
 
 NodoArbol* directorioFiles() {

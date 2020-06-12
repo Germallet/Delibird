@@ -27,27 +27,30 @@ char* leerBlocksPorConfig(char* path);
 char* leerArchivos(t_list* bloques, int cantBloques, int size);
 t_list* leerBlocks(char* path, int* cantBloques);
 
+int tamanioBloque(int nroBloque);
+
 bool sonIguales(char* a, char* b);
 bool estaAbierto(char* path);
 bool esDirectorio(char* path);
 bool existeDirectorio(char* path);
 short existeArchivo(char *path);
 
-void crearBitmap(char* path, t_bitarray* bitmap, int cantBlocks);
+void crearBitmap(char* path,int cantBlocks);
 void crearArchivo(char* path);
-void crearDirectorioFiles(NodoArbol* arbol);
-void crearDirectorioBlocks(NodoArbol* padre, int blocks);
-void crearDirectorioMetadata(NodoArbol* padre, t_bitarray* bitmap, int size, int blocks, char* magicNumber);
+void crearDirectorioFiles();
+void crearDirectorioBlocks(int blocks);
+void crearDirectorioMetadata(int size, int blocks, char* magicNumber);
 void crearBloques(int blocks);
-void crearBitmap(char* path, t_bitarray* bitmap, int cantBlocks);
+void crearBitmap(char* path, int cantBlocks);
 
 NodoArbol* crearPokemon(char* nombre);
 void crearMetadataPokemon(char* path);
 
 DatosBloques* encontrarPosicion(t_list* pokemon, Posicion pos);
 
-void agregarCantidadEnPosicion(t_list* pokemon, DatosBloques posYCant, t_list* numerosBloques, int size);
-int escribirListaEnArchivo(t_list* pokemon, int size, t_list* numerosBloques);
+int agregarCantidadEnPosicion(t_list* pokemon, DatosBloques posYCant, t_list* numerosBloques, int size);
+void escribirListaEnArchivo(t_list* pokemon, int size, t_list* numerosBloques);
+void cambiarMetadataPokemon(char* pathPokemon, t_list* numerosBloques, int bytes);
 
 
 

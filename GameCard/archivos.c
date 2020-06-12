@@ -2,13 +2,6 @@
 
 t_config* config;
 
-void last(void** lista, void* valorRetorno) {
-	int acumulador = 0;
-	while (lista[acumulador] != NULL) acumulador++;
-	if (acumulador == 0) valorRetorno = (void*) -1;
-	valorRetorno = (void*) lista[acumulador];
-}
-
 bool sonIguales(char* a, char* b)
 {
 	return strcmp(a, b) == 0;
@@ -91,15 +84,15 @@ char* pathMetadataBinDe(char* path, char* nombreArchivo) {
 	return path;
 }
 
-void crearDirectorioFiles(NodoArbol* arbol) {
+void crearDirectorioFiles() {
 
 	char* aux = string_new();
-	string_append(&aux,arbol->nombre);
+	string_append(&aux,raiz->nombre);
 	string_append(&aux,"/Files");
 
 	mkdir(aux, 0700);
 
-	agregarNodo(arbol,crearNodo("Files"));
+	agregarNodo(raiz,crearNodo("/Files"));
 
 	string_append(&aux,"/metadata.bin");
 	FILE* metadata = fopen(aux,"wb+");
@@ -108,15 +101,15 @@ void crearDirectorioFiles(NodoArbol* arbol) {
 	free(aux);
 }
 
-void crearDirectorioBlocks(NodoArbol* padre, int blocks) {
+void crearDirectorioBlocks(int blocks) {
 
 	char* aux = string_new();
-	string_append(&aux,padre->nombre);
+	string_append(&aux,raiz->nombre);
 	string_append(&aux,"/Blocks");
 
 	mkdir(aux, 0700);
 
-	agregarNodo(padre,crearNodo("Blocks"));
+	agregarNodo(raiz,crearNodo("/Blocks"));
 
 	crearBloques(blocks);
 
@@ -127,10 +120,13 @@ void crearBloques(int blocks) {
 	for (int i = 0; i < blocks; i++) {
 		char* nroBloque = string_itoa(i);
 		char* pathBloque = string_new();
-		string_append(&pathBloque,"/home/utnso/Escritorio/tall-grass/Blocks"); //TODO
+
+		string_append(&pathBloque,pathPtoMnt());
+		string_append(&pathBloque,"/Blocks");
 		string_append(&pathBloque,"/");
 		string_append(&pathBloque,nroBloque);
 		string_append(&pathBloque,".bin");
+
 		if(!existeArchivo(pathBloque)) {
 			FILE* f = fopen(pathBloque,"wb+");
 			fclose(f);
@@ -138,19 +134,21 @@ void crearBloques(int blocks) {
 	}
 }
 
-void crearDirectorioMetadata(NodoArbol* padre, t_bitarray* bitmap, int size, int blocks, char* magicNumber) {
+void crearDirectorioMetadata(int size, int blocks, char* magicNumber) {
 
 	char* aux = string_new();
-	string_append(&aux,padre->nombre);
+	string_append(&aux,raiz->nombre);
 	string_append(&aux,"/Metadata");
 
 	mkdir(aux, 0700);
 
-	agregarNodo(padre,crearNodo("Metadata"));
+	agregarNodo(raiz,crearNodo("/Metadata"));
 
-	char* aux2 = aux;
+	char* aux2 = string_new();
+	string_append(&aux2,aux);
 
-	crearBitmap(aux2,bitmap,blocks);
+	crearBitmap(aux2,blocks);
+	free(aux2);
 
 	string_append(&aux,"/metadata.bin");
 	FILE* metadata = fopen(aux,"wb+");
@@ -158,26 +156,19 @@ void crearDirectorioMetadata(NodoArbol* padre, t_bitarray* bitmap, int size, int
 	fprintf(metadata,"BLOCKS=%d\n",blocks);
 	fprintf(metadata,"MAGIC_NUMBER=%s\n",magicNumber);
 	fclose(metadata);
-
-	free(aux);
-	free(aux2);
 }
 
-void crearBitmap(char* path, t_bitarray* bitmap, int cantBlocks) {
+void crearBitmap(char* path, int cantBlocks) {
 
-//	if (existeArchivo(path)) {
-//
-//	} else {
-		bitmap = bitarray_create_with_mode(string_repeat('\0',cantBlocks), (size_t) cantBlocks, LSB_FIRST);
+	bitmap = bitarray_create_with_mode(string_repeat('\0',cantBlocks), (size_t) cantBlocks, LSB_FIRST);
 
-		string_append(&path,"/bitmap.bin");
-		FILE* fBitmap = fopen(path,"wb+");
-		fwrite(bitmap->bitarray,bitmap->size,1,fBitmap);
-		fclose(fBitmap);
-//	}
+	string_append(&path,"/bitmap.bin");
+	FILE* fBitmap = fopen(path,"wb+");
+	fwrite(bitmap->bitarray,bitmap->size,1,fBitmap);
+	fclose(fBitmap);
 }
 
-void agregarCantidadEnPosicion(t_list* pokemon, DatosBloques posYCant, t_list* numerosBloques, int size) {
+int agregarCantidadEnPosicion(t_list* pokemon, DatosBloques posYCant, t_list* numerosBloques, int size) {
 
 	DatosBloques* posicion = malloc(sizeof(DatosBloques));
 	posicion = encontrarPosicion(pokemon,posYCant.pos);
@@ -186,21 +177,44 @@ void agregarCantidadEnPosicion(t_list* pokemon, DatosBloques posYCant, t_list* n
 		list_add(pokemon,&posYCant);
 
 		int* valorRetorno = list_get(numerosBloques,list_size(numerosBloques));
-//		last((void*) bloques,&valorRetorno); //TODO VER ACA
 
-		char* path = pathMetadataBinDe("/home/utnso/Escritorio/tall-grass/Blocks",string_itoa(*valorRetorno));
+		char* pathBlocks = string_new();
+		string_append(&pathBlocks,raiz->nombre);
+		string_append(&pathBlocks,"/Blocks");
+
+		char* path = pathMetadataBinDe(pathBlocks,string_itoa(*valorRetorno));
 
 		free(valorRetorno);
 
 		FILE* bloque = fopen(path,"ab+");
 
-//		char* cadena = posicionAString(&posYCant);
+		char* cadena = posicionAString(&posYCant);
+
+		fseek(bloque,0,SEEK_END);
+		int tam = ftell(bloque);
+
+		int bytesDesocupados = 64 - tam;
+
+		if (strlen(cadena) <= bytesDesocupados) {
+			fwrite(cadena,strlen(cadena),1,bloque);
+		} else {
+			fwrite(cadena,bytesDesocupados,1,bloque);
+			cadena = string_substring_from(cadena,bytesDesocupados);
+			int nuevoBloque = pedirBloque();
+			list_add(numerosBloques,&nuevoBloque);
+			FILE* f = fopen(pathMetadataBinDe(pathBlocks,string_itoa(nuevoBloque)),"wb+");
+			fwrite(cadena,strlen(cadena),1,f);
+			fclose(f);
+		}
+
+		free(pathBlocks);
 
 		fclose(bloque);
 	} else {
 		posicion->cantidad += posYCant.cantidad;
 		escribirListaEnArchivo(pokemon,size,numerosBloques);
 	}
+	return size*(list_size(numerosBloques) - 1) + tamanioBloque((int) list_get(numerosBloques,list_size(numerosBloques)));
 }
 
 char* posicionAString(DatosBloques* d) {
@@ -215,7 +229,7 @@ char* posicionAString(DatosBloques* d) {
 	return cadena;
 }
 
-int escribirListaEnArchivo(t_list* pokemon, int size, t_list* numerosBloques) {
+void escribirListaEnArchivo(t_list* pokemon, int size, t_list* numerosBloques) {
 	char* cadenaGrande = string_new();
 
 	int cantPokemon = list_size(pokemon);
@@ -245,8 +259,6 @@ int escribirListaEnArchivo(t_list* pokemon, int size, t_list* numerosBloques) {
 	}
 
 	free(cadenaGrande);
-
-	return cantPokemon;
 }
 
 DatosBloques* encontrarPosicion(t_list* pokemon, Posicion pos) {
@@ -263,7 +275,8 @@ NodoArbol* crearPokemon(char* nombre) {
 	NodoArbol* nodo = crearNodo(nombre);
 
 	char* pathNodo = string_new();
-	string_append(&pathNodo,"/home/utnso/Escritorio/tall-grass/Blocks");
+	string_append(&pathNodo,raiz->nombre);
+	string_append(&pathNodo,"/Blocks/");
 	string_append(&pathNodo,nodo->nombre);
 
 	crearMetadataPokemon(pathNodo);
@@ -366,3 +379,46 @@ t_list* interpretarCadena(char* cadenaDatos, int cantBloques, int size) {
 	free(posX);
 	return datos;
 }
+
+int tamanioBloque(int nroBloque) {
+	char* pathBloque = string_new();
+	string_append(&pathBloque,pathPtoMnt());
+	string_append(&pathBloque,"/Blocks/");
+	string_append(&pathBloque,string_itoa(nroBloque));
+	string_append(&pathBloque,".bin");
+
+	FILE* bloque = fopen(pathBloque,"rb+");
+	fseek(bloque,0,SEEK_END);
+	int a = ftell(bloque);
+	fclose(bloque);
+
+	free(pathBloque);
+
+	return a;
+}
+
+void cambiarMetadataPokemon(char* pathPokemon, t_list* numerosBloques, int bytes) {
+	t_config* c = config_create(pathPokemon);
+	config_set_value(c,"SIZE",string_itoa(bytes));
+
+	char* bloques = string_new();
+	string_append(&bloques,"[");
+	for(int i = 0; i < list_size(numerosBloques); i++) {
+		string_append(&bloques,string_itoa((int)list_get(numerosBloques,i)));
+		string_append(&bloques,",");
+	}
+	bloques[string_length(bloques)] = ']';
+	config_set_value(c,"BLOCKS",bloques);
+
+	free(bloques);
+	config_destroy(c);
+}
+
+
+
+
+
+
+
+
+

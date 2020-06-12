@@ -80,13 +80,13 @@ void Operacion_NEW_POKEMON(DATOS_NEW_POKEMON_ID* datos) {
 		agregarNodo(directorioFiles(),nodoPokemon);
 	}
 
-	FILE* filePokemon = fopen(strcat(pathDeNodo(nodoPokemon),"/metadata.bin"),"ab+");
+	FILE* filePokemon = fopen(pathPokemon(datos->datos.pokemon),"ab+");
 
 	//TODO VER QUE NADIE ESTE ABRIENDO EL ARCHIVO
 
 	int cantBloques = 0;
 
-	t_list* numerosBloques = leerBlocks(pathDeNodo(nodoPokemon), &cantBloques);
+	t_list* numerosBloques = leerBlocks(pathPokemon(datos->datos.pokemon), &cantBloques);
 
 	t_list* bloquesConvertidos = convertirBloques(numerosBloques,cantBloques);
 
@@ -96,11 +96,15 @@ void Operacion_NEW_POKEMON(DATOS_NEW_POKEMON_ID* datos) {
 	posYCant.pos.posX = datos->datos.posicion.posX;
 	posYCant.pos.posY = datos->datos.posicion.posY;
 
-	agregarCantidadEnPosicion(bloquesConvertidos,posYCant,numerosBloques,64);
+	int size = config_get_int_value(config,"BLOCK_SIZE");
 
-	Enviar_APPEARED_POKEMON(datos);
+	int bytes = agregarCantidadEnPosicion(bloquesConvertidos,posYCant,numerosBloques,size);
 
 	fclose(filePokemon);
+
+	cambiarMetadataPokemon(pathPokemon(datos->datos.pokemon),numerosBloques,bytes);
+
+	Enviar_APPEARED_POKEMON(datos);
 
 	list_destroy_and_destroy_elements(numerosBloques,&free);
 	list_destroy_and_destroy_elements(bloquesConvertidos,&free);

@@ -2,10 +2,7 @@
 
 NodoArbol* crearNodo(char* nombre) {
 	NodoArbol* nodo = malloc(sizeof(NodoArbol));
-	char* a = string_new();
-	string_append(&a,"/");
-	string_append(&a,nombre);
-	nodo->nombre = a;
+	nodo->nombre = nombre;
 	nodo->hijos = list_create();
 	nodo->padre = NULL;
 	return nodo;
