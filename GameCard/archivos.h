@@ -41,8 +41,8 @@ short existeArchivo(char *path);
 void crearBitmap(char* path,int cantBlocks);
 void crearArchivo(char* path);
 void crearDirectorioFiles();
-void crearDirectorioBlocks(int blocks);
-void crearDirectorioMetadata(int size, int blocks, char* magicNumber);
+void crearDirectorioBlocks();
+void crearDirectorioMetadata();
 void crearBloques(int blocks);
 void crearBitmap(char* path, int cantBlocks);
 

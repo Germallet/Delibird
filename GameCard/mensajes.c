@@ -167,11 +167,11 @@ void EnviarID(Cliente* cliente, uint32_t identificador)
 void Enviar_APPEARED_POKEMON(DATOS_NEW_POKEMON_ID* datos) {
 	DATOS_APPEARED_POKEMON* datosEnviar = malloc(sizeof(DATOS_APPEARED_POKEMON));
 
-	//datosEnviar->idCorrelativa = datos->id;
+	datosEnviar->idCorrelativa = datos->id;
 	datosEnviar->pokemon = datos->datos.pokemon;
 	datosEnviar->posicion = datos->datos.posicion;
 
-	EnviarMensaje(clienteBroker, APPEARED_POKEMON, datosEnviar, (void*) &SerializarM_APPEARED_POKEMON);
+	EnviarMensaje(clienteBroker, APPEARED_POKEMON, datosEnviar, (void*) &SerializarM_APPEARED_POKEMON_ID);
 }
 
 

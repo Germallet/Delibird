@@ -64,12 +64,12 @@ NodoArbol* encontrarPokemon(char* nombre) {
 }
 
 char* pathPtoMnt() {
-	return config_get_string_value(config,"PUNTO_MONTAJE_TALLGRASS");
+	return "/home/utnso/Escritorio/tall-grass";//config_get_string_value(config,"PUNTO_MONTAJE_TALLGRASS");
 }
 
 char* pathPokemon(char* nombre) {
 	char* path = string_new();
-	string_append(&path,raiz->nombre);
+	string_append(&path,pathPtoMnt());
 	string_append(&path,"/Files/");
 	string_append(&path,nombre);
 	string_append(&path,"/metadata.bin");
@@ -123,7 +123,7 @@ int buscarPosicionLibre() {
 	bitarray_set_bit(bitmap,i);
 
 	char* pathMetadata = string_new();
-	string_append(&pathMetadata,raiz->nombre);
+	string_append(&pathMetadata,pathPtoMnt());
 	string_append(&pathMetadata,"/Metadata/bitmap.bin");
 
 	FILE* file = fopen(pathMetadata,"wb+"); //TODO VER COMO ESCRIBIR UN SOLO BIT
