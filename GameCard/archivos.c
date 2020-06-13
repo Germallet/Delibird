@@ -148,7 +148,7 @@ void crearBloques(int blocks) {
 		}
 
 		free(b);
-		free(bloque);	//ME TIRA UN ERROR FEO SI LO SACO
+		free(bloque);
 	}
 }
 

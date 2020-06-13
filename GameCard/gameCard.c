@@ -71,6 +71,8 @@ char* pathPtoMnt() {
 	return raiz->nombre;
 }
 
+//TODO VALGRIND
+
 char* pathPokemon(char* nombre) {
 	char* path = string_new();
 	string_append(&path,pathPtoMnt());
@@ -79,6 +81,8 @@ char* pathPokemon(char* nombre) {
 	string_append(&path,"/metadata.bin");
 	return path;
 }
+
+//TODO VALGRIND
 
 char* pathBloque(char* nombre) {
 	char* path = string_new();

@@ -108,6 +108,8 @@ void Operacion_NEW_POKEMON(DATOS_NEW_POKEMON_ID* datos) {
 
 		list_destroy_and_destroy_elements(numerosBloques,&free);
 		list_destroy_and_destroy_elements(datosBloques,&eliminarElemento);
+		list_destroy(datosBloques);
+		list_clean(datosBloques);
 	}
 }
 
