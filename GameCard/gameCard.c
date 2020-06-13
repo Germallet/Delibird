@@ -64,7 +64,7 @@ NodoArbol* encontrarPokemon(char* nombre) {
 }
 
 char* pathPtoMnt() {
-	return "/home/utnso/Escritorio/tall-grass";//config_get_string_value(config,"PUNTO_MONTAJE_TALLGRASS");
+	return raiz->nombre;
 }
 
 char* pathPokemon(char* nombre) {

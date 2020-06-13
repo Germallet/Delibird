@@ -53,7 +53,7 @@ char* leerOpen(char* path) {
 
 	char* open = config_get_string_value(pokemon,"OPEN");
 
-	config_destroy(config);
+	config_destroy(pokemon);
 
 	return open;
 }
@@ -63,7 +63,7 @@ int leerSize(char* path) {
 
 	int size = config_get_int_value(pokemon,"SIZE");
 
-	config_destroy(config);
+	config_destroy(pokemon);
 
 	return size;
 }
@@ -73,7 +73,7 @@ char* leerDirectorio(char* path) {
 
 	char* directory = config_get_string_value(pokemon,"DIRECTORY");
 
-	config_destroy(config);
+	config_destroy(pokemon);
 
 	return directory;
 }

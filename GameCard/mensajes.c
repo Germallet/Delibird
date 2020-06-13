@@ -82,9 +82,9 @@ void Operacion_NEW_POKEMON(DATOS_NEW_POKEMON_ID* datos) {
 
 		int cantBloques =  0;
 
-		t_list* numerosBloques = leerBlocks(path, &cantBloques);
+		t_list* numerosBloques = leerBlocks(path, &cantBloques); //DEVUELVE LA LISTA DE INTS DE LOS NROS DE BLOQUE
 
-		t_list* bloquesConvertidos = convertirBloques(numerosBloques,cantBloques);
+		t_list* datosBloques = convertirBloques(numerosBloques,cantBloques); //DEVUELVE LA LISTA DE DATOSBLOQUES
 
 		DatosBloques posYCant;
 
@@ -94,7 +94,7 @@ void Operacion_NEW_POKEMON(DATOS_NEW_POKEMON_ID* datos) {
 
 		int size = config_get_int_value(config,"BLOCK_SIZE");
 
-		int bytes = agregarCantidadEnPosicion(bloquesConvertidos,posYCant,numerosBloques,size);
+		int bytes = agregarCantidadEnPosicion(datosBloques,posYCant,numerosBloques,size);
 
 		fclose(filePokemon);
 
@@ -104,8 +104,12 @@ void Operacion_NEW_POKEMON(DATOS_NEW_POKEMON_ID* datos) {
 		Enviar_APPEARED_POKEMON(datos);
 
 		list_destroy_and_destroy_elements(numerosBloques,&free);
-		list_destroy_and_destroy_elements(bloquesConvertidos,&free);
+//		list_destroy_and_destroy_elements(datosBloques,&eliminarElemento); HAY QUE ELIMINAR LA LISTA DATOS BLOQUES
 	}
+}
+
+void eliminarElemento(void* dat) {
+	free(dat);
 }
 
 void Recibir_CATCH_POKEMON(Cliente* cliente, Paquete* paqueteRecibido) {
@@ -165,11 +169,11 @@ void EnviarID(Cliente* cliente, uint32_t identificador)
 
 
 void Enviar_APPEARED_POKEMON(DATOS_NEW_POKEMON_ID* datos) {
-	DATOS_APPEARED_POKEMON* datosEnviar = malloc(sizeof(DATOS_APPEARED_POKEMON));
+	DATOS_APPEARED_POKEMON_ID* datosEnviar = malloc(sizeof(DATOS_APPEARED_POKEMON)+sizeof(uint32_t));
 
-	datosEnviar->idCorrelativa = datos->id;
-	datosEnviar->pokemon = datos->datos.pokemon;
-	datosEnviar->posicion = datos->datos.posicion;
+	datosEnviar->id = datos->id;
+	datosEnviar->datos.pokemon = datos->datos.pokemon;
+	datosEnviar->datos.posicion = datos->datos.posicion;
 
 	EnviarMensaje(clienteBroker, APPEARED_POKEMON, datosEnviar, (void*) &SerializarM_APPEARED_POKEMON_ID);
 }
