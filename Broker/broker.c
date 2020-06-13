@@ -23,7 +23,7 @@ int main()
 	logger = log_create(Config_String("LOG_FILE"), Config_String("LOG_FILE"), true, LOG_LEVEL_INFO);
 
 	IniciarMensajes();
-	IniciarMemoria(Config_Int("TAMANO_MEMORIA"), Config_String("ALGORITMO_MEMORIA"), Config_String("ALGORITMO_REEMPLAZO"), Config_String("ALGORITMO_PARTICION_LIBRE"), Config_Int("FRECUENCIA_COMPACTACION"));
+	IniciarMemoria(Config_Int("TAMANO_MEMORIA"), Config_Int("TAMANO_MINIMO_PARTICION"), Config_String("ALGORITMO_MEMORIA"), Config_String("ALGORITMO_REEMPLAZO"), Config_String("ALGORITMO_PARTICION_LIBRE"), Config_Int("FRECUENCIA_COMPACTACION"));
 	CrearColas();
 	EscucharSignal();
 	IniciarServidorBroker(Config_String("IP_BROKER"), Config_Int("PUERTO_BROKER"));

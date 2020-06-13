@@ -10,6 +10,7 @@
 
 void* memoria;
 pthread_mutex_t mutexMemoria;
+int tamanioMinimo;
 
 void (*compactar)();
 Particion* (*seleccionar)(int);
@@ -18,8 +19,10 @@ void (*dump)();
 void (*destuir)();
 int frecuenciaCompactacion;
 
-void IniciarMemoria(int tamanioMemoria, char* algoritmoMemoria, char* algoritmoReemplazo, char* algoritmoSeleccion, int _frecuenciaCompactacion)
+void IniciarMemoria(int tamanioMemoria, int _tamanioMinimo, char* algoritmoMemoria, char* algoritmoReemplazo, char* algoritmoSeleccion, int _frecuenciaCompactacion)
 {
+	tamanioMinimo = _tamanioMinimo;
+
 	// algoritmoMemoria
 	if (strcmp(algoritmoMemoria, "PARTICIONES") == 0) // Particiones dinámicas
 	{

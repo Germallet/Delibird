@@ -8,3 +8,49 @@
 [INFO] 23:41:23:76 Broker/(11323:11323): Escucha iniciada
 [INFO] 23:44:10:503 Broker/(11452:11452): Escucha iniciada
 [INFO] 23:44:43:183 Broker/(11582:11582): Escucha iniciada en à4O	0.0.1:6009
+[INFO] 10:05:14:577 broker.log/(9782:9782): PID: 9782
+[INFO] 10:05:36:944 broker.log/(9782:9797): Recibido: GET_POKEMON: {pokemon: 'Pikachu'}
+[INFO] 10:05:36:954 broker.log/(9782:9802): Recibido: GET_POKEMON: {pokemon: 'Charmander'}
+[INFO] 10:05:43:800 broker.log/(9782:9809): Recibido: CATCH_POKEMON: {pokemon: 'Pikachu', posicion: (9, 3)}
+[INFO] 10:05:43:802 broker.log/(9782:9812): Recibido: CATCH_POKEMON: {pokemon: 'Squirtle', posicion: (9, 3)}
+[INFO] 10:05:43:803 broker.log/(9782:9815): Recibido: CAUGHT_POKEMON: {capturado: OK} (correlativo: 10)
+[INFO] 10:05:43:804 broker.log/(9782:9818): Recibido: CAUGHT_POKEMON: {capturado: FAIL} (correlativo: 11)
+[INFO] 10:05:43:805 broker.log/(9782:9821): Recibido: CATCH_POKEMON: {pokemon: 'Bulbasaur', posicion: (1, 7)}
+[INFO] 10:05:43:806 broker.log/(9782:9824): Recibido: CATCH_POKEMON: {pokemon: 'Charmander', posicion: (1, 7)}
+[INFO] 10:05:43:807 broker.log/(9782:9827): Recibido: GET_POKEMON: {pokemon: 'Pichu'}
+[INFO] 10:05:43:808 broker.log/(9782:9830): Recibido: GET_POKEMON: {pokemon: 'Raichu'}
+[INFO] 10:05:48:136 broker.log/(9782:9782): Dump! (dump.txt)
+[INFO] 10:12:07:149 broker.log/(10119:10119): PID: 10119
+[INFO] 10:12:09:352 broker.log/(10119:10124): Recibido: GET_POKEMON: {pokemon: 'Pikachu'}
+[INFO] 10:12:09:365 broker.log/(10119:10128): Recibido: GET_POKEMON: {pokemon: 'Charmander'}
+[INFO] 10:12:10:367 broker.log/(10119:10132): Recibido: CATCH_POKEMON: {pokemon: 'Pikachu', posicion: (9, 3)}
+[INFO] 10:12:10:368 broker.log/(10119:10135): Recibido: CATCH_POKEMON: {pokemon: 'Squirtle', posicion: (9, 3)}
+[INFO] 10:12:10:369 broker.log/(10119:10138): Recibido: CAUGHT_POKEMON: {capturado: OK} (correlativo: 10)
+[INFO] 10:12:10:370 broker.log/(10119:10141): Recibido: CAUGHT_POKEMON: {capturado: FAIL} (correlativo: 11)
+[INFO] 10:12:10:371 broker.log/(10119:10144): Recibido: CATCH_POKEMON: {pokemon: 'Bulbasaur', posicion: (1, 7)}
+[INFO] 10:12:10:372 broker.log/(10119:10147): Recibido: CATCH_POKEMON: {pokemon: 'Charmander', posicion: (1, 7)}
+[INFO] 10:12:10:373 broker.log/(10119:10150): Recibido: GET_POKEMON: {pokemon: 'Pichu'}
+[INFO] 10:12:10:374 broker.log/(10119:10153): Recibido: GET_POKEMON: {pokemon: 'Raichu'}
+[INFO] 10:12:17:702 broker.log/(10119:10119): Dump! (dump.txt)
+[INFO] 10:12:50:663 broker.log/(10179:10179): PID: 10179
+[INFO] 10:12:52:753 broker.log/(10179:10185): Recibido: GET_POKEMON: {pokemon: 'Pikachu'}
+[INFO] 10:12:52:770 broker.log/(10179:10189): Recibido: GET_POKEMON: {pokemon: 'Charmander'}
+[INFO] 10:12:53:840 broker.log/(10179:10193): Recibido: CATCH_POKEMON: {pokemon: 'Pikachu', posicion: (9, 3)}
+[INFO] 10:12:53:841 broker.log/(10179:10196): Recibido: CATCH_POKEMON: {pokemon: 'Squirtle', posicion: (9, 3)}
+[INFO] 10:12:53:841 broker.log/(10179:10199): Recibido: CAUGHT_POKEMON: {capturado: OK} (correlativo: 10)
+[INFO] 10:12:53:842 broker.log/(10179:10202): Recibido: CAUGHT_POKEMON: {capturado: FAIL} (correlativo: 11)
+[INFO] 10:12:53:844 broker.log/(10179:10205): Recibido: CATCH_POKEMON: {pokemon: 'Bulbasaur', posicion: (1, 7)}
+[INFO] 10:12:53:845 broker.log/(10179:10208): Recibido: CATCH_POKEMON: {pokemon: 'Charmander', posicion: (1, 7)}
+[INFO] 10:12:53:847 broker.log/(10179:10211): Recibido: GET_POKEMON: {pokemon: 'Pichu'}
+[INFO] 10:12:53:848 broker.log/(10179:10214): Recibido: GET_POKEMON: {pokemon: 'Raichu'}
+[INFO] 10:12:57:590 broker.log/(10179:10179): Dump! (dump.txt)
+[INFO] 10:16:01:832 broker.log/(10253:10253): PID: 10253
+[INFO] 10:16:08:255 broker.log/(10253:10260): Recibido: CATCH_POKEMON: {pokemon: 'Pikachu', posicion: (9, 3)}
+[INFO] 10:16:08:267 broker.log/(10253:10264): Recibido: CATCH_POKEMON: {pokemon: 'Squirtle', posicion: (9, 3)}
+[INFO] 10:16:08:268 broker.log/(10253:10267): Recibido: CAUGHT_POKEMON: {capturado: OK} (correlativo: 10)
+[INFO] 10:16:08:269 broker.log/(10253:10270): Recibido: CAUGHT_POKEMON: {capturado: FAIL} (correlativo: 11)
+[INFO] 10:16:08:270 broker.log/(10253:10273): Recibido: CATCH_POKEMON: {pokemon: 'Bulbasaur', posicion: (1, 7)}
+[INFO] 10:16:08:271 broker.log/(10253:10276): Recibido: CATCH_POKEMON: {pokemon: 'Charmander', posicion: (1, 7)}
+[INFO] 10:16:08:272 broker.log/(10253:10279): Recibido: GET_POKEMON: {pokemon: 'Pichu'}
+[INFO] 10:16:08:273 broker.log/(10253:10282): Recibido: GET_POKEMON: {pokemon: 'Raichu'}
+[INFO] 10:16:12:686 broker.log/(10253:10253): Dump! (dump.txt)

@@ -26,6 +26,9 @@ static Particion* Subparticionar(Particion* particion, int tamanio)
 
 Particion* DP_Seleccionar_FF(int tamanio)
 {
+	if(tamanio < tamanioMinimo)
+		tamanio = tamanioMinimo;
+
 	for (int indice = 0; indice < particiones->elements_count; indice++)
 	{
 		Particion* particion = (Particion*)(list_get(particiones, indice));
