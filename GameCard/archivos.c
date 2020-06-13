@@ -345,13 +345,13 @@ void crearMetadataPokemon(char* path) {
 }
 
 t_list* convertirBloques(t_list* bloques, int cantBloques) {
+	int tamBloque = config_get_int_value(config,"BLOCK_SIZE"); //TODO HAY QUE VER QUE PUEDE NO VENIR DEL CONFIG
 
-	t_list* datos = list_create();
 	char* datosArchivo = string_new();
+	datosArchivo = leerArchivos(bloques,cantBloques,tamBloque);
 
-//	int tamBloque = config_get_int_value(config,"BLOCK_SIZE"); TODO NO SABEMOS PQ NO FUNCIONA
-	datosArchivo = leerArchivos(bloques,cantBloques,62);
-	datos = interpretarCadena(datosArchivo,cantBloques,62);
+	t_list* datos = interpretarCadena(datosArchivo,cantBloques,tamBloque);
+
 	return datos;
 }
 
@@ -379,7 +379,6 @@ char* leerArchivos(t_list* bloques, int cantBloques, int size) {
 		}
 
 		fclose(f);
-		free(bloque);
 		free(path);
 	}
 	return datos;
@@ -394,6 +393,11 @@ t_list* interpretarCadena(char* cadenaDatos, int cantBloques, int size) {
 	char* cant;
 
 	int i = 0;
+
+//	if(cadenaDatos[i] == '\0') {
+//
+//	}
+//		return ;
 
 	while(cadenaDatos[i] != '\0') {
 		DatosBloques* datosLeidos = malloc(sizeof(DatosBloques));
