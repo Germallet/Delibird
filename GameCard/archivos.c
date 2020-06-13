@@ -11,6 +11,18 @@ bool estaAbierto(char* path) {
 	return sonIguales(leerOpen(path),"Y");
 }
 
+void abrir(char* path) {
+	t_config* pokemon = config_create(path);
+	config_set_value(pokemon,"OPEN","Y");
+	config_destroy(pokemon);
+}
+
+void cerrar(char* path) {
+	t_config* pokemon = config_create(path);
+	config_set_value(pokemon,"OPEN","N");
+	config_destroy(pokemon);
+}
+
 bool esDirectorio(char* path) {
 	return sonIguales(leerDirectorio(path),"Y");
 }
@@ -426,6 +438,8 @@ void cambiarMetadataPokemon(char* pathPokemon, t_list* numerosBloques, int bytes
 	}
 	bloques[string_length(bloques)] = ']';
 	config_set_value(c,"BLOCKS",bloques);
+
+	config_set_value(c,"OPEN","N");
 
 	free(bloques);
 	config_destroy(c);

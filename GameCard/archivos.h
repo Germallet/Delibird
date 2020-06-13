@@ -15,6 +15,9 @@ typedef struct {
 	uint32_t cantidad;
 } DatosBloques;
 
+void cerrar(char* path);
+void abrir(char* path);
+
 char* pathMetadataBinDe(char* path, char* nombreArchivo);
 char* posicionAString(DatosBloques* d);
 t_list* convertirBloques(t_list* bloques, int cantBloques);

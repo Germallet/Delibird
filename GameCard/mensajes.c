@@ -61,16 +61,6 @@ void Recibir_NEW_POKEMON(Cliente* cliente, Paquete* paqueteRecibido) {
 	}
 }
 
-/*
- * ver si el directorio del tipo de pokemon ya esta en nuestro fs
- * si esta => fijarse si ya hay uno de esos pokemones en esas coords
- * 			si hay => sumarle uno a lo de despues del =
- * 			si no hay => fijarse si hay espacio en el ultimo bloque que queda para agregar una linea mas
- * 						si hay => agregar la linea (posX - posY) = 1
- * 						si no hay => pedir otro bloque y agregar la linea
- * si no esta => armar el directorio de ese tipo de pokemon y adentro poner los datos (metadata, bloques, coords, etc.)
- */
-
 void Operacion_NEW_POKEMON(DATOS_NEW_POKEMON_ID* datos) {
 
 	NodoArbol* nodoPokemon = encontrarPokemon(datos->datos.pokemon);
@@ -82,32 +72,38 @@ void Operacion_NEW_POKEMON(DATOS_NEW_POKEMON_ID* datos) {
 
 	FILE* filePokemon = fopen(pathPokemon(datos->datos.pokemon),"ab+");
 
-	//TODO VER QUE NADIE ESTE ABRIENDO EL ARCHIVO
+	if(estaAbierto(pathPokemon(datos->datos.pokemon))) {
+		sleep(config_get_int_value(config,"TIEMPO_REINTENTO_OPERACION"));
+		Operacion_NEW_POKEMON(datos);
+	} else {
+		abrir(pathPokemon(datos->datos.pokemon));
 
-	int cantBloques = 0;
+		int cantBloques = 0;
 
-	t_list* numerosBloques = leerBlocks(pathPokemon(datos->datos.pokemon), &cantBloques);
+		t_list* numerosBloques = leerBlocks(pathPokemon(datos->datos.pokemon), &cantBloques);
 
-	t_list* bloquesConvertidos = convertirBloques(numerosBloques,cantBloques);
+		t_list* bloquesConvertidos = convertirBloques(numerosBloques,cantBloques);
 
-	DatosBloques posYCant;
+		DatosBloques posYCant;
 
-	posYCant.cantidad = datos->datos.cantidad;
-	posYCant.pos.posX = datos->datos.posicion.posX;
-	posYCant.pos.posY = datos->datos.posicion.posY;
+		posYCant.cantidad = datos->datos.cantidad;
+		posYCant.pos.posX = datos->datos.posicion.posX;
+		posYCant.pos.posY = datos->datos.posicion.posY;
 
-	int size = config_get_int_value(config,"BLOCK_SIZE");
+		int size = config_get_int_value(config,"BLOCK_SIZE");
 
-	int bytes = agregarCantidadEnPosicion(bloquesConvertidos,posYCant,numerosBloques,size);
+		int bytes = agregarCantidadEnPosicion(bloquesConvertidos,posYCant,numerosBloques,size);
 
-	fclose(filePokemon);
+		fclose(filePokemon);
 
-	cambiarMetadataPokemon(pathPokemon(datos->datos.pokemon),numerosBloques,bytes);
+		cambiarMetadataPokemon(pathPokemon(datos->datos.pokemon),numerosBloques,bytes);
 
-	Enviar_APPEARED_POKEMON(datos);
+		sleep(config_get_int_value(config,"TIEMPO_RETARDO_OPERACION"));
+		Enviar_APPEARED_POKEMON(datos);
 
-	list_destroy_and_destroy_elements(numerosBloques,&free);
-	list_destroy_and_destroy_elements(bloquesConvertidos,&free);
+		list_destroy_and_destroy_elements(numerosBloques,&free);
+		list_destroy_and_destroy_elements(bloquesConvertidos,&free);
+	}
 }
 
 void Recibir_CATCH_POKEMON(Cliente* cliente, Paquete* paqueteRecibido) {

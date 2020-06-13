@@ -6,11 +6,9 @@
 Eventos* eventos;
 
 /*
- * TODO BITMAP
  * TODO VERIFICAR SI SE PUEDE ABRIR
  * TODO ELIMINAR CANTIDADES Y POSICIONES DE ARCHIVO
  * TODO SINCRONIZAR TOODO
- * TODO ESCRIBIR EN LOS ARCHIVOS
  */
 
 int main()
@@ -25,19 +23,12 @@ int main()
 
 	char* puntoMontaje = config_get_string_value(config,"PUNTO_MONTAJE_TALLGRASS");
 	int tiempoReintentoConexion = config_get_int_value(config,"TIEMPO_DE_REINTENTO_CONEXION");
-	int tiempoReintentoOperacion = config_get_int_value(config,"TIEMPO_DE_REINTENTO_OPERACION");
-	int tiempoRetardoOperacion = config_get_int_value(config,"TIEMPO_RETARDO_OPERACION");
-
-	log_info(logger,"%d",tiempoReintentoOperacion);
-	log_info(logger,"%d",tiempoRetardoOperacion);
-
-	tallGrass_init(puntoMontaje);
-
-//	CrearHiloTimer(-1,tiempoReintentoConexion,&reconexion,NULL);
-
-	conectarse();
 
 	SocketEscucha(miIp, miPuerto);
+
+	CrearHiloTimer(-1,tiempoReintentoConexion,&reconexion,NULL);
+
+	tallGrass_init(puntoMontaje);
 
 	EsperarHilos();
 
@@ -62,16 +53,16 @@ void tallGrass_init(char* puntoMontaje) {
 	}
 }
 
-bool existePokemon(char* nombre) {
-
-	NodoArbol* dirPokemon = directorioFiles();
-
-	bool esIgual(char* nombre2) {
-		return sonIguales(nombre,nombre2);
-	}
-
-	return list_any_satisfy(dirPokemon->hijos,(void*)&esIgual);
-}
+//bool existePokemon(char* nombre) {
+//
+//	NodoArbol* dirPokemon = directorioFiles();
+//
+//	bool esIgual(char* nombre2) {
+//		return sonIguales(nombre,nombre2);
+//	}
+//
+//	return list_any_satisfy(dirPokemon->hijos,(void*)&esIgual);
+//}
 
 NodoArbol* encontrarPokemon(char* nombre) {
 
@@ -79,7 +70,7 @@ NodoArbol* encontrarPokemon(char* nombre) {
 
 	for (int i = 0; i < list_size(files->hijos); i++) {
 		NodoArbol* pok = (NodoArbol*) list_get(files->hijos,i);
-		if (pok->nombre == nombre) return pok;
+		if (sonIguales(pok->nombre,nombre)) return pok;
 		free(pok);
 	}
 	return NULL;
@@ -117,9 +108,10 @@ char* pathPokemon(char* nombre) {
 }
 
 NodoArbol* directorio(char* nombre) {
+
 	for (int i = 0; i < list_size(raiz->hijos); i++) {
 		NodoArbol* hijo = (NodoArbol*) list_get(raiz->hijos,i);
-		if (hijo->nombre == nombre) return hijo;
+		if (sonIguales(hijo->nombre,nombre)) return hijo;
 	}
 	return NULL;
 }
@@ -181,7 +173,7 @@ void conectarse() {
 	if(clienteBroker != NULL) SuscribirseColas(clienteBroker);
 }
 
-void reconexion(void* hello) {
+void reconexion(void* a) {
 	if (clienteBroker == NULL) conectarse();
 }
 
