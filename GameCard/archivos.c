@@ -114,7 +114,7 @@ void crearDirectorioFiles() {
 		fputs("DIRECTORY=Y\n",metadata);
 		fclose(metadata);
 	} else {
-//		DIR* directorio = opendir(aux);
+		//TODO LEER LOS DIRECTORIOS POKEMON QUE TIENE ADENTRO E INCORPORAR LOS NODOS AL ARBOL
 	}
 
 	free(aux);
@@ -183,7 +183,6 @@ void crearDirectorioMetadata() {
 	if(!existeArchivo(aux2)) {
 		crearBitmap(aux2,config_get_int_value(config,"BLOCKS"));
 	} else {
-//		int cantBloques = 0;
 		bitmap = bitarray_create_with_mode(string_repeat('\0',config_get_int_value(config,"BLOCKS")), config_get_int_value(config,"BLOCKS"), LSB_FIRST);
 		//TODO ESTO LO TENDRIA QUE LEER ARCHIVO
 	}
