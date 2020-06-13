@@ -36,11 +36,10 @@ void operacion_APPEARED_POKEMON(Cliente* cliente, Paquete* paquete)
 {
 	Stream* stream_lectura = Stream_CrearLecturaPaquete(paquete);
 	Deserializar_uint32(stream_lectura);
+
 	DATOS_APPEARED_POKEMON* datos = malloc(sizeof(DATOS_APPEARED_POKEMON));
 	*datos = Deserializar_APPEARED_POKEMON(stream_lectura);
-
-	if(necesito_especie_pokemon(datos->pokemon))
-		agregar_interrupcion(APPEARED_POKEMON, datos);
+	agregar_interrupcion(APPEARED_POKEMON, datos);
 
 	Stream_DestruirConBuffer(stream_lectura);
 }

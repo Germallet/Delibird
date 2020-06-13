@@ -297,7 +297,7 @@ void obtener_entrenadores()
 
 	char** pokemons_atrapados = string_get_string_as_array(rep_pokemons_atrapados);
 
-	log_info(logger, posiciones[0]);
+	/*log_info(logger, posiciones[0]);
 	log_info(logger, posiciones[1]);
 	log_info(logger, posiciones[2]);
 	log_info(logger, pokemons_atrapados[0]);
@@ -305,8 +305,7 @@ void obtener_entrenadores()
 	log_info(logger, pokemons_atrapados[2]);
 	log_info(logger, pokemons_objetivo[0]);
 	log_info(logger, pokemons_objetivo[1]);
-	log_info(logger, pokemons_objetivo[2]);
-
+	log_info(logger, pokemons_objetivo[2]);*/
 
 	int cantidad_entrenadores = 1;
 	for(int i=0;entrenadores[i]!='\0';i++)
@@ -362,10 +361,10 @@ void ejecutar_entrenador_actual()
 		pthread_mutex_unlock(&(entrenador_EXEC->mutex));
 	else
 	{
-		log_info(logger, "IDLE");
+		//log_info(logger, "IDLE");
 
-		agregar_pokemon_a_mapa("Squirtle", crear_posicion("3|5"));
-		agregar_pokemon_a_mapa("Gengar", crear_posicion("7|5"));
+		//agregar_pokemon_a_mapa("Squirtle", crear_posicion("3|5"));
+		//agregar_pokemon_a_mapa("Gengar", crear_posicion("7|5"));
 
 		//sleep((unsigned) config_get_int_value(config,"RETARDO_CICLO_CPU"));
 		pthread_mutex_unlock(&(mutex_team));

@@ -25,6 +25,7 @@ typedef struct
 
 extern t_dictionaryInt* diccionario_interrupciones;
 extern t_list* cola_INTERRUPCIONES;
+extern pthread_mutex_t mutex_interrupciones;
 
 void agregar_interrupcion(Tipo_Interrupcion tipo, void* info);
 void inicializar_interrupciones();

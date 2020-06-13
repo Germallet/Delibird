@@ -178,7 +178,7 @@ DATOS_APPEARED_POKEMON* convertir_APPEARED_POKEMON(int cantParametros, char* par
 {
 	if (cantParametros != 6) TerminarProgramaConError("MANDAME BIEN LOS PARAMETROS, SABANDIJA");
 
-	DATOS_APPEARED_POKEMON* datos = malloc(sizeof(DATOS_APPEARED_POKEMON_ID));
+	DATOS_APPEARED_POKEMON* datos = malloc(sizeof(DATOS_APPEARED_POKEMON));
 
 	//datos->largoPokemon = (uint32_t) strlen(parametros[3]);
 	datos->pokemon = parametros[3];

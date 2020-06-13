@@ -1,9 +1,11 @@
 #include "pokemon.h"
 #include "posicion.h"
 #include "entrenador.h"
+#include "team.h"
 #include <string.h>
 #include <stdlib.h>
 #include <commons/string.h>
+#include <commons/log.h>
 #include <commons/collections/list.h>
 
 t_list* pokemons_necesarios;
@@ -82,6 +84,7 @@ void agregar_pokemon_a_mapa(char* especie_pokemon, Posicion posicion)
 	pokemon->especie = malloc(strlen(especie_pokemon)+1);
 	strcpy(pokemon->especie, especie_pokemon);
 	pokemon->posicion = posicion;
+	log_info(logger, "Nuevo pokemon: %s (%d, %d)", pokemon->especie, pokemon->posicion.posX, pokemon->posicion.posY);
 	list_add(pokemons_mapa, pokemon);
 }
 

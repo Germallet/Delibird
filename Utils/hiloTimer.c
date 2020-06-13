@@ -30,7 +30,7 @@ HiloTimer* CrearHiloTimer(int repeticiones, unsigned int tiempo, void (*evento)(
 	nuevoHilo->info = info;
 	nuevoHilo->evento = evento;
 	pthread_mutex_init(&(nuevoHilo->mxHiloTimer), NULL);
-	pthread_create(&(nuevoHilo->thread), NULL, &EjecucionTimer, nuevoHilo);
+	pthread_create(&(nuevoHilo->thread), NULL, (void*)&EjecucionTimer, nuevoHilo);
 	pthread_detach(nuevoHilo->thread);
 	return nuevoHilo;
 }

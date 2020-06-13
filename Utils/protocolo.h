@@ -26,7 +26,6 @@ typedef struct {
 
 // APPEARED_POKEMON
 typedef struct {
-	uint32_t idCorrelativa;
 	char* pokemon;
 	Posicion posicion;
 } DATOS_APPEARED_POKEMON;

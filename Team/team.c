@@ -5,6 +5,7 @@
 #include "suscripcion.h"
 #include "planificacion.h"
 #include "interrupciones.h"
+#include "servidorTeam.h"
 #include "../Utils/hiloTimer.h"
 #include <stdlib.h>
 #include <commons/log.h>
@@ -17,15 +18,6 @@ pthread_mutex_t mutex_team;
 
 static void inicializar_datos()
 {
-	//LOGGER
-	logger = log_create("team.log", "Team", true, LOG_LEVEL_INFO);
-
-	if(logger==NULL)
-	{
-		printf("No se pudo crear el team logger");
-		exit(1);
-	}
-
 	//CONFIG
 	config = config_create("team.config");
 
@@ -33,6 +25,15 @@ static void inicializar_datos()
 	{
 		log_error(logger,"No se pudo encontrar el archivo team.config");
 		exit(2);
+	}
+
+	//LOGGER
+	logger = log_create(config_get_string_value(config,"LOG_FILE"), "Team", true, LOG_LEVEL_INFO);
+
+	if(logger==NULL)
+	{
+		printf("No se pudo crear el team logger");
+		exit(1);
 	}
 
 	//COLAS
@@ -63,36 +64,34 @@ static void inicializar_datos()
 
 static void esperar_fin_de_ciclo() { pthread_mutex_lock(&mutex_team); }
 
-static void solicitar_pokemons_para_objetivo_global_test()
+/*static void solicitar_pokemons_para_objetivo_global_test()
 {
 	agregar_pokemon_a_mapa("Pikachu", crear_posicion("1|1"));
 	agregar_pokemon_a_mapa("Squirtle", crear_posicion("9|7"));
 	agregar_pokemon_a_mapa("Onix", crear_posicion("2|2"));
-}
+}*/
 
-Entrenador* e1;
-Entrenador* e2;
-Entrenador* e3;
 //-----------HILO PRINCIPAL-----------//
 int main()
 {
 	inicializar_datos();
 	obtener_entrenadores();
 	identificar_objetivo_global();
-	solicitar_pokemons_para_objetivo_global_test();
+	IniciarServidorTeam(config_get_string_value(config,"IP_TEAM"), config_get_int_value(config,"PUERTO_TEAM"));
+	//solicitar_pokemons_para_objetivo_global_test();
 	//solicitar_pokemons_para_objetivo_global();
 	//conectarse_y_suscribirse_a_colas();
 	//TODO: conectarse_con_gameboy();
 
 	while(true)
 	{
+		pthread_mutex_lock(&mutex_interrupciones);
 		while(hay_interrupciones_para_ejecutar()) ejecutar_interrupcion();
+		pthread_mutex_unlock(&mutex_interrupciones);
+
 		planificar_entrenador_si_es_necesario();
 
 		ejecutar_entrenador_actual();
 		esperar_fin_de_ciclo();
 	}
 }
-
-
-

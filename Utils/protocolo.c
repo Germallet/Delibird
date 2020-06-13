@@ -21,7 +21,7 @@ Stream* SerializarM_NEW_POKEMON_ID(DATOS_NEW_POKEMON_ID* datos)
 // APPEARED_POKEMON
 Stream* SerializarM_APPEARED_POKEMON(DATOS_APPEARED_POKEMON* datos)
 {
-	Stream* stream = Stream_CrearEscrituraNueva(strlen(datos->pokemon) + sizeof(uint32_t)*4);
+	Stream* stream = Stream_CrearEscrituraNueva(strlen(datos->pokemon) + sizeof(uint32_t)*3);
 	Serializar_APPEARED_POKEMON(stream, datos);
 	return stream;
 }

@@ -21,7 +21,6 @@ DATOS_NEW_POKEMON Deserializar_NEW_POKEMON(Stream* stream)
 // APPEARED_POKEMON
 void Serializar_APPEARED_POKEMON(Stream* stream, DATOS_APPEARED_POKEMON* datos)
 {
-	Serializar_uint32(stream, datos->idCorrelativa);
 	Stream_SerializarString(stream, datos->pokemon);
 	Serializar_uint32(stream, datos->posicion.posX);
 	Serializar_uint32(stream, datos->posicion.posY);
@@ -29,7 +28,6 @@ void Serializar_APPEARED_POKEMON(Stream* stream, DATOS_APPEARED_POKEMON* datos)
 DATOS_APPEARED_POKEMON Deserializar_APPEARED_POKEMON(Stream* stream)
 {
 	DATOS_APPEARED_POKEMON datos;
-	datos.idCorrelativa = Deserializar_uint32(stream);
 	if (!Stream_DeserializarString(stream, &(datos.pokemon))) return datos;
 	datos.posicion.posX = Deserializar_uint32(stream);
 	datos.posicion.posY = Deserializar_uint32(stream);
