@@ -9,7 +9,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <commons/string.h>
-#define MULTIPLICADOR_TIEMPO 0.1
+#define MULTIPLICADOR_TIEMPO 1
 
 Entrenador* entrenador_EXEC;
 t_list* cola_NEW;
@@ -361,12 +361,9 @@ void ejecutar_entrenador_actual()
 		pthread_mutex_unlock(&(entrenador_EXEC->mutex));
 	else
 	{
-		//log_info(logger, "IDLE");
+		log_info(logger, "IDLE");
 
-		//agregar_pokemon_a_mapa("Squirtle", crear_posicion("3|5"));
-		//agregar_pokemon_a_mapa("Gengar", crear_posicion("7|5"));
-
-		//sleep((unsigned) config_get_int_value(config,"RETARDO_CICLO_CPU"));
+		sleep((unsigned) config_get_int_value(config,"RETARDO_CICLO_CPU"));
 		pthread_mutex_unlock(&(mutex_team));
 	}
 }
