@@ -6,3 +6,4 @@ extern t_log* logger;
 extern t_config* config;
 extern pthread_mutex_t mutex_team;
 
+void mrBug();

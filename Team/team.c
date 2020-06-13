@@ -70,6 +70,9 @@ static void solicitar_pokemons_para_objetivo_global_test()
 	agregar_pokemon_a_mapa("Onix", crear_posicion("2|2"));
 }
 
+Entrenador* e1;
+Entrenador* e2;
+Entrenador* e3;
 //-----------HILO PRINCIPAL-----------//
 int main()
 {
@@ -86,19 +89,10 @@ int main()
 		while(hay_interrupciones_para_ejecutar()) ejecutar_interrupcion();
 		planificar_entrenador_si_es_necesario();
 
-		if(entrenador_EXEC!=NULL)
-		{
-			if(list_get(entrenador_EXEC->pokemons_atrapados, 0)!=NULL) log_info(logger,"%s (%d)", ((Pokemon*) list_get(entrenador_EXEC->pokemons_atrapados, 0))->especie, ((Pokemon*) list_get(entrenador_EXEC->pokemons_atrapados, 0))->cantidad);
-			if(list_get(entrenador_EXEC->pokemons_atrapados, 1)!=NULL) log_info(logger,"%s (%d)", ((Pokemon*) list_get(entrenador_EXEC->pokemons_atrapados, 1))->especie, ((Pokemon*) list_get(entrenador_EXEC->pokemons_atrapados, 0))->cantidad);
-		}
-
 		ejecutar_entrenador_actual();
 		esperar_fin_de_ciclo();
 	}
 }
-
-
-
 
 
 

@@ -37,10 +37,12 @@ void tomar_deadlock(Entrenador** entrenador1, Entrenador** entrenador2)
 	Deadlock* deadlock = list_remove(deadlocks, 0);
 
 	*entrenador1 = deadlock->entrenador1;
+	if ((*entrenador1)->info != NULL) free((*entrenador1)->info);
 	(*entrenador1)->info = malloc(strlen(deadlock->pokemon1)+1);
 	strcpy((*entrenador1)->info, deadlock->pokemon1);
 
 	*entrenador2 = deadlock->entrenador2;
+	if ((*entrenador2)->info != NULL) free((*entrenador2)->info);
 	(*entrenador2)->info = malloc(strlen(deadlock->pokemon2)+1);
 	strcpy((*entrenador2)->info, deadlock->pokemon2);
 
@@ -61,17 +63,17 @@ void identificar_deadlocks()
 	t_list* entrenadores_intercambiar;
 	char* pokemon1;
 	char* pokemon2;
-
 	while(entrenadores_pivot->elements_count>1)
 	{
 		entrenador1 = list_remove(entrenadores_pivot, 0);
 		entrenadores_intercambiar = obtener_entrenadores_que_pueden_intercambiar_con(entrenador1, entrenadores_pivot);
-
 		for(int i=0;i<entrenadores_intercambiar->elements_count;i++)
 		{
 			entrenador2 = list_get(entrenadores_intercambiar, i);
 			pokemons_que_van_a_intercambiar(entrenador1, entrenador2, &pokemon1, &pokemon2);
 			agregar_deadlock(entrenador1, entrenador2, pokemon1, pokemon2);
+			free(pokemon1);
+			free(pokemon2);
 		}
 		list_destroy(entrenadores_intercambiar);
 	}
@@ -149,11 +151,12 @@ void terminar_team()
 {
 	log_info(logger, "GAME OVER.");
 
-	if(logger != NULL) log_destroy(logger);
+	//TODO
+	/*if(logger != NULL) log_destroy(logger);
 	if(config != NULL) config_destroy(config);
 	list_destroy(deadlocks);
 
-	if(entrenador_EXEC!=NULL) destruir_entrenador(entrenador_EXEC);
+	//if(entrenador_EXEC!=NULL) destruir_entrenador(entrenador_EXEC);
 	list_destroy(cola_NEW);
 	list_destroy(cola_READY);
 	list_destroy(cola_BLOCKED);
@@ -161,7 +164,7 @@ void terminar_team()
 
 	list_destroy_and_destroy_elements(cola_INTERRUPCIONES, &destruir_interrupcion);
 	list_destroy_and_destroy_elements(pokemons_necesarios, &destruir_pokemon);
-	list_destroy_and_destroy_elements(pokemons_mapa, &destruir_pokemon_mapa);
+	list_destroy_and_destroy_elements(pokemons_mapa, &destruir_pokemon_mapa);*/
 
 	exit(0);
 }
@@ -174,9 +177,13 @@ void planificar_entrenador_si_es_necesario()
 		cambiar_estado_a(tomar_entrenador(cola_READY), EXEC);
 	if(estamos_en_deadlock())
 	{
-		if(!deadlocks_identificados) identificar_deadlocks();
+		if(!deadlocks_identificados)
+			identificar_deadlocks();
 		planificar_intercambiar_pokemon();
 		cambiar_estado_a(tomar_entrenador(cola_READY), EXEC);
+
+		/*if(list_is_empty(deadlocks))
+			deadlocks_identificados = false;*/
 	}
 	//if(hay_entrenadores_que_podrian_intercambiar())
 		//planificar_intercambiar_pokemon_si_es_posible();
