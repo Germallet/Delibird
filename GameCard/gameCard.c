@@ -33,7 +33,9 @@ int main()
 
 	tallGrass_init(puntoMontaje);
 
-	CrearHiloTimer(-1,tiempoReintentoConexion,&reconexion,NULL);
+//	CrearHiloTimer(-1,tiempoReintentoConexion,&reconexion,NULL);
+
+	conectarse();
 
 	SocketEscucha(miIp, miPuerto);
 
@@ -73,32 +75,33 @@ bool existePokemon(char* nombre) {
 
 NodoArbol* encontrarPokemon(char* nombre) {
 
-	NodoArbol* nodoFiles = directorioFiles();
+	NodoArbol* files = directorioFiles();
 
-	bool esIgual(char* nombre2) {
-		return sonIguales(nombre,nombre2);
+	for (int i = 0; i < list_size(files->hijos); i++) {
+		NodoArbol* pok = (NodoArbol*) list_get(files->hijos,i);
+		if (pok->nombre == nombre) return pok;
+		free(pok);
 	}
-
-	return list_find(nodoFiles->hijos,(void*)&esIgual);
+	return NULL;
 }
 
-char* pathDeNodo(NodoArbol* nodo) {
-	char* pal;
-
-	if(nodo->padre == NULL)
-		return nodo->nombre;
-
-	pal = nodo->nombre;
-
-	char* pal2 = string_new();
-	pal2 = pathDeNodo(nodo->padre);
-
-	string_append(&pal2,pal);
-
-	free(pal);
-
-	return pal2;
-}
+//char* pathDeNodo(NodoArbol* nodo) {
+////	char* pal;
+//
+//	if(nodo->padre == NULL)
+//		return nodo->nombre;
+//
+////	pal = nodo->nombre;
+////
+////	char* pal2 = string_new();
+////	pal2 = pathDeNodo(nodo->padre);
+////
+////	string_append(&pal2,pal);
+////
+////	free(pal);
+//
+//	return strcat(pathDeNodo(nodo->padre),nodo->nombre);
+//}
 
 char* pathPtoMnt() {
 	return config_get_string_value(config,"PUNTO_MONTAJE_TALLGRASS");
@@ -113,11 +116,9 @@ char* pathPokemon(char* nombre) {
 	return path;
 }
 
-//TODO Recorrer mejor esto
-
 NodoArbol* directorio(char* nombre) {
 	for (int i = 0; i < list_size(raiz->hijos); i++) {
-		NodoArbol* hijo = list_get(raiz->hijos,i);
+		NodoArbol* hijo = (NodoArbol*) list_get(raiz->hijos,i);
 		if (hijo->nombre == nombre) return hijo;
 	}
 	return NULL;
@@ -157,9 +158,14 @@ int buscarPosicionLibre() {
 	if (i == bitmap->size)
 		return -1;
 
-	FILE* file = fopen(pathMetadataBinDe(pathDeNodo(directorioMetadata()), "/bitmap.bin"),"wb+"); //TODO VER COMO ESCRIBIR UN SOLO BIT
+	char* pathMetadata = string_new();
+	string_append(&pathMetadata,raiz->nombre);
+	string_append(&pathMetadata,"/Metadata");
+
+	FILE* file = fopen(pathMetadataBinDe(pathMetadata, "/bitmap.bin"),"wb+"); //TODO VER COMO ESCRIBIR UN SOLO BIT
 	fwrite(bitmap->bitarray,bitmap->size,1,file);
 	fclose(file);
+	free(pathMetadata);
 
 	return i;
 }
