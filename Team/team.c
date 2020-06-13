@@ -53,6 +53,9 @@ static void inicializar_datos()
 	//INTERRUPCIONES
 	inicializar_interrupciones();
 
+	//INTERRUPCIONES
+	deadlocks = list_create();
+
 	//MUTEX
 	pthread_mutex_init(&(mutex_team), NULL);
 	pthread_mutex_lock(&(mutex_team));
@@ -62,9 +65,9 @@ static void esperar_fin_de_ciclo() { pthread_mutex_lock(&mutex_team); }
 
 static void solicitar_pokemons_para_objetivo_global_test()
 {
-	agregar_pokemon_a_mapa("Squirtle", crear_posicion("0|0"));
-	agregar_pokemon_a_mapa("Charmander", crear_posicion("6|7"));
-	agregar_pokemon_a_mapa("Pikachu", crear_posicion("2|3"));
+	agregar_pokemon_a_mapa("Pikachu", crear_posicion("1|1"));
+	agregar_pokemon_a_mapa("Squirtle", crear_posicion("9|7"));
+	agregar_pokemon_a_mapa("Onix", crear_posicion("2|2"));
 }
 
 //-----------HILO PRINCIPAL-----------//
@@ -82,6 +85,13 @@ int main()
 	{
 		while(hay_interrupciones_para_ejecutar()) ejecutar_interrupcion();
 		planificar_entrenador_si_es_necesario();
+
+		if(entrenador_EXEC!=NULL)
+		{
+			if(list_get(entrenador_EXEC->pokemons_atrapados, 0)!=NULL) log_info(logger,"%s (%d)", ((Pokemon*) list_get(entrenador_EXEC->pokemons_atrapados, 0))->especie, ((Pokemon*) list_get(entrenador_EXEC->pokemons_atrapados, 0))->cantidad);
+			if(list_get(entrenador_EXEC->pokemons_atrapados, 1)!=NULL) log_info(logger,"%s (%d)", ((Pokemon*) list_get(entrenador_EXEC->pokemons_atrapados, 1))->especie, ((Pokemon*) list_get(entrenador_EXEC->pokemons_atrapados, 0))->cantidad);
+		}
+
 		ejecutar_entrenador_actual();
 		esperar_fin_de_ciclo();
 	}
