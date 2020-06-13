@@ -9,6 +9,7 @@ void SuscribirseColas(Cliente* cliente) {
 	Eventos_AgregarOperacion(cliente->eventos, NEW_POKEMON, (EventoOperacion)&Recibir_NEW_POKEMON);
 	Eventos_AgregarOperacion(cliente->eventos, CATCH_POKEMON, (EventoOperacion)&Recibir_CATCH_POKEMON);
 	Eventos_AgregarOperacion(cliente->eventos, GET_POKEMON, (EventoOperacion)&Recibir_GET_POKEMON);
+	Eventos_AgregarOperacion(cliente->eventos, BROKER_ID_MENSAJE, (EventoOperacion)&Recibir_ID);
 
 	if (Socket_Enviar(BROKER_CONECTAR, NULL, 0, cliente->socket) < 0) {
 		free(cliente->info);
@@ -185,3 +186,10 @@ void Enviar_CAUGHT_POKEMON(DATOS_CATCH_POKEMON* datos) {
 void Enviar_LOCALIZED_POKEMON(DATOS_GET_POKEMON* datos,Posicion* posiciones) {
 
 }
+
+void Recibir_ID(Cliente* cliente, Paquete* paqueteRecibido) {
+	Stream* stream = Stream_CrearLecturaPaquete(paqueteRecibido);
+	Deserializar_uint32(stream);
+}
+
+

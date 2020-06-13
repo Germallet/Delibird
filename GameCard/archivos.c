@@ -242,7 +242,7 @@ int agregarCantidadEnPosicion(t_list* pokemon, DatosBloques posYCant, t_list* nu
 		posicion->cantidad += posYCant.cantidad;
 		escribirListaEnArchivo(pokemon,size,numerosBloques);
 	}
-	return size*(list_size(numerosBloques) - 1) + tamanioBloque((int) list_get(numerosBloques,list_size(numerosBloques) - 1));
+	return size*(list_size(numerosBloques) - 1) + tamanioBloque((int*) list_get(numerosBloques,list_size(numerosBloques) - 1));
 }
 
 char* posicionAString(DatosBloques* d) {
@@ -448,11 +448,11 @@ t_list* interpretarCadena(char* cadenaDatos, int cantBloques, int size) {
 	return datos;
 }
 
-int tamanioBloque(int nroBloque) {
+int tamanioBloque(int* nroBloque) {
 	char* pathBloque = string_new();
 	string_append(&pathBloque,pathPtoMnt());
 	string_append(&pathBloque,"/Blocks/");
-	string_append(&pathBloque,string_itoa(nroBloque));
+	string_append(&pathBloque,string_itoa(*nroBloque));
 	string_append(&pathBloque,".bin");
 
 	FILE* bloque = fopen(pathBloque,"rb+");

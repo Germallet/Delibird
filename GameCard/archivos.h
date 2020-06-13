@@ -30,7 +30,7 @@ char* leerBlocksPorConfig(char* path);
 char* leerArchivos(t_list* bloques, int cantBloques, int size);
 t_list* leerBlocks(char* path, int* cantBloques);
 
-int tamanioBloque(int nroBloque);
+int tamanioBloque(int* nroBloque);
 
 bool sonIguales(char* a, char* b);
 bool estaAbierto(char* path);
