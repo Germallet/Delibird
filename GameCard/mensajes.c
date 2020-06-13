@@ -100,6 +100,8 @@ void Operacion_NEW_POKEMON(DATOS_NEW_POKEMON_ID* datos) {
 
 		cambiarMetadataPokemon(path,numerosBloques,bytes);
 
+		cerrar(path);
+
 		sleep(config_get_int_value(config,"TIEMPO_RETARDO_OPERACION")); //TODO PUEDE NO VENIR DEL CONFIG
 		Enviar_APPEARED_POKEMON(datos);
 
