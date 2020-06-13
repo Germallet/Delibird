@@ -9,6 +9,6 @@ NodoArbol* crearNodo(char* nombre) {
 }
 
 void agregarNodo(NodoArbol* padre, NodoArbol* hijo) {
-	list_add(padre->hijos, &hijo);
+	list_add(padre->hijos, hijo);
 	hijo->padre = padre;
 }

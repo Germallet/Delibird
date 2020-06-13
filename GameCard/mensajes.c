@@ -46,9 +46,9 @@ void ConexionColas(Cliente* cliente, Paquete* paquete) {
 void Recibir_NEW_POKEMON(Cliente* cliente, Paquete* paqueteRecibido) {
 	Stream* stream = Stream_CrearLecturaPaquete(paqueteRecibido);
 	uint32_t id = Deserializar_uint32(stream);
-	DATOS_NEW_POKEMON_ID datos;
-	datos.datos = Deserializar_NEW_POKEMON(stream);
-	datos.id = id;
+	DATOS_NEW_POKEMON_ID* datos = malloc(sizeof(DATOS_NEW_POKEMON_ID));
+	datos->datos = Deserializar_NEW_POKEMON(stream);
+	datos->id = id;
 
 	if (stream->error)
 		log_error(logger,"Error al deserializar NEW_POKEMON");
@@ -56,7 +56,7 @@ void Recibir_NEW_POKEMON(Cliente* cliente, Paquete* paqueteRecibido) {
 		log_info(logger,"Tu mensaje llego correctamente");
 		EnviarID(cliente,id);
 		pthread_t thread;
-		pthread_create(&thread, NULL, (void*) Operacion_NEW_POKEMON,&datos);
+		pthread_create(&thread, NULL, (void*) Operacion_NEW_POKEMON,datos);
 		pthread_detach(thread);
 	}
 }
@@ -70,17 +70,19 @@ void Operacion_NEW_POKEMON(DATOS_NEW_POKEMON_ID* datos) {
 		agregarNodo(directorioFiles(),nodoPokemon);
 	}
 
-	FILE* filePokemon = fopen(pathPokemon(datos->datos.pokemon),"ab+");
+	char* path = pathPokemon(datos->datos.pokemon);
+
+	FILE* filePokemon = fopen(path,"ab+");
 
 	if(estaAbierto(pathPokemon(datos->datos.pokemon))) {
 		sleep(config_get_int_value(config,"TIEMPO_REINTENTO_OPERACION"));
 		Operacion_NEW_POKEMON(datos);
 	} else {
-		abrir(pathPokemon(datos->datos.pokemon));
+		abrir(path);
 
-		int cantBloques = 0;
+		int cantBloques =  0;
 
-		t_list* numerosBloques = leerBlocks(pathPokemon(datos->datos.pokemon), &cantBloques);
+		t_list* numerosBloques = leerBlocks(path, &cantBloques);
 
 		t_list* bloquesConvertidos = convertirBloques(numerosBloques,cantBloques);
 
@@ -96,7 +98,7 @@ void Operacion_NEW_POKEMON(DATOS_NEW_POKEMON_ID* datos) {
 
 		fclose(filePokemon);
 
-		cambiarMetadataPokemon(pathPokemon(datos->datos.pokemon),numerosBloques,bytes);
+		cambiarMetadataPokemon(path,numerosBloques,bytes);
 
 		sleep(config_get_int_value(config,"TIEMPO_RETARDO_OPERACION"));
 		Enviar_APPEARED_POKEMON(datos);

@@ -29,7 +29,7 @@ void reconexion();
 void tallGrass_init(char* puntoMontaje);
 void crearDirectorio(char* path);
 void TerminarProgramaConError(char* error);
-void TerminarPrograma(t_log* logger, t_config* config);
+void TerminarPrograma();
 void EsperarHilos();
 bool existePokemon(char* nombre);
 NodoArbol* encontrarPokemon(char* nombre);

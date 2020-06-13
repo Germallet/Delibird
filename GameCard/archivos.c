@@ -1,6 +1,5 @@
 #include "archivos.h"
-
-t_config* config;
+#include <dirent.h>
 
 bool sonIguales(char* a, char* b)
 {
@@ -33,7 +32,7 @@ t_list* leerBlocks(char* path, int* cantBloques) {
 
 	char** listaBloques = config_get_array_value(pokemon,"BLOCKS");
 
-	config_destroy(config);
+	config_destroy(pokemon);
 
 	while (listaBloques[*cantBloques] != NULL) (*cantBloques)++;
 
@@ -101,16 +100,21 @@ void crearDirectorioFiles() {
 	char* aux = string_new();
 	string_append(&aux,raiz->nombre);
 	string_append(&aux,"/Files");
-
-	mkdir(aux, 0700);
-
 	agregarNodo(raiz,crearNodo("/Files"));
 
-	string_append(&aux,"/metadata.bin");
-	FILE* metadata = fopen(aux,"wb+");
-	fputs("DIRECTORY=Y\n",metadata);
-	fclose(metadata);
+	if (!existeDirectorio(aux)) {
+		mkdir(aux, 0700);
+
+		string_append(&aux,"/metadata.bin");
+		FILE* metadata = fopen(aux,"wb+");
+		fputs("DIRECTORY=Y\n",metadata);
+		fclose(metadata);
+	} else {
+//		DIR* directorio = opendir(aux);
+	}
+
 	free(aux);
+
 }
 
 void crearDirectorioBlocks(int blocks) {
@@ -119,7 +123,7 @@ void crearDirectorioBlocks(int blocks) {
 	string_append(&aux,raiz->nombre);
 	string_append(&aux,"/Blocks");
 
-	mkdir(aux, 0700);
+	if(!existeDirectorio(aux)) mkdir(aux, 0700);
 
 	agregarNodo(raiz,crearNodo("/Blocks"));
 
@@ -152,29 +156,37 @@ void crearDirectorioMetadata(int size, int blocks, char* magicNumber) {
 	string_append(&aux,raiz->nombre);
 	string_append(&aux,"/Metadata");
 
-	mkdir(aux, 0700);
+	if(!existeDirectorio(aux)) {
+		mkdir(aux, 0700);
+	}
 
 	agregarNodo(raiz,crearNodo("/Metadata"));
 
 	char* aux2 = string_new();
 	string_append(&aux2,aux);
+	string_append(&aux2,"/bitmap.bin");
 
-	crearBitmap(aux2,blocks);
+	if(!existeArchivo(aux2)) crearBitmap(aux2,blocks);
+
 	free(aux2);
 
 	string_append(&aux,"/metadata.bin");
-	FILE* metadata = fopen(aux,"wb+");
-	fprintf(metadata,"BLOCK_SIZE=%d\n",size);
-	fprintf(metadata,"BLOCKS=%d\n",blocks);
-	fprintf(metadata,"MAGIC_NUMBER=%s\n",magicNumber);
-	fclose(metadata);
+
+	if(!existeArchivo(aux)) {
+		FILE* metadata = fopen(aux,"wb+");
+		fprintf(metadata,"BLOCK_SIZE=%d\n",size);
+		fprintf(metadata,"BLOCKS=%d\n",blocks);
+		fprintf(metadata,"MAGIC_NUMBER=%s\n",magicNumber);
+		fclose(metadata);
+	}
+
+	free(aux);
 }
 
 void crearBitmap(char* path, int cantBlocks) {
 
-	bitmap = bitarray_create_with_mode(string_repeat('\0',cantBlocks), (size_t) cantBlocks, LSB_FIRST);
+	bitmap = bitarray_create_with_mode(string_repeat('0',cantBlocks), cantBlocks, LSB_FIRST);
 
-	string_append(&path,"/bitmap.bin");
 	FILE* fBitmap = fopen(path,"wb+");
 	fwrite(bitmap->bitarray,bitmap->size,1,fBitmap);
 	fclose(fBitmap);
@@ -297,21 +309,23 @@ NodoArbol* crearPokemon(char* nombre) {
 
 	char* pathNodo = string_new();
 	string_append(&pathNodo,raiz->nombre);
-	string_append(&pathNodo,"/Blocks/");
+	string_append(&pathNodo,"/Files/");
 	string_append(&pathNodo,nodo->nombre);
 
+	mkdir(pathNodo,0700);
 	crearMetadataPokemon(pathNodo);
 
 	return nodo;
 }
 
 void crearMetadataPokemon(char* path) {
+
 	string_append(&path,"/metadata.bin");
 
 	FILE* metadata = fopen(path,"wb+");
 
-	fputs("DIRECTORY=N\n",metadata);
-	fputs("SIZE=0\n",metadata);
+	fprintf(metadata,"DIRECTORY=N\n");
+	fprintf(metadata,"SIZE=0\n");
 
 	int nuevoBloque = pedirBloque();
 	char* bloques = string_new();
@@ -326,12 +340,17 @@ void crearMetadataPokemon(char* path) {
 }
 
 t_list* convertirBloques(t_list* bloques, int cantBloques) {
+
 	t_list* datos = list_create();
 	char* datosArchivo = string_new();
-	datosArchivo = leerArchivos(bloques,cantBloques,config_get_int_value(config,"BLOCKS_SIZE"));
-	datos = interpretarCadena(datosArchivo,cantBloques,config_get_int_value(config,"BLOCKS_SIZE"));
+
+//	int tamBloque = config_get_int_value(config,"BLOCK_SIZE"); TODO NO SABEMOS PQ NO FUNCIONA
+	datosArchivo = leerArchivos(bloques,cantBloques,62);
+	datos = interpretarCadena(datosArchivo,cantBloques,62);
 	return datos;
 }
+
+//TODO HASTA ACA FUNCIONA ESTO
 
 char* leerArchivos(t_list* bloques, int cantBloques, int size) {
 	char* datos = string_new();
@@ -341,7 +360,7 @@ char* leerArchivos(t_list* bloques, int cantBloques, int size) {
 		int* bloque = list_get(bloques,i);
 
 		char* pathBlocks = string_new();
-		string_append(&pathBlocks,raiz->nombre);
+		string_append(&pathBlocks,raiz->nombre); //TODO VER PORQUE SE BORRA EL NOMBRE DE LA RAIZ
 		string_append(&pathBlocks,"/Blocks");
 
 		char* path = pathMetadataBinDe(pathBlocks,string_itoa(*bloque));
@@ -355,7 +374,12 @@ char* leerArchivos(t_list* bloques, int cantBloques, int size) {
 		}
 
 		fclose(f);
+		free(bloque);
+		free(path);
+		free(pathBlocks);
 	}
+
+
 
 	return datos;
 }
