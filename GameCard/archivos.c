@@ -181,7 +181,7 @@ void crearDirectorioMetadata() {
 	if(!existeArchivo(aux2)) {
 		crearBitmap(aux2,config_get_int_value(config,"BLOCKS"));
 	} else {
-		int cantBloques = 0;
+//		int cantBloques = 0;
 		bitmap = bitarray_create_with_mode(string_repeat('\0',config_get_int_value(config,"BLOCKS")), config_get_int_value(config,"BLOCKS"), LSB_FIRST);
 		//TODO ESTO LO TENDRIA QUE LEER ARCHIVO
 	}
@@ -214,8 +214,6 @@ int agregarCantidadEnPosicion(t_list* pokemon, DatosBloques posYCant, t_list* nu
 		string_append(&pathBlocks,"/Blocks");
 
 		char* path = pathMetadataBinDe(pathBlocks,string_itoa(*valorRetorno));
-
-		free(valorRetorno);
 
 		FILE* bloque = fopen(path,"ab+");
 
@@ -276,10 +274,14 @@ void escribirListaEnArchivo(t_list* pokemon, int size, t_list* numerosBloques) {
 	string_append(&aux,"/Blocks");
 
 	int i = 0;
+
 	while((void*) list_get(numerosBloques,i) != NULL) {
 		int* a = list_get(numerosBloques,i);
 		FILE* f = fopen(pathMetadataBinDe(aux,string_itoa(*a)),"wb+");
 		fwrite(cadenaGrande,size,1,f);
+		fclose(f);
+		if(strlen(cadenaGrande) < size)
+			break;
 		cadenaGrande = string_substring_from(cadenaGrande, size);
 	}
 
@@ -288,6 +290,9 @@ void escribirListaEnArchivo(t_list* pokemon, int size, t_list* numerosBloques) {
 		list_add(numerosBloques,&nuevoBloque);
 		FILE* f = fopen(pathMetadataBinDe(aux,string_itoa(nuevoBloque)),"wb+");
 		fwrite(cadenaGrande,size,1,f);
+		fclose(f);
+		if(strlen(cadenaGrande) < size)
+			break;
 		cadenaGrande = string_substring_from(cadenaGrande, size);
 	}
 
@@ -379,6 +384,7 @@ char* leerArchivos(t_list* bloques, int cantBloques, int size) {
 		}
 
 		fclose(f);
+//		free(bloque);
 		free(path);
 	}
 	return datos;

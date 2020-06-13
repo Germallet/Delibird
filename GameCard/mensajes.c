@@ -92,7 +92,7 @@ void Operacion_NEW_POKEMON(DATOS_NEW_POKEMON_ID* datos) {
 		posYCant.pos.posX = datos->datos.posicion.posX;
 		posYCant.pos.posY = datos->datos.posicion.posY;
 
-		int size = config_get_int_value(config,"BLOCK_SIZE");
+		int size = config_get_int_value(config,"BLOCK_SIZE"); // TODO PUEDE NO VENIR DEL CONFIG
 
 		int bytes = agregarCantidadEnPosicion(datosBloques,posYCant,numerosBloques,size);
 
@@ -100,7 +100,7 @@ void Operacion_NEW_POKEMON(DATOS_NEW_POKEMON_ID* datos) {
 
 		cambiarMetadataPokemon(path,numerosBloques,bytes);
 
-		sleep(config_get_int_value(config,"TIEMPO_RETARDO_OPERACION"));
+		sleep(config_get_int_value(config,"TIEMPO_RETARDO_OPERACION")); //TODO PUEDE NO VENIR DEL CONFIG
 		Enviar_APPEARED_POKEMON(datos);
 
 		list_destroy_and_destroy_elements(numerosBloques,&free);
@@ -108,9 +108,9 @@ void Operacion_NEW_POKEMON(DATOS_NEW_POKEMON_ID* datos) {
 	}
 }
 
-void eliminarElemento(void* dat) {
-	free(dat);
-}
+//void eliminarElemento(void* dat) {
+//	free(dat);
+//}
 
 void Recibir_CATCH_POKEMON(Cliente* cliente, Paquete* paqueteRecibido) {
 	Stream* stream = Stream_CrearLecturaPaquete(paqueteRecibido);
