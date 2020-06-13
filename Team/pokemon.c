@@ -15,7 +15,8 @@ Pokemon* crear_pokemon(char* especie)
 {
 	Pokemon* pokemon = malloc(sizeof(Pokemon));
 
-	pokemon->especie = especie;
+	pokemon->especie = malloc(strlen(especie)+1);
+	strcpy(pokemon->especie, especie);
 	pokemon->cantidad = 1;
 
 	return pokemon;
@@ -36,14 +37,14 @@ void destruir_pokemon_mapa(void* pokemon)
 //-----------LISTA POKEMON-----------//
 t_list* crear_lista_pokemon(char* pokemons)
 {
-	if(strlen(pokemons) == 0)
+	if(pokemons == NULL || strlen(pokemons)==0)
 		return list_create();
 
 	t_list* lista_pokemon = list_create();
 
 	int cantidad_pokemons = 1;
 	for(int i=0;pokemons[i]!='\0';i++)
-			cantidad_pokemons += pokemons[i] == '|';
+		cantidad_pokemons += pokemons[i] == '|';
 
 	char** array_pokemons = string_split(pokemons, "|");
 
@@ -66,23 +67,13 @@ void agregar_pokemon(t_list* lista_pokemon, char* especie_pokemon)
 		Pokemon* pokemon_actual = ((Pokemon*) list_get(lista_pokemon, i));
 		if(strcmp(pokemon_actual->especie, especie_pokemon)==0)
 		{
-			pokemon_actual->cantidad++;
+			(pokemon_actual->cantidad)++;
 			tiene_pokemon = true;
 		}
 	}
 
-	Pokemon* nuevo_pokemon()
-	{
-		Pokemon* nuevo_pokemon = malloc(sizeof(Pokemon));
-		nuevo_pokemon->especie = malloc(strlen(especie_pokemon)+1);
-		strcpy(nuevo_pokemon->especie, especie_pokemon);
-		nuevo_pokemon->cantidad = 1;
-
-		return nuevo_pokemon;
-	}
-
 	if(!tiene_pokemon)
-		list_add(lista_pokemon, nuevo_pokemon());
+		list_add(lista_pokemon, crear_pokemon(especie_pokemon));
 }
 
 void agregar_pokemon_a_mapa(char* especie_pokemon, Posicion posicion)
@@ -234,10 +225,13 @@ int obtener_entrenador_disponible_mas_cercano(Pokemon_Mapa* pokemon, Entrenador*
 void pokemon_y_entrenador_mas_cercanos_entre_si(Pokemon_Mapa** pokemon, void** entrenador)
 {
 	t_list* pokemons_que_necesito = list_filter(pokemons_mapa, (void*) &necesito_pokemon_mapa);
+	*pokemon = (Pokemon_Mapa*) list_get(pokemons_que_necesito, 0);
+	obtener_entrenador_disponible_mas_cercano(*pokemon, (Entrenador**) entrenador);
 
+	/*
 	if(!list_is_empty(pokemons_que_necesito))
 	{
-		*pokemon = (Pokemon_Mapa*) list_remove(pokemons_que_necesito, 0);
+		*pokemon = (Pokemon_Mapa*) list_get(pokemons_que_necesito, 0);
 		int distancia = obtener_entrenador_disponible_mas_cercano(*pokemon, (Entrenador**) entrenador);
 		Pokemon_Mapa* pokemon_pivot = NULL;
 		Entrenador* entrenador_pivot = NULL;
@@ -253,7 +247,9 @@ void pokemon_y_entrenador_mas_cercanos_entre_si(Pokemon_Mapa** pokemon, void** e
 				distancia = nueva_distancia;
 			}
 		}
+
 	}
+	*/
 	list_destroy(pokemons_que_necesito);
 }
 
