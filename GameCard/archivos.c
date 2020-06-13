@@ -13,12 +13,14 @@ bool estaAbierto(char* path) {
 void abrir(char* path) {
 	t_config* pokemon = config_create(path);
 	config_set_value(pokemon,"OPEN","Y");
+	config_save(pokemon);
 	config_destroy(pokemon);
 }
 
 void cerrar(char* path) {
 	t_config* pokemon = config_create(path);
 	config_set_value(pokemon,"OPEN","N");
+	config_save(pokemon);
 	config_destroy(pokemon);
 }
 
@@ -241,7 +243,7 @@ int agregarCantidadEnPosicion(t_list* pokemon, DatosBloques posYCant, t_list* nu
 		posicion->cantidad += posYCant.cantidad;
 		escribirListaEnArchivo(pokemon,size,numerosBloques);
 	}
-	return size*(list_size(numerosBloques) - 1) + tamanioBloque((int) list_get(numerosBloques,list_size(numerosBloques)));
+	return size*(list_size(numerosBloques) - 1) + tamanioBloque((int) list_get(numerosBloques,list_size(numerosBloques) - 1));
 }
 
 char* posicionAString(DatosBloques* d) {
@@ -275,13 +277,15 @@ void escribirListaEnArchivo(t_list* pokemon, int size, t_list* numerosBloques) {
 
 	int i = 0;
 
-	while((void*) list_get(numerosBloques,i) != NULL) {
+	while(list_get(numerosBloques,i) != NULL) {
 		int* a = list_get(numerosBloques,i);
 		FILE* f = fopen(pathMetadataBinDe(aux,string_itoa(*a)),"wb+");
 		fwrite(cadenaGrande,size,1,f);
 		fclose(f);
-		if(strlen(cadenaGrande) < size)
+		if(strlen(cadenaGrande) < size) {
+			free(cadenaGrande);
 			break;
+		}
 		cadenaGrande = string_substring_from(cadenaGrande, size);
 	}
 
@@ -291,12 +295,13 @@ void escribirListaEnArchivo(t_list* pokemon, int size, t_list* numerosBloques) {
 		FILE* f = fopen(pathMetadataBinDe(aux,string_itoa(nuevoBloque)),"wb+");
 		fwrite(cadenaGrande,size,1,f);
 		fclose(f);
-		if(strlen(cadenaGrande) < size)
+		if(strlen(cadenaGrande) < size) {
+			free(cadenaGrande);
 			break;
+		}
 		cadenaGrande = string_substring_from(cadenaGrande, size);
 	}
 
-	free(cadenaGrande);
 	free(aux);
 }
 
@@ -360,17 +365,17 @@ t_list* convertirBloques(t_list* bloques, int cantBloques) {
 	return datos;
 }
 
-//TODO HASTA ACA FUNCIONA ESTO
-
 char* leerArchivos(t_list* bloques, int cantBloques, int size) {
 	char* datos = string_new();
 
+	int* bloque = malloc(sizeof(int));
+
 	for(int i = 0; i < cantBloques; i++) {
 
-		int* bloque = list_get(bloques,i);
+		bloque = list_get(bloques,i);
 
 		char* pathBlocks = string_new();
-		string_append(&pathBlocks,pathPtoMnt()); //TODO VER PORQUE SE BORRA EL NOMBRE DE LA RAIZ
+		string_append(&pathBlocks,pathPtoMnt());
 		string_append(&pathBlocks,"/Blocks");
 
 		char* path = pathMetadataBinDe(pathBlocks,string_itoa(*bloque));
@@ -379,12 +384,12 @@ char* leerArchivos(t_list* bloques, int cantBloques, int size) {
 
 		while(!feof(f)) {
 			char* leidos = string_new();
-			fgets(leidos,size,f);
+			fread(leidos,size,1,f);
 			string_append(&datos,leidos);
+			free(leidos);
 		}
 
 		fclose(f);
-//		free(bloque);
 		free(path);
 	}
 	return datos;
@@ -400,11 +405,6 @@ t_list* interpretarCadena(char* cadenaDatos, int cantBloques, int size) {
 
 	int i = 0;
 
-//	if(cadenaDatos[i] == '\0') {
-//
-//	}
-//		return ;
-
 	while(cadenaDatos[i] != '\0') {
 		DatosBloques* datosLeidos = malloc(sizeof(DatosBloques));
 
@@ -416,6 +416,8 @@ t_list* interpretarCadena(char* cadenaDatos, int cantBloques, int size) {
 		}
 		datosLeidos->pos.posX = strtol(posX,NULL,10);
 
+		free(posX);
+
 		if (cadenaDatos[i] != '\0') i++;
 
 		posY = string_new();
@@ -426,6 +428,8 @@ t_list* interpretarCadena(char* cadenaDatos, int cantBloques, int size) {
 		}
 		datosLeidos->pos.posY = strtol(posY,NULL,10);
 
+		free(posY);
+
 		if (cadenaDatos[i] != '\0') i++;
 
 		cant = string_new();
@@ -435,12 +439,13 @@ t_list* interpretarCadena(char* cadenaDatos, int cantBloques, int size) {
 			i++;
 		}
 		datosLeidos->cantidad = strtol(cant,NULL,10);
+
+		free(cant);
+
+		if (cadenaDatos[i] != '\0') i++;
+
 		list_add(datos,datosLeidos);
 	}
-//
-//	free(cant);
-//	free(posY);
-//	free(posX);
 	return datos;
 }
 
@@ -468,7 +473,8 @@ void cambiarMetadataPokemon(char* pathPokemon, t_list* numerosBloques, int bytes
 	char* bloques = string_new();
 	string_append(&bloques,"[");
 	for(int i = 0; i < list_size(numerosBloques); i++) {
-		string_append(&bloques,string_itoa((int)list_get(numerosBloques,i)));
+		int* a = list_get(numerosBloques,i);
+		string_append(&bloques,string_itoa(*a));
 		string_append(&bloques,",");
 	}
 	bloques[string_length(bloques)-1] = ']';
@@ -477,6 +483,7 @@ void cambiarMetadataPokemon(char* pathPokemon, t_list* numerosBloques, int bytes
 	config_set_value(c,"OPEN","N");
 
 	free(bloques);
+	config_save(c);
 	config_destroy(c);
 }
 

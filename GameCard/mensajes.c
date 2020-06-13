@@ -108,10 +108,6 @@ void Operacion_NEW_POKEMON(DATOS_NEW_POKEMON_ID* datos) {
 	}
 }
 
-//void eliminarElemento(void* dat) {
-//	free(dat);
-//}
-
 void Recibir_CATCH_POKEMON(Cliente* cliente, Paquete* paqueteRecibido) {
 	Stream* stream = Stream_CrearLecturaPaquete(paqueteRecibido);
 	uint32_t id = Deserializar_uint32(stream);
