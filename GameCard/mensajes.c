@@ -1,8 +1,6 @@
 #include "mensajes.h"
 #include "gameCard.h"
 
-Servidor* servidor;
-
 void SuscribirseColas(Cliente* cliente) {
 
 	Eventos_AgregarOperacion(cliente->eventos, BROKER_CONECTADO, (EventoOperacion) &ConexionColas);
@@ -106,9 +104,15 @@ void Operacion_NEW_POKEMON(DATOS_NEW_POKEMON_ID* datos) {
 		sleep(config_get_int_value(config,"TIEMPO_RETARDO_OPERACION")); //TODO PUEDE NO VENIR DEL CONFIG
 		Enviar_APPEARED_POKEMON(datos);
 
+		free(path);
+
 		list_destroy_and_destroy_elements(numerosBloques,&free);
-//		list_destroy_and_destroy_elements(datosBloques,&eliminarElemento); HAY QUE ELIMINAR LA LISTA DATOS BLOQUES
+		list_destroy_and_destroy_elements(datosBloques,&eliminarElemento);
 	}
+}
+
+void eliminarElemento(void* datos) {
+	free(datos);
 }
 
 void Recibir_CATCH_POKEMON(Cliente* cliente, Paquete* paqueteRecibido) {

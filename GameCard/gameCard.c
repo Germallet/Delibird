@@ -2,6 +2,7 @@
 #include "mensajes.h"
 #include <unistd.h>
 #include "archivos.h"
+#include <signal.h>
 
 Eventos* eventos;
 
@@ -23,18 +24,22 @@ int main()
 	int miPuerto = config_get_int_value(config,"PUERTO_GAMECARD");
 
 	char* puntoMontaje = config_get_string_value(config,"PUNTO_MONTAJE_TALLGRASS");
-	int tiempoReintentoConexion = config_get_int_value(config,"TIEMPO_DE_REINTENTO_CONEXION");
+//	int tiempoReintentoConexion = config_get_int_value(config,"TIEMPO_DE_REINTENTO_CONEXION");
 
 	SocketEscucha(miIp, miPuerto);
 
-	CrearHiloTimer(-1,tiempoReintentoConexion,&reconexion,NULL);
+//	CrearHiloTimer(-1,tiempoReintentoConexion,&reconexion,NULL);
 
 	tallGrass_init(puntoMontaje);
 
 	EsperarHilos();
 
-	TerminarPrograma(logger,config);
 	return 0;
+}
+
+void EscuchaSignal(int signo) {
+    if (signo == SIGINT)
+    	TerminarPrograma();
 }
 
 void tallGrass_init(char* puntoMontaje) {
@@ -75,15 +80,13 @@ char* pathPokemon(char* nombre) {
 	return path;
 }
 
-NodoArbol* directorio(char* nombre) {
-
-	if(list_is_empty(raiz->hijos))
-
-	for (int i = 0; i < list_size(raiz->hijos); i++) {
-		NodoArbol* hijo = list_get(raiz->hijos,i);
-		if (sonIguales(hijo->nombre,nombre)) return hijo;
-	}
-	return NULL;
+char* pathBloque(char* nombre) {
+	char* path = string_new();
+	string_append(&path,pathPtoMnt());
+	string_append(&path,"/Blocks/");
+	string_append(&path,nombre);
+	string_append(&path,".bin");
+	return path;
 }
 
 NodoArbol* directorioFiles() {
@@ -167,5 +170,8 @@ void TerminarPrograma()
 {
 	log_destroy(logger);
 	config_destroy(config);
+	bitarray_destroy(bitmap);
+	DestruirCliente(clienteBroker);
+	DestruirServidor(servidor);
 	free(raiz);
 }

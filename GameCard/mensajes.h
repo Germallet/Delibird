@@ -26,3 +26,5 @@ void Enviar_CAUGHT_POKEMON(/*PARAMETROS*/);
 void Enviar_LOCALIZED_POKEMON(/*PARAMETROS*/);
 
 void Recibir_ID(Cliente* cliente, Paquete* paqueteRecibido);
+
+void eliminarElemento(void* datos);

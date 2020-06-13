@@ -24,6 +24,10 @@ NodoArbol* raiz;
 
 t_bitarray* bitmap;
 
+Servidor* servidor;
+
+void EscuchaSignal(int signo);
+char* pathBloque(char* nombre);
 void conectarse();
 void reconexion();
 void tallGrass_init(char* puntoMontaje);
