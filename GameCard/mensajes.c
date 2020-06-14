@@ -62,7 +62,7 @@ void Recibir_NEW_POKEMON(Cliente* cliente, Paquete* paqueteRecibido) {
 
 void Operacion_NEW_POKEMON(DATOS_NEW_POKEMON_ID* datos) {
 
-	NodoArbol* nodoPokemon = encontrarPokemon(datos->datos.pokemon);
+	NodoArbol* nodoPokemon = encontrarPokemon(datos->datos.pokemon); //NO ESTA ENCONTRANDO POKEMONS QUE YA EXISTEN
 
 	if(nodoPokemon == NULL) {
 		nodoPokemon = crearPokemon(datos->datos.pokemon);
@@ -77,7 +77,7 @@ void Operacion_NEW_POKEMON(DATOS_NEW_POKEMON_ID* datos) {
 		sleep(config_get_int_value(config,"TIEMPO_REINTENTO_OPERACION"));
 		Operacion_NEW_POKEMON(datos);
 	} else {
-		abrir(path);
+		abrir(path); //NO LO SETEA EN Y;
 
 		int cantBloques =  0;
 
@@ -93,10 +93,12 @@ void Operacion_NEW_POKEMON(DATOS_NEW_POKEMON_ID* datos) {
 
 		int size = config_get_int_value(config,"BLOCK_SIZE"); // TODO PUEDE NO VENIR DEL CONFIG
 
-		int bytes = agregarCantidadEnPosicion(datosBloques,posYCant,numerosBloques,size);
-
+		int bytes = agregarCantidadEnPosicion(datosBloques,posYCant,numerosBloques,size); //A LA SEGUNDA LE AGREGA LOS 0-0=0
+// EL FWRITE CON UN TAM MAYOR DEBE ESCRIBIR CARACTERES VACIOS POR TODOS LADOS, HAY QUE VER ESO
 		fclose(filePokemon);
 
+		//HAY UN FREE DE LOS NUMEROS BLOQUES QUE HACE QUE NO LE ASIGNE BIEN EL NUMERO
+		//CUANDO ES
 		cambiarMetadataPokemon(path,numerosBloques,bytes);
 
 		cerrar(path);
@@ -106,10 +108,13 @@ void Operacion_NEW_POKEMON(DATOS_NEW_POKEMON_ID* datos) {
 
 		free(path);
 
-		list_destroy_and_destroy_elements(numerosBloques,&free);
-		list_destroy_and_destroy_elements(datosBloques,&eliminarElemento);
-		list_destroy(datosBloques);
+		list_clean(numerosBloques);
+		list_destroy(numerosBloques);
 		list_clean(datosBloques);
+		list_destroy(datosBloques);
+
+//		list_destroy_and_destroy_elements(numerosBloques,&free);
+//		list_destroy_and_destroy_elements(datosBloques,&eliminarElemento); //HAY QUE VER PORQUE LOS ELIMINA MAL ACA
 	}
 }
 
@@ -180,7 +185,15 @@ void Enviar_APPEARED_POKEMON(DATOS_NEW_POKEMON_ID* datos) {
 	datosEnviar->datos.pokemon = datos->datos.pokemon;
 	datosEnviar->datos.posicion = datos->datos.posicion;
 
-	EnviarMensaje(clienteBroker, APPEARED_POKEMON, datosEnviar, (void*) &SerializarM_APPEARED_POKEMON_ID);
+	//HAY QUE VER COMO HACER PARA QUE NO LE ENVIE MENSAJE AL BROKER SI NO SE PUDO CONECTAR
+	//HABRIA QUE GUARDAR LOS MENSAJES EN ALGUN LUGAR Y CUANDO SE RECONECTA MANDARSELOS
+	if(clienteBroker != NULL) {
+		EnviarMensaje(clienteBroker, APPEARED_POKEMON, datosEnviar, (void*) &SerializarM_APPEARED_POKEMON_ID);
+		log_info(logger,"Se envio correctamente el appeared pokemon");
+	} else {
+		log_info(logger, "Se guardo el mensaje para cuando se pueda volver a conectarse");
+	}
+
 }
 
 

@@ -30,6 +30,8 @@ int main()
 
 //	CrearHiloTimer(-1,tiempoReintentoConexion,&reconexion,NULL);
 
+	conectarse();
+
 	tallGrass_init(puntoMontaje);
 
 	EsperarHilos();

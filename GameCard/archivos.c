@@ -3,7 +3,7 @@
 
 bool sonIguales(char* a, char* b)
 {
-	return strcmp(a, b) == 0;
+	return string_equals_ignore_case(a, b);
 }
 
 bool estaAbierto(char* path) {
@@ -259,6 +259,8 @@ int agregarCantidadEnPosicion(t_list* pokemon, DatosBloques posYCant, t_list* nu
 //	return a;
 //}
 
+//TODO VER VALGRIND ACA PORQUE HAY BASTANTES COSAS MAL
+
 void escribirListaEnArchivo(t_list* pokemon, int size, t_list* numerosBloques) {
 	char* cadenaGrande = string_new();
 
@@ -274,33 +276,41 @@ void escribirListaEnArchivo(t_list* pokemon, int size, t_list* numerosBloques) {
 
 	int i = 0;
 
-	while(list_get(numerosBloques,i) != NULL) {
-		int* a = list_get(numerosBloques,i);
+	//PODRIAMOS IR DIVIENDOLAS ENTRE LOS \N E IR ESCRIBIENDO DE A UNA, EL
+	//FWRITE NOS CAGA BASTANTE LAS COSAS.
+
+	if (cantPokemon < size) {
+		int* a = list_get(numerosBloques,0);
 		FILE* f = fopen(pathBloque(string_itoa(*a)),"wb+");
 		fwrite(cadenaGrande,size,1,f);
 		fclose(f);
-		if(strlen(cadenaGrande) < size) {
-			free(cadenaGrande);
-			break;
+	} else {
+		while(list_get(numerosBloques,i) != NULL) {
+			int* a = list_get(numerosBloques,i);
+			FILE* f = fopen(pathBloque(string_itoa(*a)),"wb+");
+			fwrite(cadenaGrande,size,1,f);
+			fclose(f);
+			if(strlen(cadenaGrande) < size) {
+	//			free(cadenaGrande);
+				break;
+			}
+			cadenaGrande = string_substring_from(cadenaGrande, size);
 		}
-		cadenaGrande = string_substring_from(cadenaGrande, size);
+
+		while(strlen(cadenaGrande) > 0) {
+			int nuevoBloque = pedirBloque();
+			list_add(numerosBloques,&nuevoBloque);
+			FILE* f = fopen(pathBloque(string_itoa(nuevoBloque)),"wb+");
+			fwrite(cadenaGrande,size,1,f);
+			fclose(f);
+			if(strlen(cadenaGrande) < size) {
+				break;
+			}
+			cadenaGrande = string_substring_from(cadenaGrande, size);
+		}
 	}
 
-	while(strlen(cadenaGrande) > 0) {
-		int nuevoBloque = pedirBloque();
-		list_add(numerosBloques,&nuevoBloque);
-		FILE* f = fopen(pathBloque(string_itoa(nuevoBloque)),"wb+");
-		fwrite(cadenaGrande,size,1,f);
-		fclose(f);
-		if(strlen(cadenaGrande) < size) {
-
-			break;
-		}
-		cadenaGrande = string_substring_from(cadenaGrande, size);
-	}
-
-//	free(cadenaGrande);
-//	free(aux);
+	free(cadenaGrande);
 }
 
 DatosBloques* encontrarPosicion(t_list* pokemon, Posicion pos) {
@@ -379,7 +389,7 @@ char* leerArchivos(t_list* bloques, int cantBloques, int size) {
 
 		if(!feof(f)) {
 			char* leidos = malloc(size);
-			fread(leidos,size,1,f);
+			fread(leidos,size,1,f); //CUANDO LO LEE LE AGREGA UN SIMBOLO RARO AL FINAL
 			string_append(&datos,leidos);
 			free(leidos);
 		}
@@ -444,6 +454,8 @@ t_list* interpretarCadena(char* cadenaDatos, int cantBloques, int size) {
 	return datos;
 }
 
+//TODO HAY ALGO MAL ACA
+
 int tamanioBloque(int* nroBloque) {
 	char* path = pathBloque(string_itoa(*nroBloque));
 
@@ -461,6 +473,7 @@ int tamanioBloque(int* nroBloque) {
 
 void cambiarMetadataPokemon(char* pathPokemon, t_list* numerosBloques, int bytes) {
 	t_config* c = config_create(pathPokemon);
+
 	config_set_value(c,"SIZE",string_itoa(bytes));
 
 	char* bloques = string_new();
