@@ -282,7 +282,7 @@ void escribirListaEnArchivo(t_list* pokemon, int size, t_list* numerosBloques) {
 	if (cantPokemon < size) {
 		int* a = list_get(numerosBloques,0);
 		FILE* f = fopen(pathBloque(string_itoa(*a)),"wb+");
-		fwrite(cadenaGrande,size,1,f);
+		fwrite(cadenaGrande,cantPokemon,1,f);
 		fclose(f);
 	} else {
 		while(list_get(numerosBloques,i) != NULL) {
@@ -296,6 +296,9 @@ void escribirListaEnArchivo(t_list* pokemon, int size, t_list* numerosBloques) {
 			}
 			cadenaGrande = string_substring_from(cadenaGrande, size);
 		}
+
+		//HAY QUE VER COMO HACER PARA QUE NO DEJE DE ENTRAR AL SEGUNDO, PORQUE SINO SIEMPRE
+		//VA A PEDIR OTRO Y SIEMPRE VA A PEDIR MAS Y MAS Y MAS
 
 		while(strlen(cadenaGrande) > 0) {
 			int nuevoBloque = pedirBloque();
