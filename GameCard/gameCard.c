@@ -7,8 +7,11 @@
 Eventos* eventos;
 
 /*
- * TODO ELIMINAR CANTIDADES Y POSICIONES DE ARCHIVO
+ * TODO CATCH_POKEMON
+ * TODO GET_POKEMON
+ * TODO SOLUCIONAR BUGS COMENTADOS
  * TODO SINCRONIZAR TOODO
+ * TODO CATCH DEL CTRL C PARA TERMINAR DE ESCUCHAR
  */
 
 int main()
@@ -24,21 +27,23 @@ int main()
 	int miPuerto = config_get_int_value(config,"PUERTO_GAMECARD");
 
 	char* puntoMontaje = config_get_string_value(config,"PUNTO_MONTAJE_TALLGRASS");
-//	int tiempoReintentoConexion = config_get_int_value(config,"TIEMPO_DE_REINTENTO_CONEXION");
+	int tiempoReintentoConexion = config_get_int_value(config,"TIEMPO_DE_REINTENTO_CONEXION");
 
 	SocketEscucha(miIp, miPuerto);
 
-//	CrearHiloTimer(-1,tiempoReintentoConexion,&reconexion,NULL);
+	CrearHiloTimer(-1,tiempoReintentoConexion,&reconexion,NULL);
 
 	conectarse();
 
 	tallGrass_init(puntoMontaje);
 
 	EsperarHilos();
+// HAY QUE VER COMO PARAR DE ESCUCHAR HILOS.
 
 	return 0;
 }
 
+//ESTO ES PARA ESCUCHAR HILOS
 void EscuchaSignal(int signo) {
     if (signo == SIGINT)
     	TerminarPrograma();
@@ -51,6 +56,8 @@ void tallGrass_init(char* puntoMontaje) {
 	if (!existeDirectorio(puntoMontaje)) mkdir(puntoMontaje, 0700);
 
 	crearDirectorioFiles();
+
+	//ESTAS DE ACA NO DEBERIAN TENER NADA DE PARAMETRO
 	crearDirectorioBlocks(config_get_int_value(config,"BLOCKS"));
 	crearDirectorioMetadata(config_get_int_value(config,"BLOCK_SIZE"),config_get_int_value(config,"BLOCKS"),config_get_string_value(config,"MAGIC_NUMBER"));
 }
@@ -154,7 +161,12 @@ void conectarse() {
 }
 
 void reconexion(void* a) {
-	if (clienteBroker == NULL) conectarse();
+	if (clienteBroker == NULL) {
+		conectarse();
+
+		//ENVIAR TODOS LOS MENSAJES SI PUDO CONECTARSE BIEN
+	}
+
 }
 
 void EsperarHilos()

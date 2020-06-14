@@ -83,6 +83,7 @@ void Operacion_NEW_POKEMON(DATOS_NEW_POKEMON_ID* datos) {
 
 		t_list* numerosBloques = leerBlocks(path, &cantBloques); //DEVUELVE LA LISTA DE INTS DE LOS NROS DE BLOQUE
 
+		//NOS OLVIDAMOS DE QUE EL SEGUNDO PUEDE EMPEZAR DE CUALQUIER LADO, ENTONCES CONVIERTE MAL Y TERMINA ESCRIBIENDO TOD_O MAL
 		t_list* datosBloques = convertirBloques(numerosBloques,cantBloques); //DEVUELVE LA LISTA DE DATOSBLOQUES
 
 		DatosBloques posYCant;
@@ -93,12 +94,11 @@ void Operacion_NEW_POKEMON(DATOS_NEW_POKEMON_ID* datos) {
 
 		int size = config_get_int_value(config,"BLOCK_SIZE"); // TODO PUEDE NO VENIR DEL CONFIG
 
-		int bytes = agregarCantidadEnPosicion(datosBloques,posYCant,numerosBloques,size); //A LA SEGUNDA LE AGREGA LOS 0-0=0
-// EL FWRITE CON UN TAM MAYOR DEBE ESCRIBIR CARACTERES VACIOS POR TODOS LADOS, HAY QUE VER ESO
+		int bytes = agregarCantidadEnPosicion(datosBloques,posYCant,numerosBloques,size); //A LA SEGUNDA LE AGREGA LOS 0-0=0 NEWSS= PARECERIA QUE SE SOLUCIONO HAY QUE VER PORQUE
+// EL FWRITE CON UN TAM MAYOR DEBE ESCRIBIR CARACTERES VACIOS POR TODOS LADOS, HAY QUE VER ESO, AHORA NO TANTO PORQUE AGREGUE UN IF
 		fclose(filePokemon);
 
-		//HAY UN FREE DE LOS NUMEROS BLOQUES QUE HACE QUE NO LE ASIGNE BIEN EL NUMERO
-		//CUANDO ES
+		//HAY UN FREE DE LOS NUMEROS BLOQUES QUE HACE QUE NO LE ASIGNE BIEN EL NUMERO A LA LISTA DE BLOQUES
 		cambiarMetadataPokemon(path,numerosBloques,bytes);
 
 		cerrar(path);
@@ -179,7 +179,7 @@ void EnviarID(Cliente* cliente, uint32_t identificador)
 
 
 void Enviar_APPEARED_POKEMON(DATOS_NEW_POKEMON_ID* datos) {
-	DATOS_APPEARED_POKEMON_ID* datosEnviar = malloc(sizeof(DATOS_APPEARED_POKEMON)+sizeof(uint32_t));
+	DATOS_APPEARED_POKEMON_ID* datosEnviar = malloc(sizeof(DATOS_APPEARED_POKEMON_ID));
 
 	datosEnviar->id = datos->id;
 	datosEnviar->datos.pokemon = datos->datos.pokemon;
@@ -193,6 +193,8 @@ void Enviar_APPEARED_POKEMON(DATOS_NEW_POKEMON_ID* datos) {
 	} else {
 		log_info(logger, "Se guardo el mensaje para cuando se pueda volver a conectarse");
 	}
+
+//	free(datosEnviar); ESTE FREE VA?
 
 }
 
