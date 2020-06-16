@@ -94,13 +94,6 @@ short existeArchivo(char *path) {
   return 1;
 }
 
-//char* pathMetadataBinDe(char* path, char* nombreArchivo) {
-//	string_append(&path,"/");
-//	string_append(&path,nombreArchivo);
-//	string_append(&path,".bin");
-//	return path;
-//}
-
 void crearDirectorioFiles() {
 
 	log_info(logger,"Creando directorio Files");
@@ -306,13 +299,11 @@ void escribirListaEnArchivo(t_list* pokemon, int size, t_list* numerosBloques) {
 
 DatosBloques* encontrarPosicion(t_list* pokemon, Posicion pos) {
 
+	DatosBloques* dat = malloc(sizeof(DatosBloques));
 	for (int i = 0; i < list_size(pokemon); i++) {
-		DatosBloques* dat = (DatosBloques*) list_get(pokemon,i);
+		dat = list_get(pokemon,i);
 		Posicion pos2 = dat->pos;
-		if (pos2.posX == pos.posX && pos2.posY == pos.posY) {
-			return dat;
-		}
-		free(dat);
+		if (pos2.posX == pos.posX && pos2.posY == pos.posY) return dat;
 	}
 	return NULL;
 }
@@ -388,7 +379,7 @@ char* leerArchivos(t_list* bloques, int cantBloques, int size) {
 		FILE* f = fopen(pathBlocks,"rb+");
 
 		if(f != NULL && !feof(f)) {
-			char* leidos = malloc(size);
+			char* leidos = calloc(1,size);
 			fread(leidos,size,1,f);
 			string_append(&datos,leidos);
 			free(leidos);
@@ -455,8 +446,6 @@ t_list* interpretarCadena(char* cadenaDatos, int cantBloques, int size) {
 	}
 	return datos;
 }
-
-//TODO HAY ALGO MAL ACA
 
 int tamanioBloque(int* nroBloque) {
 	char* path = pathBloque(string_itoa(*nroBloque));

@@ -75,7 +75,6 @@ NodoArbol* encontrarPokemon(char* nombre) {
 	for (int i = 0; i < list_size(files->hijos); i++) {
 		NodoArbol* pok = list_get(files->hijos,i);
 		if (sonIguales(pok->nombre,nombre)) return pok;
-		free(pok);
 	}
 
 	return NULL;
@@ -193,5 +192,7 @@ void TerminarPrograma()
 	bitarray_destroy(bitmap);
 	DestruirCliente(clienteBroker);
 	DestruirServidor(servidor);
+	list_clean(raiz->hijos);
+	list_destroy(raiz->hijos);
 	free(raiz);
 }
