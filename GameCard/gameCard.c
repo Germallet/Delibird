@@ -7,6 +7,7 @@
 Eventos* eventos;
 
 /*
+ * TODO MANEJAR MEJOR LOS ERRORES DE FALTA DE MEMORIA
  * TODO CATCH_POKEMON
  * TODO GET_POKEMON
  * TODO SOLUCIONAR BUGS COMENTADOS
@@ -119,11 +120,10 @@ NodoArbol* directorioMetadata() {
 }
 
 
-int pedirBloque() {
+int* pedirBloque() {
 
-	int block = buscarPosicionLibre();
-
-	if(block == -1) return -1;
+	int* block = malloc(sizeof(int));
+	*block = buscarPosicionLibre();
 
 	return block;
 }
@@ -133,8 +133,6 @@ int buscarPosicionLibre() {
 	int i;
 
 	for (i = 0;bitarray_test_bit(bitmap,i) && i < bitmap->size;i++) {}
-//	while (bitarray_test_bit(bitmap,i))
-//		i++;
 
 	if (i >= bitmap->size)
 		return -1;

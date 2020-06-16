@@ -53,7 +53,7 @@ NodoArbol* directorioBlocks();
 char* pathDeNodo(NodoArbol* nodo);
 char* pathPtoMnt();
 char* pathPokemon(char* nombre);
-int pedirBloque();
+int* pedirBloque();
 NodoArbol* directorioMetadata();
 int buscarPosicionLibre();
 NodoArbol* directorio(char* str);

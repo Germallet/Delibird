@@ -42,10 +42,11 @@ t_list* leerBlocks(char* path, int* cantBloques) {
 
 	t_list* listaARetornar = list_create();
 
-	int elem;
+
 	for (int i = 0; i < *cantBloques; i++) {
-		elem = strtol(listaBloques[i],NULL,10);
-		list_add(listaARetornar,&elem);
+		int* elem = malloc(sizeof(int));
+		*elem = strtol(listaBloques[i],NULL,10);
+		list_add(listaARetornar,elem);
 	}
 
 	return listaARetornar;
@@ -242,10 +243,10 @@ int agregarCantidadEnPosicion(t_list* pokemon, DatosBloques posYCant, t_list* nu
 				fwrite(cadena,bytesDesocupados,1,bloque);
 
 				cadena = string_substring_from(cadena,bytesDesocupados);
-				int nuevoBloque = pedirBloque();
-				list_add(numerosBloques,&nuevoBloque);
+				int* nuevoBloque = pedirBloque();
+				list_add(numerosBloques,nuevoBloque);
 
-				char* nB = string_itoa(nuevoBloque);
+				char* nB = string_itoa(*nuevoBloque);
 				char* pathB = pathBloque(nB);
 				free(nB);
 				FILE* f = fopen(pathB,"wb+");
@@ -288,8 +289,8 @@ void escribirListaEnArchivo(t_list* pokemon, int size, t_list* numerosBloques) {
 
 	if (strlen(cadenaGrande) > size*list_size(numerosBloques)) {
 		log_info(logger, "Pidiendo bloque");
-		int nuevoBloque = pedirBloque();
-		list_add(numerosBloques,&nuevoBloque);
+		int* nuevoBloque = pedirBloque();
+		list_add(numerosBloques,nuevoBloque);
 	}
 	for (int i = 0; i < list_size(numerosBloques); i++) {
 		int* a = list_get(numerosBloques,i);
@@ -344,35 +345,37 @@ void crearMetadataPokemon(char* path) {
 	fprintf(metadata,"DIRECTORY=N\n");
 	fprintf(metadata,"SIZE=0\n");
 
-	int nuevoBloque = pedirBloque();
+	int* nuevoBloque = pedirBloque();
 	char* bloques = string_new();
 	string_append(&bloques,"BLOCKS=[");
-	string_append(&bloques,string_itoa(nuevoBloque));
+	string_append(&bloques,string_itoa(*nuevoBloque));
 	string_append(&bloques,"]\n");
 	fputs(bloques,metadata);
 	fputs("OPEN=N\n",metadata);
 
 	free(bloques);
+	free(nuevoBloque);
 	fclose(metadata);
 }
 
 t_list* convertirBloques(t_list* bloques, int cantBloques) {
 	int tamBloque = config_get_int_value(config,"BLOCK_SIZE"); //TODO HAY QUE VER QUE PUEDE NO VENIR DEL CONFIG
 
-	char* datosArchivo = string_new();
-	leerArchivos(bloques,cantBloques,tamBloque,datosArchivo);
+	char* datosArchivo = leerArchivos(bloques,cantBloques,tamBloque);
 
 	t_list* datos = interpretarCadena(datosArchivo,cantBloques,tamBloque);
 
 	log_info(logger,"Bloques convertidos");
 
-//	free(datosArchivo);
+	free(datosArchivo);
 	return datos;
 }
 
-void leerArchivos(t_list* bloques, int cantBloques, int size, char* datos) {
+char* leerArchivos(t_list* bloques, int cantBloques, int size) {
 
 	log_info(logger,"Leyendo los bloques");
+
+	char* datos = string_new();
 
 	int* bloque = malloc(sizeof(int));
 
@@ -385,7 +388,7 @@ void leerArchivos(t_list* bloques, int cantBloques, int size, char* datos) {
 		FILE* f = fopen(pathBlocks,"rb+");
 
 		if(f != NULL && !feof(f)) {
-			char* leidos = string_new();
+			char* leidos = malloc(size);
 			fread(leidos,size,1,f);
 			string_append(&datos,leidos);
 			free(leidos);
@@ -394,6 +397,7 @@ void leerArchivos(t_list* bloques, int cantBloques, int size, char* datos) {
 		fclose(f);
 		free(pathBlocks);
 	}
+	return datos;
 }
 
 t_list* interpretarCadena(char* cadenaDatos, int cantBloques, int size) {

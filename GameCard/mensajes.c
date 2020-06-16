@@ -81,7 +81,7 @@ void Operacion_NEW_POKEMON(DATOS_NEW_POKEMON_ID* datos) {
 			sleep(config_get_int_value(config,"TIEMPO_REINTENTO_OPERACION"));
 			Operacion_NEW_POKEMON(datos);
 		} else {
-			abrir(path); //NO LO SETEA EN Y;
+			abrir(path);
 
 			int cantBloques =  0;
 
@@ -104,8 +104,6 @@ void Operacion_NEW_POKEMON(DATOS_NEW_POKEMON_ID* datos) {
 
 			//HAY UN FREE DE LOS NUMEROS BLOQUES QUE HACE QUE NO LE ASIGNE BIEN EL NUMERO A LA LISTA DE BLOQUES
 			cambiarMetadataPokemon(path,numerosBloques,bytes);
-
-			cerrar(path);
 
 			sleep(config_get_int_value(config,"TIEMPO_RETARDO_OPERACION")); //TODO PUEDE NO VENIR DEL CONFIG
 			Enviar_APPEARED_POKEMON(datos);
