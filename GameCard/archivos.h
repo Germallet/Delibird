@@ -54,12 +54,4 @@ DatosBloques* encontrarPosicion(t_list* pokemon, Posicion pos);
 int agregarCantidadEnPosicion(t_list* pokemon, DatosBloques posYCant, t_list* numerosBloques, int size);
 void escribirListaEnArchivo(t_list* pokemon, int size, t_list* numerosBloques);
 void cambiarMetadataPokemon(char* pathPokemon, t_list* numerosBloques, int bytes);
-
-
-
-
-
-
-
-
-//void last(void** lista, void* valorRetorno);
+bool atraparPokemon(t_list* datosBloques, Posicion pos, t_list* numerosBloques, int size, int* bytes);

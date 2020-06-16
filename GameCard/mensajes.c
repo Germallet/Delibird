@@ -87,7 +87,6 @@ void Operacion_NEW_POKEMON(DATOS_NEW_POKEMON_ID* datos) {
 
 			t_list* numerosBloques = leerBlocks(path, &cantBloques); //DEVUELVE LA LISTA DE INTS DE LOS NROS DE BLOQUE
 
-			//NOS OLVIDAMOS DE QUE EL SEGUNDO PUEDE EMPEZAR DE CUALQUIER LADO, ENTONCES CONVIERTE MAL Y TERMINA ESCRIBIENDO TOD_O MAL
 			t_list* datosBloques = convertirBloques(numerosBloques,cantBloques); //DEVUELVE LA LISTA DE DATOSBLOQUES
 
 			DatosBloques posYCant;
@@ -98,11 +97,10 @@ void Operacion_NEW_POKEMON(DATOS_NEW_POKEMON_ID* datos) {
 
 			int size = config_get_int_value(config,"BLOCK_SIZE"); // TODO PUEDE NO VENIR DEL CONFIG
 
-			int bytes = agregarCantidadEnPosicion(datosBloques,posYCant,numerosBloques,size); //A LA SEGUNDA LE AGREGA LOS 0-0=0 NEWSS= PARECERIA QUE SE SOLUCIONO HAY QUE VER PORQUE
-	// EL FWRITE CON UN TAM MAYOR DEBE ESCRIBIR CARACTERES VACIOS POR TODOS LADOS, HAY QUE VER ESO, AHORA NO TANTO PORQUE AGREGUE UN IF
+			int bytes = agregarCantidadEnPosicion(datosBloques,posYCant,numerosBloques,size);
+
 			fclose(filePokemon);
 
-			//HAY UN FREE DE LOS NUMEROS BLOQUES QUE HACE QUE NO LE ASIGNE BIEN EL NUMERO A LA LISTA DE BLOQUES
 			cambiarMetadataPokemon(path,numerosBloques,bytes);
 
 			sleep(config_get_int_value(config,"TIEMPO_RETARDO_OPERACION")); //TODO PUEDE NO VENIR DEL CONFIG
@@ -127,7 +125,9 @@ void eliminarElemento(void* datos) {
 void Recibir_CATCH_POKEMON(Cliente* cliente, Paquete* paqueteRecibido) {
 	Stream* stream = Stream_CrearLecturaPaquete(paqueteRecibido);
 	uint32_t id = Deserializar_uint32(stream);
-	DATOS_CATCH_POKEMON datos = Deserializar_CATCH_POKEMON(stream);
+	DATOS_CATCH_POKEMON_ID* datos = malloc(sizeof(DATOS_NEW_POKEMON_ID));
+	datos->datos = Deserializar_CATCH_POKEMON(stream);
+	datos->id = id;
 
 	if (stream->error)
 		log_error(logger, "Error al deserializar CATCH_POKEMON");
@@ -139,17 +139,67 @@ void Recibir_CATCH_POKEMON(Cliente* cliente, Paquete* paqueteRecibido) {
 	pthread_detach(thread);
 }
 
-void Operacion_CATCH_POKEMON(DATOS_CATCH_POKEMON* datos) {
-	log_info(logger,"llego");
-	//TODO hacer lo que se tenga que hacer con el CATCH_POKEMON
-	// HAY QUE MANDARLE AL BROKER UN MENSAJE DE CAUGHT
-	Enviar_CAUGHT_POKEMON(/*PARAMETROS*/);
+void Operacion_CATCH_POKEMON(DATOS_CATCH_POKEMON_ID* datos) {
+	log_info(logger,"Buscando pokemon...");
+
+	NodoArbol* nodoPokemon = encontrarPokemon(datos->datos.pokemon); //NO ESTA ENCONTRANDO POKEMONS QUE YA EXISTEN
+
+	if(nodoPokemon == NULL) {
+		log_error(logger, "No existe el pokemon");
+	} else {
+		char* path = pathPokemon(datos->datos.pokemon);
+
+		FILE* filePokemon = fopen(path,"ab+");
+
+		if (filePokemon != NULL) {
+
+			if(estaAbierto(pathPokemon(datos->datos.pokemon))) {
+				sleep(config_get_int_value(config,"TIEMPO_REINTENTO_OPERACION"));
+				Operacion_CATCH_POKEMON(datos);
+			} else {
+				abrir(path);
+
+				int cantBloques =  0;
+
+				t_list* numerosBloques = leerBlocks(path, &cantBloques); //DEVUELVE LA LISTA DE INTS DE LOS NROS DE BLOQUE
+
+				t_list* datosBloques = convertirBloques(numerosBloques,cantBloques); //DEVUELVE LA LISTA DE DATOSBLOQUES
+
+				Posicion posicion;
+
+				posicion.posX = datos->datos.posicion.posX;
+				posicion.posY = datos->datos.posicion.posY;
+
+				int size = config_get_int_value(config,"BLOCK_SIZE"); // TODO PUEDE NO VENIR DEL CONFIG
+
+				int* bytes = malloc(sizeof(int));
+
+				bool caught = atraparPokemon(datosBloques,posicion,numerosBloques,size,bytes);
+
+				fclose(filePokemon);
+
+				cambiarMetadataPokemon(path,numerosBloques,*bytes);
+
+				sleep(config_get_int_value(config,"TIEMPO_RETARDO_OPERACION")); //TODO PUEDE NO VENIR DEL CONFIG
+				Enviar_CAUGHT_POKEMON(datos,caught);
+
+				free(path);
+
+				list_clean(numerosBloques);
+				list_destroy(numerosBloques);
+				list_clean(datosBloques);
+				list_destroy(datosBloques);
+			}
+		} else log_error(logger,"Error al leer archivo de pokemon");
+	}
 }
 
 void Recibir_GET_POKEMON(Cliente* cliente, Paquete* paqueteRecibido) {
 	Stream* stream = Stream_CrearLecturaPaquete(paqueteRecibido);
 	uint32_t id = Deserializar_uint32(stream);
-	DATOS_GET_POKEMON datos = Deserializar_GET_POKEMON(stream);
+	DATOS_GET_POKEMON_ID* datos = malloc(sizeof(DATOS_GET_POKEMON_ID));
+	datos->datos = Deserializar_GET_POKEMON(stream);
+	datos->id = id;
 
 	if (stream->error)
 		log_error(logger, "Error al deserializar GET_POKEMON");
@@ -161,12 +211,49 @@ void Recibir_GET_POKEMON(Cliente* cliente, Paquete* paqueteRecibido) {
 	pthread_detach(thread);
 }
 
-void Operacion_GET_POKEMON(DATOS_GET_POKEMON* datos) {
+void Operacion_GET_POKEMON(DATOS_GET_POKEMON_ID* datos) {
 
 	log_info(logger,"llego");
-	//TODO hacer lo que se tenga que hacer con el GET_POKEMON
-	// HAY QUE MANDARLE AL BROKER UN MENSAJE DE LOCALIZED
-	Enviar_LOCALIZED_POKEMON(/*PARAMETROS*/);
+	log_info(logger,"Buscando pokemon...");
+
+	NodoArbol* nodoPokemon = encontrarPokemon(datos->datos.pokemon); //NO ESTA ENCONTRANDO POKEMONS QUE YA EXISTEN
+
+	if(nodoPokemon == NULL) {
+		Enviar_LOCALIZED_POKEMON(datos,NULL);
+	} else {
+		char* path = pathPokemon(datos->datos.pokemon);
+
+		FILE* filePokemon = fopen(path,"ab+");
+
+		if (filePokemon != NULL) {
+
+			if(estaAbierto(pathPokemon(datos->datos.pokemon))) {
+				sleep(config_get_int_value(config,"TIEMPO_REINTENTO_OPERACION"));
+				Operacion_GET_POKEMON(datos);
+			} else {
+				abrir(path);
+
+				int cantBloques =  0;
+
+				t_list* numerosBloques = leerBlocks(path, &cantBloques); //DEVUELVE LA LISTA DE INTS DE LOS NROS DE BLOQUE
+
+				t_list* datosBloques = convertirBloques(numerosBloques,cantBloques); //DEVUELVE LA LISTA DE DATOSBLOQUES
+
+				sleep(config_get_int_value(config,"TIEMPO_RETARDO_OPERACION")); //TODO PUEDE NO VENIR DEL CONFIG
+
+				Enviar_LOCALIZED_POKEMON(datos,datosBloques);
+
+				free(path);
+
+				list_clean(numerosBloques);
+				list_destroy(numerosBloques);
+				list_clean(datosBloques);
+				list_destroy(datosBloques);
+			}
+		} else {
+			log_error(logger,"Error al leer archivo de pokemon");
+		}
+	}
 }
 
 void EnviarID(Cliente* cliente, uint32_t identificador)
@@ -198,16 +285,27 @@ void Enviar_APPEARED_POKEMON(DATOS_NEW_POKEMON_ID* datos) {
 	}
 
 	free(datos);
-
 }
 
+void Enviar_CAUGHT_POKEMON(DATOS_CATCH_POKEMON_ID* datos, bool caught) {
 
-void Enviar_CAUGHT_POKEMON(DATOS_CATCH_POKEMON* datos) {
+	DATOS_CAUGHT_POKEMON_ID* datosEnviar = malloc(sizeof(DATOS_CAUGHT_POKEMON_ID));
 
+	datosEnviar->idCorrelativa = datos->id;
+	datosEnviar->datos.capturado = caught;
+
+	//HABRIA QUE GUARDAR LOS MENSAJES EN ALGUN LUGAR Y CUANDO SE RECONECTA MANDARSELOS
+	if(clienteBroker != NULL) {
+		EnviarMensaje(clienteBroker, CAUGHT_POKEMON, datosEnviar, (void*) &SerializarM_CAUGHT_POKEMON_ID);
+		log_info(logger,"Se envio correctamente el caught pokemon");
+	} else {
+		log_info(logger, "Se guardo el mensaje para cuando se pueda volver a conectarse");
+	}
+
+	free(datos);
 }
 
-
-void Enviar_LOCALIZED_POKEMON(DATOS_GET_POKEMON* datos,Posicion* posiciones) {
+void Enviar_LOCALIZED_POKEMON(DATOS_GET_POKEMON_ID* datos,t_list* datosArchivo) {
 
 }
 
@@ -215,5 +313,3 @@ void Recibir_ID(Cliente* cliente, Paquete* paqueteRecibido) {
 	Stream* stream = Stream_CrearLecturaPaquete(paqueteRecibido);
 	Deserializar_uint32(stream);
 }
-
-

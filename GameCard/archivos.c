@@ -203,6 +203,32 @@ void crearBitmap(char* path, int cantBlocks) {
 	fclose(fBitmap);
 }
 
+bool atraparPokemon(t_list* datosBloques, Posicion pos, t_list* numerosBloques, int size, int* bytes) {
+	DatosBloques* posYCant = malloc(sizeof(DatosBloques));
+	posYCant = encontrarPosicion(datosBloques,pos);
+
+	bool caught;
+
+	bool esPosicion(DatosBloques* dat) {
+		return dat->pos.posX == pos.posX && dat->pos.posY == pos.posY;
+	}
+
+	if (posYCant == NULL) {
+		log_error(logger, "No existe pokemon en esa posicion");
+		caught = false;
+	} else {
+		posYCant->cantidad-=1;
+		if (posYCant->cantidad == 0) list_remove_and_destroy_by_condition(datosBloques,(void*)&esPosicion,&free);
+		log_info(logger,"Atrapando pokemon...");
+		escribirListaEnArchivo(datosBloques,size,numerosBloques);
+		caught = true;
+	}
+
+	*bytes = size*(list_size(numerosBloques) - 1) + tamanioBloque((int*) list_get(numerosBloques,list_size(numerosBloques) - 1));
+
+	return caught;
+}
+
 int agregarCantidadEnPosicion(t_list* pokemon, DatosBloques posYCant, t_list* numerosBloques, int size) {
 
 	DatosBloques* posicion = malloc(sizeof(DatosBloques));

@@ -230,7 +230,7 @@ DATOS_CATCH_POKEMON_ID* convertir_CATCH_POKEMON_ID(int cantParametros, char* par
 	DATOS_CATCH_POKEMON_ID* datos = malloc(sizeof(DATOS_CATCH_POKEMON_ID));
 
 	datos->datos = *convertir_CATCH_POKEMON(cantParametros - 1, parametros);
-	datos->id = strtol(parametros[7], NULL, 10);
+	datos->id = strtol(parametros[6], NULL, 10);
 
 	return datos;
 }
