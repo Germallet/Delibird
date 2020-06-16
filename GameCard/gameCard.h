@@ -14,14 +14,14 @@
 #include <fcntl.h>
 #include <errno.h>
 
-typedef struct {
-	uint32_t tamanioBlocks;
-	uint32_t cantidadBlocks;
-//	NodoArbol* arbolDirectorios; NO SABRIA SI ESTO ESTARIA BUENO ACA
-
-}ConfigFS;
-
-ConfigFS* configFS;
+//typedef struct {
+//	uint32_t tamanioBlocks;
+//	uint32_t cantidadBlocks;
+////	NodoArbol* arbolDirectorios; NO SABRIA SI ESTO ESTARIA BUENO ACA
+//
+//} ConfigFS;
+//
+//ConfigFS* configFS;
 
 t_log* logger;
 

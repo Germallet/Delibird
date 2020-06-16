@@ -62,6 +62,8 @@ void Recibir_NEW_POKEMON(Cliente* cliente, Paquete* paqueteRecibido) {
 
 void Operacion_NEW_POKEMON(DATOS_NEW_POKEMON_ID* datos) {
 
+	log_info(logger,"Buscando pokemon...");
+
 	NodoArbol* nodoPokemon = encontrarPokemon(datos->datos.pokemon); //NO ESTA ENCONTRANDO POKEMONS QUE YA EXISTEN
 
 	if(nodoPokemon == NULL) {
@@ -73,48 +75,50 @@ void Operacion_NEW_POKEMON(DATOS_NEW_POKEMON_ID* datos) {
 
 	FILE* filePokemon = fopen(path,"ab+");
 
-	if(estaAbierto(pathPokemon(datos->datos.pokemon))) {
-		sleep(config_get_int_value(config,"TIEMPO_REINTENTO_OPERACION"));
-		Operacion_NEW_POKEMON(datos);
+	if (filePokemon != NULL) {
+
+		if(estaAbierto(pathPokemon(datos->datos.pokemon))) {
+			sleep(config_get_int_value(config,"TIEMPO_REINTENTO_OPERACION"));
+			Operacion_NEW_POKEMON(datos);
+		} else {
+			abrir(path); //NO LO SETEA EN Y;
+
+			int cantBloques =  0;
+
+			t_list* numerosBloques = leerBlocks(path, &cantBloques); //DEVUELVE LA LISTA DE INTS DE LOS NROS DE BLOQUE
+
+			//NOS OLVIDAMOS DE QUE EL SEGUNDO PUEDE EMPEZAR DE CUALQUIER LADO, ENTONCES CONVIERTE MAL Y TERMINA ESCRIBIENDO TOD_O MAL
+			t_list* datosBloques = convertirBloques(numerosBloques,cantBloques); //DEVUELVE LA LISTA DE DATOSBLOQUES
+
+			DatosBloques posYCant;
+
+			posYCant.cantidad = datos->datos.cantidad;
+			posYCant.pos.posX = datos->datos.posicion.posX;
+			posYCant.pos.posY = datos->datos.posicion.posY;
+
+			int size = config_get_int_value(config,"BLOCK_SIZE"); // TODO PUEDE NO VENIR DEL CONFIG
+
+			int bytes = agregarCantidadEnPosicion(datosBloques,posYCant,numerosBloques,size); //A LA SEGUNDA LE AGREGA LOS 0-0=0 NEWSS= PARECERIA QUE SE SOLUCIONO HAY QUE VER PORQUE
+	// EL FWRITE CON UN TAM MAYOR DEBE ESCRIBIR CARACTERES VACIOS POR TODOS LADOS, HAY QUE VER ESO, AHORA NO TANTO PORQUE AGREGUE UN IF
+			fclose(filePokemon);
+
+			//HAY UN FREE DE LOS NUMEROS BLOQUES QUE HACE QUE NO LE ASIGNE BIEN EL NUMERO A LA LISTA DE BLOQUES
+			cambiarMetadataPokemon(path,numerosBloques,bytes);
+
+			cerrar(path);
+
+			sleep(config_get_int_value(config,"TIEMPO_RETARDO_OPERACION")); //TODO PUEDE NO VENIR DEL CONFIG
+			Enviar_APPEARED_POKEMON(datos);
+
+			free(path);
+
+			list_clean(numerosBloques);
+			list_destroy(numerosBloques);
+			list_clean(datosBloques);
+			list_destroy(datosBloques);
+		}
 	} else {
-		abrir(path); //NO LO SETEA EN Y;
-
-		int cantBloques =  0;
-
-		t_list* numerosBloques = leerBlocks(path, &cantBloques); //DEVUELVE LA LISTA DE INTS DE LOS NROS DE BLOQUE
-
-		//NOS OLVIDAMOS DE QUE EL SEGUNDO PUEDE EMPEZAR DE CUALQUIER LADO, ENTONCES CONVIERTE MAL Y TERMINA ESCRIBIENDO TOD_O MAL
-		t_list* datosBloques = convertirBloques(numerosBloques,cantBloques); //DEVUELVE LA LISTA DE DATOSBLOQUES
-
-		DatosBloques posYCant;
-
-		posYCant.cantidad = datos->datos.cantidad;
-		posYCant.pos.posX = datos->datos.posicion.posX;
-		posYCant.pos.posY = datos->datos.posicion.posY;
-
-		int size = config_get_int_value(config,"BLOCK_SIZE"); // TODO PUEDE NO VENIR DEL CONFIG
-
-		int bytes = agregarCantidadEnPosicion(datosBloques,posYCant,numerosBloques,size); //A LA SEGUNDA LE AGREGA LOS 0-0=0 NEWSS= PARECERIA QUE SE SOLUCIONO HAY QUE VER PORQUE
-// EL FWRITE CON UN TAM MAYOR DEBE ESCRIBIR CARACTERES VACIOS POR TODOS LADOS, HAY QUE VER ESO, AHORA NO TANTO PORQUE AGREGUE UN IF
-		fclose(filePokemon);
-
-		//HAY UN FREE DE LOS NUMEROS BLOQUES QUE HACE QUE NO LE ASIGNE BIEN EL NUMERO A LA LISTA DE BLOQUES
-		cambiarMetadataPokemon(path,numerosBloques,bytes);
-
-		cerrar(path);
-
-		sleep(config_get_int_value(config,"TIEMPO_RETARDO_OPERACION")); //TODO PUEDE NO VENIR DEL CONFIG
-		Enviar_APPEARED_POKEMON(datos);
-
-		free(path);
-
-		list_clean(numerosBloques);
-		list_destroy(numerosBloques);
-		list_clean(datosBloques);
-		list_destroy(datosBloques);
-
-//		list_destroy_and_destroy_elements(numerosBloques,&free);
-//		list_destroy_and_destroy_elements(datosBloques,&eliminarElemento); //HAY QUE VER PORQUE LOS ELIMINA MAL ACA
+		log_error(logger,"Error al leer archivo de pokemon");
 	}
 }
 
@@ -179,6 +183,7 @@ void EnviarID(Cliente* cliente, uint32_t identificador)
 
 
 void Enviar_APPEARED_POKEMON(DATOS_NEW_POKEMON_ID* datos) {
+
 	DATOS_APPEARED_POKEMON_ID* datosEnviar = malloc(sizeof(DATOS_APPEARED_POKEMON_ID));
 
 	datosEnviar->id = datos->id;
@@ -194,7 +199,7 @@ void Enviar_APPEARED_POKEMON(DATOS_NEW_POKEMON_ID* datos) {
 		log_info(logger, "Se guardo el mensaje para cuando se pueda volver a conectarse");
 	}
 
-//	free(datosEnviar); ESTE FREE VA?
+	free(datos);
 
 }
 

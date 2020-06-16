@@ -35,10 +35,14 @@ int main()
 
 	conectarse();
 
+	log_info(logger,"Creando tall-grass");
+
 	tallGrass_init(puntoMontaje);
 
+	log_info(logger,"Mandame mensaje pa, dale");
+
 	EsperarHilos();
-// HAY QUE VER COMO PARAR DE ESCUCHAR HILOS.
+// HAY QUE VER COMO PARAR DE ESCUCHAR HILOS. (ctrl+c???)
 
 	return 0;
 }

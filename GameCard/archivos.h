@@ -27,7 +27,7 @@ char* leerOpen(char* path);
 int leerSize(char* path);
 char* leerDirectorio(char* path);
 char* leerBlocksPorConfig(char* path);
-char* leerArchivos(t_list* bloques, int cantBloques, int size);
+void leerArchivos(t_list* bloques, int cantBloques, int size, char* datos);
 t_list* leerBlocks(char* path, int* cantBloques);
 
 int tamanioBloque(int* nroBloque);
