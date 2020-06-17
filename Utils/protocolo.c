@@ -42,7 +42,7 @@ Stream* SerializarM_CATCH_POKEMON(DATOS_CATCH_POKEMON* datos)
 }
 Stream* SerializarM_CATCH_POKEMON_ID( DATOS_CATCH_POKEMON_ID* datos)
 {
-	Stream* stream = Stream_CrearEscrituraNueva(strlen(datos->datos.pokemon) + sizeof(uint32_t)*3);
+	Stream* stream = Stream_CrearEscrituraNueva(strlen(datos->datos.pokemon) + sizeof(uint32_t)*4);
 	Serializar_uint32(stream, datos->id);
 	Serializar_CATCH_POKEMON(stream, &(datos->datos));
 	return stream;
