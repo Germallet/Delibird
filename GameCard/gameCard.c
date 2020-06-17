@@ -8,8 +8,6 @@ Eventos* eventos;
 
 /*
  * TODO MANEJAR MEJOR LOS ERRORES DE FALTA DE MEMORIA
- * TODO CATCH_POKEMON
- * TODO GET_POKEMON
  * TODO SINCRONIZAR TOODO
  * TODO CATCH DEL CTRL C PARA TERMINAR DE ESCUCHAR
  */
@@ -28,6 +26,10 @@ int main()
 
 	char* puntoMontaje = config_get_string_value(config,"PUNTO_MONTAJE_TALLGRASS");
 	int tiempoReintentoConexion = config_get_int_value(config,"TIEMPO_DE_REINTENTO_CONEXION");
+
+	mensajesNoEnviadosAPPEARED = list_create();
+	mensajesNoEnviadosCAUGHT = list_create();
+	mensajesNoEnviadosLOCALIZED = list_create();
 
 	SocketEscucha(miIp, miPuerto);
 
@@ -164,9 +166,19 @@ void reconexion(void* a) {
 	if (clienteBroker == NULL) {
 		conectarse();
 
-		//ENVIAR TODOS LOS MENSAJES SI PUDO CONECTARSE BIEN
+		for (int i = 0; i < list_size(mensajesNoEnviadosAPPEARED); i++) {
+			EnviarMensaje(clienteBroker, APPEARED_POKEMON, list_get(mensajesNoEnviadosAPPEARED,i), (void*) &SerializarM_APPEARED_POKEMON_ID);
+		}
+		list_clean(mensajesNoEnviadosAPPEARED);
+		for (int i = 0; i < list_size(mensajesNoEnviadosCAUGHT); i++) {
+			EnviarMensaje(clienteBroker, CAUGHT_POKEMON, list_get(mensajesNoEnviadosCAUGHT,i), (void*) &SerializarM_CAUGHT_POKEMON_ID);
+		}
+		list_clean(mensajesNoEnviadosCAUGHT);
+		for (int i = 0; i < list_size(mensajesNoEnviadosLOCALIZED); i++) {
+			EnviarMensaje(clienteBroker, LOCALIZED_POKEMON, list_get(mensajesNoEnviadosLOCALIZED,i), (void*) &SerializarM_LOCALIZED_POKEMON);
+		}
+		list_clean(mensajesNoEnviadosLOCALIZED);
 	}
-
 }
 
 void EsperarHilos()
@@ -191,6 +203,9 @@ void TerminarPrograma()
 	bitarray_destroy(bitmap);
 	DestruirCliente(clienteBroker);
 	DestruirServidor(servidor);
+	list_destroy(mensajesNoEnviadosAPPEARED);
+	list_destroy(mensajesNoEnviadosCAUGHT);
+	list_destroy(mensajesNoEnviadosLOCALIZED);
 	list_clean(raiz->hijos);
 	list_destroy(raiz->hijos);
 	free(raiz);

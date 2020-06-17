@@ -64,7 +64,7 @@ void Operacion_NEW_POKEMON(DATOS_NEW_POKEMON_ID* datos) {
 
 	log_info(logger,"Buscando pokemon...");
 
-	NodoArbol* nodoPokemon = encontrarPokemon(datos->datos.pokemon); //NO ESTA ENCONTRANDO POKEMONS QUE YA EXISTEN
+	NodoArbol* nodoPokemon = encontrarPokemon(datos->datos.pokemon);
 
 	if(nodoPokemon == NULL) {
 		nodoPokemon = crearPokemon(datos->datos.pokemon);
@@ -77,7 +77,7 @@ void Operacion_NEW_POKEMON(DATOS_NEW_POKEMON_ID* datos) {
 
 	if (filePokemon != NULL) {
 
-		if(estaAbierto(pathPokemon(datos->datos.pokemon))) {
+		if(estaAbierto(pathPokemon(datos->datos.pokemon))) { // TODO ARREGLAR ESTO QUE ESTA MAL
 			sleep(config_get_int_value(config,"TIEMPO_REINTENTO_OPERACION"));
 			Operacion_NEW_POKEMON(datos);
 		} else {
@@ -99,11 +99,12 @@ void Operacion_NEW_POKEMON(DATOS_NEW_POKEMON_ID* datos) {
 
 			int bytes = agregarCantidadEnPosicion(datosBloques,posYCant,numerosBloques,size);
 
+			sleep(config_get_int_value(config,"TIEMPO_RETARDO_OPERACION")); //TODO PUEDE NO VENIR DEL CONFIG
+
 			fclose(filePokemon);
 
 			cambiarMetadataPokemon(path,numerosBloques,bytes);
 
-			sleep(config_get_int_value(config,"TIEMPO_RETARDO_OPERACION")); //TODO PUEDE NO VENIR DEL CONFIG
 			Enviar_APPEARED_POKEMON(datos);
 
 			free(path);
@@ -116,10 +117,6 @@ void Operacion_NEW_POKEMON(DATOS_NEW_POKEMON_ID* datos) {
 	} else {
 		log_error(logger,"Error al leer archivo de pokemon");
 	}
-}
-
-void eliminarElemento(void* datos) {
-	free(datos);
 }
 
 void Recibir_CATCH_POKEMON(Cliente* cliente, Paquete* paqueteRecibido) {
@@ -142,7 +139,7 @@ void Recibir_CATCH_POKEMON(Cliente* cliente, Paquete* paqueteRecibido) {
 void Operacion_CATCH_POKEMON(DATOS_CATCH_POKEMON_ID* datos) {
 	log_info(logger,"Buscando pokemon...");
 
-	NodoArbol* nodoPokemon = encontrarPokemon(datos->datos.pokemon); //NO ESTA ENCONTRANDO POKEMONS QUE YA EXISTEN
+	NodoArbol* nodoPokemon = encontrarPokemon(datos->datos.pokemon);
 
 	if(nodoPokemon == NULL) {
 		log_error(logger, "No existe el pokemon");
@@ -153,7 +150,7 @@ void Operacion_CATCH_POKEMON(DATOS_CATCH_POKEMON_ID* datos) {
 
 		if (filePokemon != NULL) {
 
-			if(estaAbierto(pathPokemon(datos->datos.pokemon))) {
+			if(estaAbierto(pathPokemon(datos->datos.pokemon))) { // TODO ARREGLAR ESTO QUE ESTA MAL
 				sleep(config_get_int_value(config,"TIEMPO_REINTENTO_OPERACION"));
 				Operacion_CATCH_POKEMON(datos);
 			} else {
@@ -176,11 +173,12 @@ void Operacion_CATCH_POKEMON(DATOS_CATCH_POKEMON_ID* datos) {
 
 				bool caught = atraparPokemon(datosBloques,posicion,numerosBloques,size,bytes);
 
+				sleep(config_get_int_value(config,"TIEMPO_RETARDO_OPERACION")); //TODO PUEDE NO VENIR DEL CONFIG
+
 				fclose(filePokemon);
 
 				cambiarMetadataPokemon(path,numerosBloques,*bytes);
 
-				sleep(config_get_int_value(config,"TIEMPO_RETARDO_OPERACION")); //TODO PUEDE NO VENIR DEL CONFIG
 				Enviar_CAUGHT_POKEMON(datos,caught);
 
 				free(path);
@@ -219,7 +217,7 @@ void Operacion_GET_POKEMON(DATOS_GET_POKEMON_ID* datos) {
 	NodoArbol* nodoPokemon = encontrarPokemon(datos->datos.pokemon); //NO ESTA ENCONTRANDO POKEMONS QUE YA EXISTEN
 
 	if(nodoPokemon == NULL) {
-		Enviar_LOCALIZED_POKEMON(datos,NULL);
+		Enviar_LOCALIZED_POKEMON(datos,list_create());
 	} else {
 		char* path = pathPokemon(datos->datos.pokemon);
 
@@ -242,6 +240,10 @@ void Operacion_GET_POKEMON(DATOS_GET_POKEMON_ID* datos) {
 				sleep(config_get_int_value(config,"TIEMPO_RETARDO_OPERACION")); //TODO PUEDE NO VENIR DEL CONFIG
 
 				Enviar_LOCALIZED_POKEMON(datos,datosBloques);
+
+				cerrar(path);
+
+				fclose(filePokemon);
 
 				free(path);
 
@@ -266,7 +268,6 @@ void EnviarID(Cliente* cliente, uint32_t identificador)
 	free(id_mensaje);
 }
 
-
 void Enviar_APPEARED_POKEMON(DATOS_NEW_POKEMON_ID* datos) {
 
 	DATOS_APPEARED_POKEMON_ID* datosEnviar = malloc(sizeof(DATOS_APPEARED_POKEMON_ID));
@@ -275,13 +276,12 @@ void Enviar_APPEARED_POKEMON(DATOS_NEW_POKEMON_ID* datos) {
 	datosEnviar->datos.pokemon = datos->datos.pokemon;
 	datosEnviar->datos.posicion = datos->datos.posicion;
 
-	//HAY QUE VER COMO HACER PARA QUE NO LE ENVIE MENSAJE AL BROKER SI NO SE PUDO CONECTAR
-	//HABRIA QUE GUARDAR LOS MENSAJES EN ALGUN LUGAR Y CUANDO SE RECONECTA MANDARSELOS
 	if(clienteBroker != NULL) {
 		EnviarMensaje(clienteBroker, APPEARED_POKEMON, datosEnviar, (void*) &SerializarM_APPEARED_POKEMON_ID);
 		log_info(logger,"Se envio correctamente el appeared pokemon");
 	} else {
 		log_info(logger, "Se guardo el mensaje para cuando se pueda volver a conectarse");
+		list_add(mensajesNoEnviadosAPPEARED,datosEnviar);
 	}
 
 	free(datos);
@@ -294,19 +294,19 @@ void Enviar_CAUGHT_POKEMON(DATOS_CATCH_POKEMON_ID* datos, bool caught) {
 	datosEnviar->idCorrelativa = datos->id;
 	datosEnviar->datos.capturado = caught;
 
-	//HABRIA QUE GUARDAR LOS MENSAJES EN ALGUN LUGAR Y CUANDO SE RECONECTA MANDARSELOS
 	if(clienteBroker != NULL) {
 		EnviarMensaje(clienteBroker, CAUGHT_POKEMON, datosEnviar, (void*) &SerializarM_CAUGHT_POKEMON_ID);
 		log_info(logger,"Se envio correctamente el caught pokemon");
 	} else {
 		log_info(logger, "Se guardo el mensaje para cuando se pueda volver a conectarse");
+		list_add(mensajesNoEnviadosCAUGHT,datosEnviar);
 	}
-
 	free(datos);
 }
 
 void Enviar_LOCALIZED_POKEMON(DATOS_GET_POKEMON_ID* datos,t_list* datosArchivo) {
 	DATOS_LOCALIZED_POKEMON* datosAEnviar = malloc(sizeof(DATOS_LOCALIZED_POKEMON));
+
 
 	Posicion posiciones[list_size(datosArchivo)];
 
@@ -322,8 +322,10 @@ void Enviar_LOCALIZED_POKEMON(DATOS_GET_POKEMON_ID* datos,t_list* datosArchivo) 
 		posiciones[i].posY = a->pos.posY;
 	}
 
-	datosAEnviar->posiciones = posiciones;
-	datosAEnviar->cantidad = list_size(datosArchivo); //TODO NECESITAMOS LAS CANTIDADES? SERIA RARO
+	if (list_size(datosArchivo) == 0) datosAEnviar->posiciones = NULL;
+	else datosAEnviar->posiciones = posiciones;
+
+	datosAEnviar->cantidad = list_size(datosArchivo);
 	datosAEnviar->idCorrelativa = datos->id;
 	datosAEnviar->pokemon = datos->datos.pokemon;
 
@@ -332,6 +334,7 @@ void Enviar_LOCALIZED_POKEMON(DATOS_GET_POKEMON_ID* datos,t_list* datosArchivo) 
 		log_info(logger,"Se envio correctamente el localized pokemon");
 	} else {
 		log_info(logger, "Se guardo el mensaje para cuando se pueda volver a conectarse");
+		list_add(mensajesNoEnviadosLOCALIZED,datosAEnviar);
 	}
 
 	free(datos);

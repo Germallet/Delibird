@@ -177,7 +177,7 @@ void crearDirectorioMetadata() {
 		FILE* metadata = fopen(aux,"wb+");
 		fprintf(metadata,"BLOCK_SIZE=%d\n",config_get_int_value(config,"BLOCK_SIZE"));
 		fprintf(metadata,"BLOCKS=%d\n",config_get_int_value(config,"BLOCKS"));
-		fprintf(metadata,"MAGIC_NUMBER=%s\n",config_get_string_value(config,"BLOCK_SIZE"));
+		fprintf(metadata,"MAGIC_NUMBER=%s\n",config_get_string_value(config,"MAGIC_NUMBER"));
 		fclose(metadata);
 	}
 

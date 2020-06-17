@@ -14,14 +14,13 @@
 #include <fcntl.h>
 #include <errno.h>
 
-//typedef struct {
-//	uint32_t tamanioBlocks;
-//	uint32_t cantidadBlocks;
-////	NodoArbol* arbolDirectorios; NO SABRIA SI ESTO ESTARIA BUENO ACA
-//
-//} ConfigFS;
-//
-//ConfigFS* configFS;
+typedef struct {
+	uint32_t tamanioBlocks;
+	uint32_t cantidadBlocks;
+	char* magicNumber;
+} ConfigFS;
+
+ConfigFS configFS;
 
 t_log* logger;
 
@@ -35,7 +34,11 @@ t_bitarray* bitmap;
 
 Servidor* servidor;
 
-t_list* mensajesNoEnviados;
+t_list* mensajesNoEnviadosAPPEARED;
+
+t_list* mensajesNoEnviadosCAUGHT;
+
+t_list* mensajesNoEnviadosLOCALIZED;
 
 void EscuchaSignal(int signo);
 char* pathBloque(char* nombre);
