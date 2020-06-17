@@ -270,7 +270,7 @@ t_list* obtener_entrenadores_disponibles_para_atrapar()
 	return entrenadores_disponibles;
 }
 
-char *str_replace(char *orig, char *rep, char *with) {
+char* str_replace(char* orig, char* rep, char* with) {
     char *result; // the return string
     char *ins;    // the next insert point
     char *tmp;    // varies
