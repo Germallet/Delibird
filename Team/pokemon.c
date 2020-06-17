@@ -244,28 +244,6 @@ void pokemon_y_entrenador_mas_cercanos_entre_si(Pokemon_Mapa** pokemon, void** e
 	*pokemon = (Pokemon_Mapa*) list_get(pokemons_que_necesito, 0);
 	obtener_entrenador_disponible_mas_cercano(*pokemon, (Entrenador**) entrenador);
 
-	/*
-	if(!list_is_empty(pokemons_que_necesito))
-	{
-		*pokemon = (Pokemon_Mapa*) list_get(pokemons_que_necesito, 0);
-		int distancia = obtener_entrenador_disponible_mas_cercano(*pokemon, (Entrenador**) entrenador);
-		Pokemon_Mapa* pokemon_pivot = NULL;
-		Entrenador* entrenador_pivot = NULL;
-		int nueva_distancia;
-		for(int i=1; i < pokemons_que_necesito->elements_count;i++)
-		{
-			pokemon_pivot = list_get(pokemons_que_necesito, i);
-			nueva_distancia = obtener_entrenador_disponible_mas_cercano(pokemon_pivot, (Entrenador**) &entrenador_pivot);
-			if(nueva_distancia<distancia)
-			{
-				*pokemon = pokemon_pivot;
-				*entrenador = entrenador_pivot;
-				distancia = nueva_distancia;
-			}
-		}
-
-	}
-	*/
 	list_destroy(pokemons_que_necesito);
 }
 

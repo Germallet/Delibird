@@ -83,7 +83,6 @@ int main()
 	solicitar_pokemons_para_objetivo_global_test();
 	//solicitar_pokemons_para_objetivo_global();
 	//conectarse_y_suscribirse_a_colas();
-	//TODO: conectarse_con_gameboy();
 
 	while(true)
 	{

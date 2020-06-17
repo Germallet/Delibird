@@ -44,6 +44,7 @@ void tomar_deadlock(Entrenador** entrenador1, Entrenador** entrenador2)
 	if(esta_en_EXIT(*entrenador1) || esta_en_EXIT(*entrenador2))
 	{
 		list_destroy_and_destroy_elements(deadlocks, (void*) &destruir_deadlock);
+		destruir_deadlock(deadlock);
 		deadlocks = list_create();
 		identificar_deadlocks();
 		deadlock = list_remove(deadlocks, 0);
