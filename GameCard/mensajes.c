@@ -130,7 +130,7 @@ void Recibir_CATCH_POKEMON(Cliente* cliente, Paquete* paqueteRecibido) {
 		EnviarID(cliente,id);
 
 	pthread_t thread;
-	pthread_create(&thread, NULL, (void*) Operacion_CATCH_POKEMON,&datos);
+	pthread_create(&thread, NULL, (void*) Operacion_CATCH_POKEMON,datos);
 	pthread_detach(thread);
 }
 
@@ -201,7 +201,7 @@ void Recibir_GET_POKEMON(Cliente* cliente, Paquete* paqueteRecibido) {
 		EnviarID(cliente,id);
 
 	pthread_t thread;
-	pthread_create(&thread, NULL, (void*) Operacion_GET_POKEMON,&datos);
+	pthread_create(&thread, NULL, (void*) Operacion_GET_POKEMON,datos);
 	pthread_detach(thread);
 }
 
