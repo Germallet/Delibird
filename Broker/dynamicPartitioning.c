@@ -32,7 +32,7 @@ Particion* DP_Seleccionar_FF(int tamanio)
 	for (int indice = 0; indice < particiones->elements_count; indice++)
 	{
 		Particion* particion = (Particion*)(list_get(particiones, indice));
-		if (!particion->ocupado && particion->tamanio >= tamanio) // TODO: >= tamanio + tamanioMinimo
+		if (!particion->ocupado && particion->tamanio >= tamanio + tamanioMinimo)
 		{
 			if (particion->tamanio > tamanio)
 				Subparticionar(particion, tamanio);

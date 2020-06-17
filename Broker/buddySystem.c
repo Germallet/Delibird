@@ -11,11 +11,6 @@ Particion* BS_Seleccionar(int tamanio)
 	return NULL;
 }
 
-void BS_Compactar()
-{
-
-}
-
 void BS_Eliminar_FIFO()
 {
 

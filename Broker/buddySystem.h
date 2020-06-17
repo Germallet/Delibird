@@ -2,7 +2,6 @@
 #include "particion.h"
 
 Particion* BS_Seleccionar(int tamanio);
-void BS_Compactar();
 void BS_Eliminar_FIFO();
 void BS_Eliminar_LRU();
 void BS_Dump();

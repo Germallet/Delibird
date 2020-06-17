@@ -54,7 +54,7 @@ void IniciarMemoria(int tamanioMemoria, int _tamanioMinimo, char* algoritmoMemor
 	}
 	else if (strcmp(algoritmoMemoria, "BS") == 0) // BuddySystem
 	{
-		compactar = &BS_Compactar;
+		compactar = NULL;
 		seleccionar = &BS_Seleccionar;
 		dump = &BS_Dump;
 		destuir = &BS_Destruir;
@@ -94,10 +94,13 @@ void GuardarMensaje(Mensaje* mensaje, CodigoDeCola tipoDeMensaje, Stream* conten
 			break;
 		intentos++;
 
-		if (intentos == frecuenciaCompactacion/* || (frecuenciaCompactacion == -1 && particiones->elements_count == 1 && !((Particion*)(list_get(particiones, 0)))->ocupado)*/)
+		if (compactar != NULL)
 		{
-			compactar();
-			intentos = 0;
+			if (intentos == frecuenciaCompactacion/* || (frecuenciaCompactacion == -1 && particiones->elements_count == 1 && !((Particion*)(list_get(particiones, 0)))->ocupado)*/)
+			{
+				compactar();
+				intentos = 0;
+			}
 		}
 		else
 			eliminarParticion();
