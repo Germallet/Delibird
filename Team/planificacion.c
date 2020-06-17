@@ -1,10 +1,11 @@
 #include "team.h"
 #include "pokemon.h"
+#include "posicion.h"
 #include "entrenador.h"
 #include "planificacion.h"
 #include "interrupciones.h"
 
-bool deadlocks_identificados = false;
+bool deadlocks_estan_identificados = false;
 t_list* deadlocks;
 
 bool hay_entrenador_en_ejecucion() { return entrenador_EXEC != NULL; }
@@ -12,6 +13,7 @@ bool hay_entrenadores_READY() { return !list_is_empty(cola_READY); }
 bool hay_pokemons_para_atrapar() { return !list_is_empty(pokemons_mapa); }
 bool necesitamos_pokemons() { return !list_is_empty(pokemons_necesarios); }
 bool hay_entrenadores_disponibles_para_atrapar() { return list_any_satisfy(cola_BLOCKED, &puede_planificarse_para_atrapar) || !list_is_empty(cola_NEW); }
+bool es_planificacion_tipo(char* tipo) { return strcmp(config_get_string_value(config, "ALGORITMO_PLANIFICACION"), tipo)==0; }
 
 Deadlock* crear_deadlock(Entrenador* entrenador1, Entrenador* entrenador2, char* pokemon1, char* pokemon2)
 {
@@ -37,23 +39,55 @@ void tomar_deadlock(Entrenador** entrenador1, Entrenador** entrenador2)
 	Deadlock* deadlock = list_remove(deadlocks, 0);
 
 	*entrenador1 = deadlock->entrenador1;
-	if ((*entrenador1)->info != NULL) free((*entrenador1)->info);
+	*entrenador2 = deadlock->entrenador2;
+
+	if(esta_en_EXIT(*entrenador1) || esta_en_EXIT(*entrenador2))
+	{
+		list_destroy_and_destroy_elements(deadlocks, (void*) &destruir_deadlock);
+		deadlocks = list_create();
+		identificar_deadlocks();
+		deadlock = list_remove(deadlocks, 0);
+		*entrenador1 = deadlock->entrenador1;
+		*entrenador2 = deadlock->entrenador2;
+	}
+
 	(*entrenador1)->info = malloc(strlen(deadlock->pokemon1)+1);
 	strcpy((*entrenador1)->info, deadlock->pokemon1);
 
 	*entrenador2 = deadlock->entrenador2;
-	if ((*entrenador2)->info != NULL) free((*entrenador2)->info);
 	(*entrenador2)->info = malloc(strlen(deadlock->pokemon2)+1);
 	strcpy((*entrenador2)->info, deadlock->pokemon2);
 
 	destruir_deadlock(deadlock);
 }
 
+static int ciclos_estimados(Deadlock* deadlock)
+{
+	int distancia = distancia_entre(deadlock->entrenador1->posicion, deadlock->entrenador2->posicion);
+	return distancia + 5;
+}
+static void insertar_FIFO(Deadlock* deadlock) { list_add(deadlocks, deadlock); }
+void insertar_SJF(Deadlock* deadlock)
+{
+	int index = 0;
+	Deadlock* pivot = list_get(deadlocks, index);
+	while(pivot != NULL && ciclos_estimados(pivot)<=ciclos_estimados(deadlock))
+	{
+		index++;
+		pivot = list_get(deadlocks, index);
+	}
+	list_add_in_index(deadlocks, index, deadlock);
+}
+
 void agregar_deadlock(Entrenador* entrenador1, Entrenador* entrenador2, char* pokemon1, char* pokemon2)
 {
-	list_add(deadlocks, crear_deadlock(entrenador1, entrenador2, pokemon1, pokemon2));
+	if(es_planificacion_tipo("FIFO") || es_planificacion_tipo("RR"))
+		insertar_FIFO(crear_deadlock(entrenador1, entrenador2, pokemon1, pokemon2));
+	if(es_planificacion_tipo("SJF-SD") || es_planificacion_tipo("SJF-CD"))
+		insertar_SJF(crear_deadlock(entrenador1, entrenador2, pokemon1, pokemon2));
 	log_info(logger, "Los entrenadores %d y %d estan en deadlock", entrenador1->ID, entrenador2->ID);
 }
+
 void identificar_deadlocks()
 {
 	t_list* entrenadores_pivot = obtener_entrenadores_que_podrian_intercambiar();
@@ -79,7 +113,7 @@ void identificar_deadlocks()
 	}
 
 	list_destroy(entrenadores_pivot);
-	deadlocks_identificados = true;
+	deadlocks_estan_identificados = true;
 }
 
 void planificar_atrapar_pokemon()
@@ -99,7 +133,7 @@ void planificar_atrapar_pokemon()
 	strcpy(especie, pokemon->especie);
 	cargar_accion(entrenador, CAPTURAR_POKEMON, especie);
 
-	cambiar_estado_a(entrenador, READY); // METER ORDENADO PARA SJF ACA
+	cambiar_estado_a(entrenador, READY);
 
 	se_asigno_para_capturar(pokemon);
 }
@@ -121,36 +155,12 @@ void planificar_intercambiar_pokemon()
 	cargar_accion(entrenador_1, INTERCAMBIAR_POKEMON_EN_PROGRESO, entrenador_2);
 	cargar_accion(entrenador_1, INTERCAMBIAR_POKEMON_FINALIZADO, entrenador_2);
 
-	cambiar_estado_a(entrenador_1, READY);  // METER ORDENADO PARA SJF ACA
-}
-
-void planificar_intercambiar_pokemon_si_es_posible()
-{
-	Entrenador* entrenador_1 = NULL;
-	Entrenador* entrenador_2 = NULL;
-
-	obtener_entrenadores_que_pueden_intercambiar(&entrenador_1, &entrenador_2);
-
-	if(entrenador_1 != NULL && entrenador_2 != NULL)
-	{
-		Posicion* posicion = malloc(sizeof(Posicion));
-		*posicion = entrenador_2->posicion;
-
-		cargar_accion(entrenador_1, MOVER, posicion);
-		cargar_accion(entrenador_1, INTERCAMBIAR_POKEMON_EN_PROGRESO, entrenador_2);
-		cargar_accion(entrenador_1, INTERCAMBIAR_POKEMON_EN_PROGRESO, entrenador_2);
-		cargar_accion(entrenador_1, INTERCAMBIAR_POKEMON_EN_PROGRESO, entrenador_2);
-		cargar_accion(entrenador_1, INTERCAMBIAR_POKEMON_EN_PROGRESO, entrenador_2);
-		cargar_accion(entrenador_1, INTERCAMBIAR_POKEMON_FINALIZADO, entrenador_2);
-
-		cambiar_estado_a(entrenador_1, READY);  // METER ORDENADO PARA SJF ACA
-	}
+	cambiar_estado_a(entrenador_1, READY);
 }
 
 void terminar_team()
 {
 	log_info(logger, "GAME OVER.");
-
 	//TODO
 	/*if(logger != NULL) log_destroy(logger);
 	if(config != NULL) config_destroy(config);
@@ -174,19 +184,17 @@ void planificar_entrenador_si_es_necesario()
 	while(hay_pokemons_para_atrapar() && hay_entrenadores_disponibles_para_atrapar())
 		planificar_atrapar_pokemon();
 	if(!hay_entrenador_en_ejecucion() && hay_entrenadores_READY())
-		cambiar_estado_a(tomar_entrenador(cola_READY), EXEC);
+		poner_entrenador_en_EXEC();
 	if(estamos_en_deadlock())
 	{
-		if(!deadlocks_identificados)
+		if(!deadlocks_estan_identificados)
 			identificar_deadlocks();
-		planificar_intercambiar_pokemon();
-		cambiar_estado_a(tomar_entrenador(cola_READY), EXEC);
-
-		/*if(list_is_empty(deadlocks))
-			deadlocks_identificados = false;*/
+		if(!list_is_empty(deadlocks))
+		{
+			planificar_intercambiar_pokemon();
+			poner_entrenador_en_EXEC();
+		}
 	}
-	//if(hay_entrenadores_que_podrian_intercambiar())
-		//planificar_intercambiar_pokemon_si_es_posible();
 	if(!hay_entrenador_en_ejecucion() && !necesitamos_pokemons())
 		terminar_team();
 }

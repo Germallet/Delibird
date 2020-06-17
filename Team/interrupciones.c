@@ -44,6 +44,13 @@ void ejecutar_interrupcion()
 
 bool hay_interrupciones_para_ejecutar() { return !list_is_empty(cola_INTERRUPCIONES); }
 
+void ejecutar_interrupciones_existentes()
+{
+	pthread_mutex_lock(&mutex_interrupciones);
+	while(hay_interrupciones_para_ejecutar()) ejecutar_interrupcion();
+	pthread_mutex_unlock(&mutex_interrupciones);
+}
+
 //-----------INTERRUPCIONES-----------//
 void interrupcion_CAUGHT_POKEMON(void* dato)
 {

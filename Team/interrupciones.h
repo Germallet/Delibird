@@ -28,6 +28,7 @@ extern t_list* cola_INTERRUPCIONES;
 extern pthread_mutex_t mutex_interrupciones;
 
 void agregar_interrupcion(Tipo_Interrupcion tipo, void* info);
+void ejecutar_interrupciones_existentes();
 void inicializar_interrupciones();
 void ejecutar_interrupcion();
 bool hay_interrupciones_para_ejecutar();

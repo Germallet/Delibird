@@ -88,12 +88,25 @@ void agregar_pokemon_a_mapa(char* especie_pokemon, Posicion posicion)
 	list_add(pokemons_mapa, pokemon);
 }
 
+char* obtener_especie_pokemon(Pokemon* pokemon) { return pokemon->especie; }
+
 bool tiene_pokemon(t_list* lista_pokemon, char* especie_pokemon)
 {
 	for(int i=0;i<lista_pokemon->elements_count;i++)
 	{
 		Pokemon* pokemon = ((Pokemon*) list_get(lista_pokemon, i));
 		if(strcmp(pokemon->especie, especie_pokemon)==0)
+			return true;
+	}
+	return false;
+}
+
+bool tiene_especie(t_list* lista_especies, char* especie_pokemon)
+{
+	for(int i=0;i<lista_especies->elements_count;i++)
+	{
+		char* especie_lista = list_get(lista_especies, i);
+		if(strcmp(especie_lista, especie_pokemon)==0)
 			return true;
 	}
 	return false;
@@ -281,13 +294,6 @@ t_list* especies_en_mapa()
 	}
 
 	return especies_en_mapa;
-}
-char* una_especie_que_necesito_y_esta_en_mapa() { return ((Pokemon_Mapa*) list_get(pokemons_mapa, 0))->especie; }
-
-char* especie_con_entrenador_mas_cercano()
-{
-
-	return ((Pokemon_Mapa*) list_get(pokemons_mapa, 0))->especie;
 }
 
 bool necesito_especie_pokemon(char* especie) { return tiene_pokemon(pokemons_necesarios, especie); }

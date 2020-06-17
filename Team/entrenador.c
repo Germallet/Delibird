@@ -9,7 +9,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <commons/string.h>
-#define MULTIPLICADOR_TIEMPO 1
+#define MULTIPLICADOR_TIEMPO 0.3
 
 Entrenador* entrenador_EXEC;
 t_list* cola_NEW;
@@ -84,7 +84,6 @@ void destruir_entrenador(void* entrenador_void)
 
 	resetear_acciones(entrenador);
 	list_destroy(entrenador->datos_acciones);
-	if (entrenador->info != NULL) free(entrenador->info);
 	free(entrenador);
 }
 
@@ -94,6 +93,15 @@ void asignar_id_mensaje_espera(Entrenador* entrenador, uint* nuevo_id)
 {
 	free(entrenador->id_mensaje_espera);
 	entrenador->id_mensaje_espera = nuevo_id;
+}
+
+int ciclos_restantes(Entrenador* entrenador)
+{
+	if(entrenador->datos_acciones == NULL)
+		return 0;
+
+	int distancia = distancia_entre(*((Posicion*) (((Datos_Accion*) list_get(entrenador->datos_acciones, 0))->info)), entrenador->posicion);
+	return distancia + entrenador->datos_acciones->elements_count - (entrenador->indice_accion_actual+1);
 }
 
 void habilitar_entrenador(Entrenador* entrenador) { entrenador->esta_disponible=true; }
@@ -128,31 +136,64 @@ void sacar_de_cola_actual(Entrenador* entrenador)
 	}
 }
 
+static void insertar_FIFO(Entrenador* entrenador) { list_add(cola_READY, entrenador); }
+static void insertar_SJF(Entrenador* entrenador)
+{
+	int index = 0;
+	Entrenador* pivot = list_get(cola_READY, index);
+	while(pivot != NULL && ciclos_restantes(pivot)<=ciclos_restantes(entrenador))
+	{
+		index++;
+		pivot = list_get(cola_READY, index);
+	}
+	list_add_in_index(cola_READY, index, entrenador);
+}
+
+static void meter_en_cola_READY(Entrenador* entrenador)
+{
+	if(es_planificacion_tipo("FIFO") || es_planificacion_tipo("RR"))
+		insertar_FIFO(entrenador);
+	if(es_planificacion_tipo("SJF-SD"))
+		insertar_SJF(entrenador);
+	if(es_planificacion_tipo("SJF-CD"))
+	{
+		insertar_SJF(entrenador);
+		if(entrenador_EXEC != NULL)
+		{
+			insertar_SJF(entrenador_EXEC);
+			entrenador_EXEC->estado = READY;
+			entrenador_EXEC = NULL;
+		}
+	}
+}
+
+void poner_entrenador_en_EXEC() { cambiar_estado_a(tomar_entrenador(cola_READY), EXEC); }
 void cambiar_estado_a(Entrenador* entrenador, Estado_Entrenador estado)
 {
 	sacar_de_cola_actual(entrenador);
 	if(estado==EXEC)
 		entrenador_EXEC = entrenador;
+	else if(estado==READY)
+		meter_en_cola_READY(entrenador);
 	else
 		list_add(dictionaryInt_get(diccionario_colas, estado), entrenador);
 	entrenador->estado = estado;
 	if(estado==EXIT)
-	{
-		entrenador->esta_disponible = false;
 		log_info(logger, "Finalizo el entrenador %d.", entrenador->ID);
-	}
 }
 
 bool puede_seguir_atrapando_pokemons(Entrenador* entrenador) { return cantidad_de_pokemons_en_lista(entrenador->pokemons_atrapados) < cantidad_de_pokemons_en_lista(entrenador->pokemons_objetivo); }
+bool tiene_de_mas(Entrenador* entrenador, Pokemon* pokemon)
+{
+	char* especie = pokemon->especie;
+	return cantidad_de_pokemon_en_lista(entrenador->pokemons_atrapados, especie) > cantidad_de_pokemon_en_lista(entrenador->pokemons_objetivo, especie);
+}
+
 bool tiene_pokemons_que_no_necesita(void* entrenador_void)
 {
 	Entrenador* entrenador = entrenador_void;
-	bool tiene_de_mas(void* pokemon)
-	{
-		char* especie = ((Pokemon*) pokemon)->especie;
-		return cantidad_de_pokemon_en_lista(entrenador->pokemons_atrapados, especie) > cantidad_de_pokemon_en_lista(entrenador->pokemons_objetivo, especie);
-	}
-	return list_any_satisfy(entrenador->pokemons_atrapados, &tiene_de_mas);
+	bool entrenador_tiene_de_mas(void* pokemon) { return tiene_de_mas(entrenador, pokemon); }
+	return list_any_satisfy(entrenador->pokemons_atrapados, &entrenador_tiene_de_mas);
 }
 
 Datos_Accion* datos_accion_actual(Entrenador* entrenador) {	return list_get(entrenador->datos_acciones, entrenador->indice_accion_actual); }
@@ -284,7 +325,6 @@ void obtener_entrenadores()
 
 	char* entrenadores = config_get_string_value(config,"POSICIONES_ENTRENADORES");
 
-
 	char** posiciones = config_get_array_value(config,"POSICIONES_ENTRENADORES");
 	char* pokemons_atrapados_string = config_get_string_value(config,"POKEMON_ENTRENADORES");
 	char** pokemons_objetivo = config_get_array_value(config,"OBJETIVOS_ENTRENADORES");
@@ -296,16 +336,6 @@ void obtener_entrenadores()
 	free(rep_pokemons_atrapados_pivot);
 
 	char** pokemons_atrapados = string_get_string_as_array(rep_pokemons_atrapados);
-
-	/*log_info(logger, posiciones[0]);
-	log_info(logger, posiciones[1]);
-	log_info(logger, posiciones[2]);
-	log_info(logger, pokemons_atrapados[0]);
-	log_info(logger, pokemons_atrapados[1]);
-	log_info(logger, pokemons_atrapados[2]);
-	log_info(logger, pokemons_objetivo[0]);
-	log_info(logger, pokemons_objetivo[1]);
-	log_info(logger, pokemons_objetivo[2]);*/
 
 	int cantidad_entrenadores = 1;
 	for(int i=0;entrenadores[i]!='\0';i++)
@@ -368,26 +398,28 @@ void ejecutar_entrenador_actual()
 	}
 }
 
-t_list* pokemons_que_tiene_y_no_necesita(Entrenador* entrenador)
+t_list* especies_que_tiene_y_no_necesita(Entrenador* entrenador)
 {
-	// Deep Copy
-	// t_list* pokemons_de_mas = list_duplicate(entrenador->pokemons_atrapados);
 	t_list* pokemons_de_mas = list_create();
 	for(int i=0;i<entrenador->pokemons_atrapados->elements_count;i++)
 	{
-		Pokemon* original = (Pokemon*) list_get(entrenador->pokemons_atrapados, i);
-		Pokemon* copia = crear_pokemon(original->especie);
-		copia->cantidad = original->cantidad;
-		list_add(pokemons_de_mas, copia);
+		Pokemon* pokemon = (Pokemon*) list_get(entrenador->pokemons_atrapados, i);
+
+		if(tiene_de_mas(entrenador, pokemon))
+			list_add(pokemons_de_mas, pokemon->especie);
 	}
-
-	for(int i=0;i<entrenador->pokemons_objetivo->elements_count;i++)
-		tomar_pokemon(pokemons_de_mas, ((Pokemon*) list_get(entrenador->pokemons_objetivo, i))->especie);
-
 	return pokemons_de_mas;
 }
 
+bool esta_en_EXIT(Entrenador* entrenador) { return entrenador->estado == EXIT; }
 bool necesita_pokemon(Entrenador* entrenador, Pokemon* pokemon) { return tiene_pokemon(entrenador->pokemons_objetivo, pokemon->especie); }
+bool necesita_especie(Entrenador* entrenador, char* especie)
+{
+	t_list* especies = list_map(entrenador->pokemons_objetivo, (void*) &obtener_especie_pokemon);
+	bool necesita = tiene_especie(especies, especie);
+	list_destroy(especies);
+	return necesita;
+}
 
 bool necesita_algun_pokemon_de(Entrenador* entrenador, t_list* pokemons)
 {
@@ -395,43 +427,31 @@ bool necesita_algun_pokemon_de(Entrenador* entrenador, t_list* pokemons)
 	return list_any_satisfy(pokemons, &entrenador_necesita_pokemon);
 }
 
-char* especie_que_necesita_de(Entrenador* entrenador, t_list* pokemons)
+bool necesita_alguna_especie_de(Entrenador* entrenador, t_list* especies)
 {
-	bool entrenador_necesita_pokemon(void* pokemon) { return necesita_pokemon(entrenador, (Pokemon*) pokemon); }
-	for(int i=0; i<pokemons->elements_count;i++)
-		if(entrenador_necesita_pokemon(list_get(pokemons, i))) return ((Pokemon*) list_get(pokemons, i))->especie;
+	bool entrenador_necesita_especie(void* especie) { return necesita_especie(entrenador, (char*) especie); }
+	return list_any_satisfy(especies, &entrenador_necesita_especie);
+}
+
+char* especie_que_necesita_de(Entrenador* entrenador, t_list* especies)
+{
+	bool entrenador_necesita_especie(void* especie) { return necesita_especie(entrenador, especie); }
+	for(int i=0; i<especies->elements_count;i++)
+		if(entrenador_necesita_especie(list_get(especies, i))) return list_get(especies, i);
 	return NULL;
 }
 
 bool tienen_pokemons_para_intercambiar(Entrenador* entrenador_1, Entrenador* entrenador_2)
 {
-	t_list* pokemons_que_le_sobran_a_entrenador_1 = pokemons_que_tiene_y_no_necesita(entrenador_1);
-	t_list* pokemons_que_le_sobran_a_entrenador_2 = pokemons_que_tiene_y_no_necesita(entrenador_2);
+	t_list* especies_que_le_sobran_a_entrenador_1 = especies_que_tiene_y_no_necesita(entrenador_1);
+	t_list* especies_que_le_sobran_a_entrenador_2 = especies_que_tiene_y_no_necesita(entrenador_2);
 
-	entrenador_1->info = NULL;
-	entrenador_2->info = NULL;
+	bool tienen = necesita_alguna_especie_de(entrenador_2, especies_que_le_sobran_a_entrenador_1) || necesita_alguna_especie_de(entrenador_1, especies_que_le_sobran_a_entrenador_2);
 
-	if(necesita_algun_pokemon_de(entrenador_1, pokemons_que_le_sobran_a_entrenador_2))
-	{
-		char* especieQueNecesita = especie_que_necesita_de(entrenador_1, pokemons_que_le_sobran_a_entrenador_2);
-		if (entrenador_1->info != NULL) free(entrenador_1->info);
-		entrenador_1->info = malloc(strlen(especieQueNecesita)+1);
-		strcpy(entrenador_1->info, especieQueNecesita);
-	}
-	if(necesita_algun_pokemon_de(entrenador_2, pokemons_que_le_sobran_a_entrenador_1))
-	{
-		char* especieQueNecesita = especie_que_necesita_de(entrenador_2, pokemons_que_le_sobran_a_entrenador_1);
-		if (entrenador_2->info != NULL) free(entrenador_2->info);
-		entrenador_2->info = malloc(strlen(especieQueNecesita)+1);
-		strcpy(entrenador_2->info, especieQueNecesita);
-	}
+	list_destroy(especies_que_le_sobran_a_entrenador_1);
+	list_destroy(especies_que_le_sobran_a_entrenador_2);
 
-	bool se_encontro_algun_pokemon_intercambiable = (entrenador_1->info != NULL) || (entrenador_2->info != NULL);
-
-	list_destroy_and_destroy_elements(pokemons_que_le_sobran_a_entrenador_1, &destruir_pokemon);
-	list_destroy_and_destroy_elements(pokemons_que_le_sobran_a_entrenador_2, &destruir_pokemon);
-
-	return se_encontro_algun_pokemon_intercambiable;
+	return tienen;
 }
 
 bool estamos_en_deadlock() { return !necesitamos_pokemons() && entrenador_EXEC==NULL && cola_BLOCKED->elements_count > 1;}
@@ -444,10 +464,10 @@ t_list* obtener_entrenadores_que_podrian_intercambiar()
 
 void pokemons_que_van_a_intercambiar(Entrenador* entrenador_1, Entrenador* entrenador_2, char** pokemon1, char** pokemon2)
 {
-	t_list* pokemons_que_le_sobran_a_entrenador_1 = pokemons_que_tiene_y_no_necesita(entrenador_1);
-	t_list* pokemons_que_le_sobran_a_entrenador_2 = pokemons_que_tiene_y_no_necesita(entrenador_2);
+	t_list* pokemons_que_le_sobran_a_entrenador_1 = especies_que_tiene_y_no_necesita(entrenador_1);
+	t_list* pokemons_que_le_sobran_a_entrenador_2 = especies_que_tiene_y_no_necesita(entrenador_2);
 
-	if(necesita_algun_pokemon_de(entrenador_1, pokemons_que_le_sobran_a_entrenador_2))
+	if(necesita_alguna_especie_de(entrenador_1, pokemons_que_le_sobran_a_entrenador_2))
 	{
 		char* especieQueNecesita = especie_que_necesita_de(entrenador_1, pokemons_que_le_sobran_a_entrenador_2);
 		*pokemon1 = malloc(strlen(especieQueNecesita)+1);
@@ -459,7 +479,7 @@ void pokemons_que_van_a_intercambiar(Entrenador* entrenador_1, Entrenador* entre
 		*pokemon1 = malloc(strlen(especieQueNecesita)+1);
 		strcpy(*pokemon1, especieQueNecesita);
 	}
-	if(necesita_algun_pokemon_de(entrenador_2, pokemons_que_le_sobran_a_entrenador_1))
+	if(necesita_alguna_especie_de(entrenador_2, pokemons_que_le_sobran_a_entrenador_1))
 	{
 		char* especieQueNecesita = especie_que_necesita_de(entrenador_2, pokemons_que_le_sobran_a_entrenador_1);
 		*pokemon2 = malloc(strlen(especieQueNecesita)+1);
@@ -472,34 +492,8 @@ void pokemons_que_van_a_intercambiar(Entrenador* entrenador_1, Entrenador* entre
 		strcpy(*pokemon2, especieQueNecesita);
 	}
 
-	list_destroy_and_destroy_elements(pokemons_que_le_sobran_a_entrenador_1, &destruir_pokemon);
-	list_destroy_and_destroy_elements(pokemons_que_le_sobran_a_entrenador_2, &destruir_pokemon);
-}
-
-void obtener_entrenadores_que_pueden_intercambiar(Entrenador** entrenador_1, Entrenador** entrenador_2)
-{
-	t_list* entrenadores_que_podrian_intercambiar = obtener_entrenadores_que_podrian_intercambiar();
-
-	Entrenador* entrenador_pivot = NULL;
-	bool encontro = false;
-	if(!list_is_empty(entrenadores_que_podrian_intercambiar)) entrenador_pivot = list_get(entrenadores_que_podrian_intercambiar, 0);
-
-	for(int i=1;!encontro && i<entrenadores_que_podrian_intercambiar->elements_count;i++)
-	{
-		if(tienen_pokemons_para_intercambiar(entrenador_pivot, list_get(entrenadores_que_podrian_intercambiar, i)))
-		{
-			*entrenador_1 = entrenador_pivot;
-			*entrenador_2 = list_get(entrenadores_que_podrian_intercambiar, i);
-			encontro = true;
-		}
-	}
-	if(!encontro)
-	{
-		*entrenador_1 = NULL;
-		*entrenador_2 = NULL;
-	}
-
-	list_destroy(entrenadores_que_podrian_intercambiar);
+	list_destroy(pokemons_que_le_sobran_a_entrenador_1);
+	list_destroy(pokemons_que_le_sobran_a_entrenador_2);
 }
 
 t_list* obtener_entrenadores_que_pueden_intercambiar_con(Entrenador* entrenador, t_list* entrenadores)
@@ -581,6 +575,9 @@ static void intercambiar_pokemon_finalizado(Entrenador* entrenador)
 
 	actualizar_estado(entrenador);
 	actualizar_estado(entrenador2);
+
+	free(entrenador->info);
+	free(entrenador2->info);
 
 	siguiente_accion(entrenador);
 }

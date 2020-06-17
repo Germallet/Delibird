@@ -14,5 +14,7 @@ typedef struct
 
 void planificar_entrenador_si_es_necesario();
 void destruir_interrupcion(void* interrupcion);
+void identificar_deadlocks();
 void terminar_team();
 bool necesitamos_pokemons();
+bool es_planificacion_tipo(char* tipo);
