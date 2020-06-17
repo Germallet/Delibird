@@ -40,3 +40,10 @@ void Particion_Dump(Particion* particion, FILE* archivo, int numero)
 			particion->tamanio
 		);
 }
+
+Particion* Particon_Combinar(Particion* particionA, Particion* particionB)
+{
+	particionA->tamanio += particionB->tamanio;
+	Particion_Destruir(particionB);
+	return particionA;
+}

@@ -68,6 +68,8 @@ void IniciarMemoria(int tamanioMemoria, int _tamanioMinimo, char* algoritmoMemor
 			log_error(logger, "Algorimo de reemplazo inválido");
 			exit(-1);
 		}
+
+		BS_Inicializar(tamanioMemoria);
 	}
 	else
 	{

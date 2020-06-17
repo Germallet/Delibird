@@ -1,7 +1,6 @@
 #include "dynamicPartitioning.h"
-#include "particion.h"
-#include "../Utils/dictionaryInt.h"
 #include "memoria.h"
+#include "../Utils/dictionaryInt.h"
 #include <string.h>
 
 t_list* particiones;
@@ -26,8 +25,7 @@ static Particion* Subparticionar(Particion* particion, int tamanio)
 
 Particion* DP_Seleccionar_FF(int tamanio)
 {
-	if(tamanio < tamanioMinimo)
-		tamanio = tamanioMinimo;
+	tamanio = tamanio < tamanioMinimo ? tamanioMinimo : tamanio;
 
 	for (int indice = 0; indice < particiones->elements_count; indice++)
 	{
@@ -53,14 +51,13 @@ Particion* DP_Seleccionar_BF(int tamanio)
 		Particion* particion = (Particion*)(list_get(particiones, indice));
 		if (!particion->ocupado && particion->tamanio >= tamanio)
 		{
-			if (mejorParticion == NULL || particion->tamanio < mejorParticion->tamanio)
-			{
-				if (particion->tamanio > tamanio)
-					Subparticionar(particion, tamanio);
-				return particion;
-			}
+			if (mejorParticion == NULL || particion->tamanio < mejorParticion->tamanio + tamanioMinimo)
+				mejorParticion = particion;
 		}
 	}
+	if (mejorParticion->tamanio > tamanio)
+		Subparticionar(mejorParticion, tamanio);
+
 	return mejorParticion;
 }
 
@@ -76,9 +73,28 @@ void DP_Compactar()
 	}
 }
 
+static void DP_Consolidar(Particion* particion)
+{
+	int indice = 0;
+	for(; list_get(particiones, indice) != particion; indice++);
+
+	if(indice != 0)
+	{
+		Particion* particionA = (Particion*)list_get(particiones, 0);
+		if (!particionA->ocupado)
+			particion = Particon_Combinar(particionA, particion);
+	}
+	if(indice != particiones->elements_count-1)
+	{
+		Particion* particionB = (Particion*)list_get(particiones, indice+1);
+		if (!particionB->ocupado)
+			Particon_Combinar(particion, particionB);
+	}
+}
 static void DP_Eliminar(Particion* particion)
 {
 	particion->ocupado = false;
+	DP_Consolidar(particion);
 }
 
 void DP_Eliminar_FIFO()
