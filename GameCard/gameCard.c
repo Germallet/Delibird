@@ -63,9 +63,9 @@ void tallGrass_init(char* puntoMontaje) {
 
 	crearDirectorioFiles();
 
-	//ESTAS DE ACA NO DEBERIAN TENER NADA DE PARAMETRO
-	crearDirectorioBlocks(config_get_int_value(config,"BLOCKS"));
-	crearDirectorioMetadata(config_get_int_value(config,"BLOCK_SIZE"),config_get_int_value(config,"BLOCKS"),config_get_string_value(config,"MAGIC_NUMBER"));
+	crearDirectorioMetadata();
+
+	crearDirectorioBlocks();
 }
 
 NodoArbol* encontrarPokemon(char* nombre) {
@@ -85,8 +85,6 @@ char* pathPtoMnt() {
 	return raiz->nombre;
 }
 
-//TODO VALGRIND
-
 char* pathPokemon(char* nombre) {
 	char* path = string_new();
 	string_append(&path,pathPtoMnt());
@@ -95,8 +93,6 @@ char* pathPokemon(char* nombre) {
 	string_append(&path,"/metadata.bin");
 	return path;
 }
-
-//TODO VALGRIND
 
 char* pathBloque(char* nombre) {
 	char* path = string_new();
@@ -162,7 +158,7 @@ void conectarse() {
 	if(clienteBroker != NULL) SuscribirseColas(clienteBroker);
 }
 
-void reconexion(void* a) {
+void reconexion(void* a) { //TODO ARREGLAR LO DE LOS MENSAJES
 	if (clienteBroker == NULL) {
 		conectarse();
 

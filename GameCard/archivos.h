@@ -15,19 +15,27 @@ typedef struct {
 	uint32_t cantidad;
 } DatosBloques;
 
+typedef struct {
+	uint32_t tamanioBlocks;
+	uint32_t cantidadBlocks;
+	char* magicNumber;
+} ConfigFS;
+
+ConfigFS configFS;
+
 void cerrar(char* path);
 void abrir(char* path);
 
 char* pathMetadataBinDe(char* path, char* nombreArchivo);
 char* posicionAString(DatosBloques* d);
 t_list* convertirBloques(t_list* bloques, int cantBloques);
-t_list* interpretarCadena(char* cadenaDatos, int cantBloques, int size);
+t_list* interpretarCadena(char* cadenaDatos, int cantBloques);
 
 char* leerOpen(char* path);
 int leerSize(char* path);
 char* leerDirectorio(char* path);
 char* leerBlocksPorConfig(char* path);
-char* leerArchivos(t_list* bloques, int cantBloques, int size);
+char* leerArchivos(t_list* bloques, int cantBloques);
 t_list* leerBlocks(char* path, int* cantBloques);
 
 int tamanioBloque(int* nroBloque);
@@ -38,20 +46,19 @@ bool esDirectorio(char* path);
 bool existeDirectorio(char* path);
 short existeArchivo(char *path);
 
-void crearBitmap(char* path,int cantBlocks);
+void crearBitmap(char* path);
 void crearArchivo(char* path);
 void crearDirectorioFiles();
 void crearDirectorioBlocks();
 void crearDirectorioMetadata();
-void crearBloques(int blocks);
-void crearBitmap(char* path, int cantBlocks);
+void crearBloques();
 
 NodoArbol* crearPokemon(char* nombre);
 void crearMetadataPokemon(char* path);
 
 DatosBloques* encontrarPosicion(t_list* pokemon, Posicion pos);
 
-int agregarCantidadEnPosicion(t_list* pokemon, DatosBloques posYCant, t_list* numerosBloques, int size);
-void escribirListaEnArchivo(t_list* pokemon, int size, t_list* numerosBloques);
+int agregarCantidadEnPosicion(t_list* pokemon, DatosBloques posYCant, t_list* numerosBloques);
+void escribirListaEnArchivo(t_list* pokemon, t_list* numerosBloques);
 void cambiarMetadataPokemon(char* pathPokemon, t_list* numerosBloques, int bytes);
-bool atraparPokemon(t_list* datosBloques, Posicion pos, t_list* numerosBloques, int size, int* bytes);
+bool atraparPokemon(t_list* datosBloques, Posicion pos, t_list* numerosBloques, int* bytes);

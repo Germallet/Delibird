@@ -77,7 +77,7 @@ void Operacion_NEW_POKEMON(DATOS_NEW_POKEMON_ID* datos) {
 
 	if (filePokemon != NULL) {
 
-		if(estaAbierto(pathPokemon(datos->datos.pokemon))) { // TODO ARREGLAR ESTO QUE ESTA MAL
+		if(estaAbierto(pathPokemon(datos->datos.pokemon))) {
 			sleep(config_get_int_value(config,"TIEMPO_REINTENTO_OPERACION"));
 			Operacion_NEW_POKEMON(datos);
 		} else {
@@ -95,11 +95,9 @@ void Operacion_NEW_POKEMON(DATOS_NEW_POKEMON_ID* datos) {
 			posYCant.pos.posX = datos->datos.posicion.posX;
 			posYCant.pos.posY = datos->datos.posicion.posY;
 
-			int size = config_get_int_value(config,"BLOCK_SIZE"); // TODO PUEDE NO VENIR DEL CONFIG
+			int bytes = agregarCantidadEnPosicion(datosBloques,posYCant,numerosBloques);
 
-			int bytes = agregarCantidadEnPosicion(datosBloques,posYCant,numerosBloques,size);
-
-			sleep(config_get_int_value(config,"TIEMPO_RETARDO_OPERACION")); //TODO PUEDE NO VENIR DEL CONFIG
+			sleep(config_get_int_value(config,"TIEMPO_RETARDO_OPERACION"));
 
 			fclose(filePokemon);
 
@@ -122,8 +120,8 @@ void Operacion_NEW_POKEMON(DATOS_NEW_POKEMON_ID* datos) {
 void Recibir_CATCH_POKEMON(Cliente* cliente, Paquete* paqueteRecibido) {
 	Stream* stream = Stream_CrearLecturaPaquete(paqueteRecibido);
 	uint32_t id = Deserializar_uint32(stream);
-	DATOS_CATCH_POKEMON_ID* datos = malloc(sizeof(DATOS_NEW_POKEMON_ID));
-	datos->datos = Deserializar_CATCH_POKEMON(stream);
+	DATOS_CATCH_POKEMON_ID* datos = malloc(sizeof(DATOS_CATCH_POKEMON_ID));
+	datos->datos = Deserializar_CATCH_POKEMON(stream); //TODO DESERIALIZA MAL
 	datos->id = id;
 
 	if (stream->error)
@@ -150,7 +148,7 @@ void Operacion_CATCH_POKEMON(DATOS_CATCH_POKEMON_ID* datos) {
 
 		if (filePokemon != NULL) {
 
-			if(estaAbierto(pathPokemon(datos->datos.pokemon))) { // TODO ARREGLAR ESTO QUE ESTA MAL
+			if(estaAbierto(pathPokemon(datos->datos.pokemon))) {
 				sleep(config_get_int_value(config,"TIEMPO_REINTENTO_OPERACION"));
 				Operacion_CATCH_POKEMON(datos);
 			} else {
@@ -167,13 +165,11 @@ void Operacion_CATCH_POKEMON(DATOS_CATCH_POKEMON_ID* datos) {
 				posicion.posX = datos->datos.posicion.posX;
 				posicion.posY = datos->datos.posicion.posY;
 
-				int size = config_get_int_value(config,"BLOCK_SIZE"); // TODO PUEDE NO VENIR DEL CONFIG
-
 				int* bytes = malloc(sizeof(int));
 
-				bool caught = atraparPokemon(datosBloques,posicion,numerosBloques,size,bytes);
+				bool caught = atraparPokemon(datosBloques,posicion,numerosBloques,bytes);
 
-				sleep(config_get_int_value(config,"TIEMPO_RETARDO_OPERACION")); //TODO PUEDE NO VENIR DEL CONFIG
+				sleep(config_get_int_value(config,"TIEMPO_RETARDO_OPERACION"));
 
 				fclose(filePokemon);
 
@@ -237,7 +233,7 @@ void Operacion_GET_POKEMON(DATOS_GET_POKEMON_ID* datos) {
 
 				t_list* datosBloques = convertirBloques(numerosBloques,cantBloques); //DEVUELVE LA LISTA DE DATOSBLOQUES
 
-				sleep(config_get_int_value(config,"TIEMPO_RETARDO_OPERACION")); //TODO PUEDE NO VENIR DEL CONFIG
+				sleep(config_get_int_value(config,"TIEMPO_RETARDO_OPERACION"));
 
 				Enviar_LOCALIZED_POKEMON(datos,datosBloques);
 

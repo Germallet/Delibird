@@ -14,14 +14,6 @@
 #include <fcntl.h>
 #include <errno.h>
 
-typedef struct {
-	uint32_t tamanioBlocks;
-	uint32_t cantidadBlocks;
-	char* magicNumber;
-} ConfigFS;
-
-ConfigFS configFS;
-
 t_log* logger;
 
 Cliente* clienteBroker;
