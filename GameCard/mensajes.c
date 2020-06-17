@@ -306,7 +306,35 @@ void Enviar_CAUGHT_POKEMON(DATOS_CATCH_POKEMON_ID* datos, bool caught) {
 }
 
 void Enviar_LOCALIZED_POKEMON(DATOS_GET_POKEMON_ID* datos,t_list* datosArchivo) {
+	DATOS_LOCALIZED_POKEMON* datosAEnviar = malloc(sizeof(DATOS_LOCALIZED_POKEMON));
 
+	Posicion posiciones[list_size(datosArchivo)];
+
+	for (int i = 0; i < list_size(datosArchivo); i++) {
+		posiciones[i].posX = 0;
+		posiciones[i].posY = 0;
+	}
+
+	for (int i = 0; i < list_size(datosArchivo); i++) {
+		DatosBloques* a = list_get(datosArchivo,i);
+
+		posiciones[i].posX = a->pos.posX;
+		posiciones[i].posY = a->pos.posY;
+	}
+
+	datosAEnviar->posiciones = posiciones;
+	datosAEnviar->cantidad = list_size(datosArchivo); //TODO NECESITAMOS LAS CANTIDADES? SERIA RARO
+	datosAEnviar->idCorrelativa = datos->id;
+	datosAEnviar->pokemon = datos->datos.pokemon;
+
+	if(clienteBroker != NULL) {
+		EnviarMensaje(clienteBroker, LOCALIZED_POKEMON, datosAEnviar, (void*) &SerializarM_LOCALIZED_POKEMON);
+		log_info(logger,"Se envio correctamente el localized pokemon");
+	} else {
+		log_info(logger, "Se guardo el mensaje para cuando se pueda volver a conectarse");
+	}
+
+	free(datos);
 }
 
 void Recibir_ID(Cliente* cliente, Paquete* paqueteRecibido) {
