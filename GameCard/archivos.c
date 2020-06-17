@@ -500,6 +500,7 @@ void cambiarMetadataPokemon(char* pathPokemon, t_list* numerosBloques, int bytes
 		string_append(&bloques,string_itoa(*a));
 		string_append(&bloques,",");
 	}
+
 	bloques[string_length(bloques)-1] = ']';
 	config_set_value(c,"BLOCKS",bloques);
 
