@@ -8,7 +8,7 @@ Eventos* eventos;
 
 /*
  * TODO MANEJAR MEJOR LOS ERRORES DE FALTA DE MEMORIA
- * TODO SINCRONIZAR TOODO
+ * TODO SINCRONIZAR BITMAP
  * TODO CATCH DEL CTRL C PARA TERMINAR DE ESCUCHAR
  */
 
@@ -31,6 +31,8 @@ int main()
 	mensajesNoEnviadosCAUGHT = list_create();
 	mensajesNoEnviadosLOCALIZED = list_create();
 
+//	pthread_mutex_init(&semBitmap,NULL);
+
 	SocketEscucha(miIp, miPuerto);
 
 	CrearHiloTimer(-1,tiempoReintentoConexion,&reconexion,NULL);
@@ -43,16 +45,18 @@ int main()
 
 	log_info(logger,"Mandame mensaje pa, dale");
 
+	signal(SIGINT,EscuchaSignal);
+
 	EsperarHilos();
-// HAY QUE VER COMO PARAR DE ESCUCHAR HILOS. (ctrl+c???)
+
+	TerminarPrograma();
 
 	return 0;
 }
 
 //ESTO ES PARA ESCUCHAR HILOS
 void EscuchaSignal(int signo) {
-    if (signo == SIGINT)
-    	TerminarPrograma();
+    if (signo == SIGINT) pthread_mutex_unlock(&mx_main);
 }
 
 void tallGrass_init(char* puntoMontaje) {
@@ -179,7 +183,6 @@ void reconexion(void* a) { //TODO ARREGLAR LO DE LOS MENSAJES
 
 void EsperarHilos()
 {
-	pthread_mutex_t mx_main;
 	pthread_mutex_init(&mx_main, NULL);
 	pthread_mutex_lock(&mx_main);
 	pthread_mutex_lock(&mx_main);
@@ -194,14 +197,22 @@ void TerminarProgramaConError(char* error)
 
 void TerminarPrograma()
 {
+	log_info(logger,"Terminando programa");
 	log_destroy(logger);
 	config_destroy(config);
 	bitarray_destroy(bitmap);
-	DestruirCliente(clienteBroker);
+	if (clienteBroker != NULL) DestruirCliente(clienteBroker);
 	DestruirServidor(servidor);
+	list_clean(mensajesNoEnviadosAPPEARED);
 	list_destroy(mensajesNoEnviadosAPPEARED);
+	list_clean(mensajesNoEnviadosCAUGHT);
 	list_destroy(mensajesNoEnviadosCAUGHT);
+	list_clean(mensajesNoEnviadosLOCALIZED);
 	list_destroy(mensajesNoEnviadosLOCALIZED);
+	NodoArbol* files = directorioFiles();
+	list_clean(files->hijos);
+	list_destroy(files->hijos);
+	free(files);
 	list_clean(raiz->hijos);
 	list_destroy(raiz->hijos);
 	free(raiz);

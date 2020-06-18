@@ -32,6 +32,10 @@ t_list* mensajesNoEnviadosCAUGHT;
 
 t_list* mensajesNoEnviadosLOCALIZED;
 
+pthread_mutex_t semBitmap;
+
+pthread_mutex_t mx_main;
+
 void EscuchaSignal(int signo);
 char* pathBloque(char* nombre);
 void conectarse();

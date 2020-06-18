@@ -75,17 +75,19 @@ void Operacion_NEW_POKEMON(DATOS_NEW_POKEMON_ID* datos) {
 
 	FILE* filePokemon = fopen(path,"ab+");
 
+	t_config* pConfig = config_create(path);
+
 	if (filePokemon != NULL) {
 
-		if(estaAbierto(pathPokemon(datos->datos.pokemon))) {
+		if(estaAbierto(pConfig)) {
 			sleep(config_get_int_value(config,"TIEMPO_REINTENTO_OPERACION"));
 			Operacion_NEW_POKEMON(datos);
 		} else {
-			abrir(path);
+			abrir(pConfig);
 
 			int cantBloques =  0;
 
-			t_list* numerosBloques = leerBlocks(path, &cantBloques); //DEVUELVE LA LISTA DE INTS DE LOS NROS DE BLOQUE
+			t_list* numerosBloques = leerBlocks(&cantBloques, pConfig); //DEVUELVE LA LISTA DE INTS DE LOS NROS DE BLOQUE
 
 			t_list* datosBloques = convertirBloques(numerosBloques,cantBloques); //DEVUELVE LA LISTA DE DATOSBLOQUES
 
@@ -101,11 +103,13 @@ void Operacion_NEW_POKEMON(DATOS_NEW_POKEMON_ID* datos) {
 
 			fclose(filePokemon);
 
-			cambiarMetadataPokemon(path,numerosBloques,bytes);
+			cambiarMetadataPokemon(pConfig,numerosBloques,bytes);
 
 			Enviar_APPEARED_POKEMON(datos);
 
 			free(path);
+
+			config_destroy(pConfig);
 
 			list_clean(numerosBloques);
 			list_destroy(numerosBloques);
@@ -121,7 +125,7 @@ void Recibir_CATCH_POKEMON(Cliente* cliente, Paquete* paqueteRecibido) {
 	Stream* stream = Stream_CrearLecturaPaquete(paqueteRecibido);
 	uint32_t id = Deserializar_uint32(stream);
 	DATOS_CATCH_POKEMON_ID* datos = malloc(sizeof(DATOS_CATCH_POKEMON_ID));
-	datos->datos = Deserializar_CATCH_POKEMON(stream); //TODO DESERIALIZA MAL
+	datos->datos = Deserializar_CATCH_POKEMON(stream);
 	datos->id = id;
 
 	if (stream->error)
@@ -146,17 +150,19 @@ void Operacion_CATCH_POKEMON(DATOS_CATCH_POKEMON_ID* datos) {
 
 		FILE* filePokemon = fopen(path,"ab+");
 
+		t_config* pConfig = config_create(path);
+
 		if (filePokemon != NULL) {
 
-			if(estaAbierto(pathPokemon(datos->datos.pokemon))) {
+			if(estaAbierto(pConfig)) {
 				sleep(config_get_int_value(config,"TIEMPO_REINTENTO_OPERACION"));
 				Operacion_CATCH_POKEMON(datos);
 			} else {
-				abrir(path);
+				abrir(pConfig);
 
 				int cantBloques =  0;
 
-				t_list* numerosBloques = leerBlocks(path, &cantBloques); //DEVUELVE LA LISTA DE INTS DE LOS NROS DE BLOQUE
+				t_list* numerosBloques = leerBlocks(&cantBloques,pConfig); //DEVUELVE LA LISTA DE INTS DE LOS NROS DE BLOQUE
 
 				t_list* datosBloques = convertirBloques(numerosBloques,cantBloques); //DEVUELVE LA LISTA DE DATOSBLOQUES
 
@@ -173,11 +179,13 @@ void Operacion_CATCH_POKEMON(DATOS_CATCH_POKEMON_ID* datos) {
 
 				fclose(filePokemon);
 
-				cambiarMetadataPokemon(path,numerosBloques,*bytes);
+				cambiarMetadataPokemon(pConfig,numerosBloques,*bytes);
 
 				Enviar_CAUGHT_POKEMON(datos,caught);
 
 				free(path);
+
+				config_destroy(pConfig);
 
 				list_clean(numerosBloques);
 				list_destroy(numerosBloques);
@@ -219,17 +227,19 @@ void Operacion_GET_POKEMON(DATOS_GET_POKEMON_ID* datos) {
 
 		FILE* filePokemon = fopen(path,"ab+");
 
+		t_config* pConfig = config_create(path);
+
 		if (filePokemon != NULL) {
 
-			if(estaAbierto(pathPokemon(datos->datos.pokemon))) {
+			if(estaAbierto(pConfig)) {
 				sleep(config_get_int_value(config,"TIEMPO_REINTENTO_OPERACION"));
 				Operacion_GET_POKEMON(datos);
 			} else {
-				abrir(path);
+				abrir(pConfig);
 
 				int cantBloques =  0;
 
-				t_list* numerosBloques = leerBlocks(path, &cantBloques); //DEVUELVE LA LISTA DE INTS DE LOS NROS DE BLOQUE
+				t_list* numerosBloques = leerBlocks(&cantBloques,pConfig); //DEVUELVE LA LISTA DE INTS DE LOS NROS DE BLOQUE
 
 				t_list* datosBloques = convertirBloques(numerosBloques,cantBloques); //DEVUELVE LA LISTA DE DATOSBLOQUES
 
@@ -237,7 +247,9 @@ void Operacion_GET_POKEMON(DATOS_GET_POKEMON_ID* datos) {
 
 				Enviar_LOCALIZED_POKEMON(datos,datosBloques);
 
-				cerrar(path);
+				cerrar(pConfig);
+
+				config_destroy(pConfig);
 
 				fclose(filePokemon);
 

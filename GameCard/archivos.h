@@ -23,26 +23,23 @@ typedef struct {
 
 ConfigFS configFS;
 
-void cerrar(char* path);
-void abrir(char* path);
+void cerrar(t_config* conf);
+void abrir(t_config* conf);
 
 char* pathMetadataBinDe(char* path, char* nombreArchivo);
 char* posicionAString(DatosBloques* d);
 t_list* convertirBloques(t_list* bloques, int cantBloques);
 t_list* interpretarCadena(char* cadenaDatos, int cantBloques);
 
-char* leerOpen(char* path);
-int leerSize(char* path);
-char* leerDirectorio(char* path);
+char* leerOpen(t_config* conf);
 char* leerBlocksPorConfig(char* path);
 char* leerArchivos(t_list* bloques, int cantBloques);
-t_list* leerBlocks(char* path, int* cantBloques);
+t_list* leerBlocks(int* cantBloques, t_config* conf);
 
 int tamanioBloque(int* nroBloque);
 
 bool sonIguales(char* a, char* b);
-bool estaAbierto(char* path);
-bool esDirectorio(char* path);
+bool estaAbierto(t_config* conf);
 bool existeDirectorio(char* path);
 short existeArchivo(char *path);
 
@@ -60,5 +57,5 @@ DatosBloques* encontrarPosicion(t_list* pokemon, Posicion pos);
 
 int agregarCantidadEnPosicion(t_list* pokemon, DatosBloques posYCant, t_list* numerosBloques);
 void escribirListaEnArchivo(t_list* pokemon, t_list* numerosBloques);
-void cambiarMetadataPokemon(char* pathPokemon, t_list* numerosBloques, int bytes);
+void cambiarMetadataPokemon(t_config* c, t_list* numerosBloques, int bytes);
 bool atraparPokemon(t_list* datosBloques, Posicion pos, t_list* numerosBloques, int* bytes);

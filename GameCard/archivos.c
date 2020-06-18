@@ -3,40 +3,39 @@
 
 bool sonIguales(char* a, char* b)
 {
-	return string_equals_ignore_case(a, b);
+	return strcmp(a, b) == 0;
 }
 
-bool estaAbierto(char* path) {
-	return sonIguales(leerOpen(path),"Y");
+bool estaAbierto(t_config* conf) {
+	char* a = leerOpen(conf);
+	bool son = sonIguales(a,"Y");
+	free(a);
+	return son;
 }
 
-void abrir(char* path) {
-	t_config* pokemon = config_create(path);
-	config_set_value(pokemon,"OPEN","Y");
-	config_save(pokemon);
-	config_destroy(pokemon);
+void abrir(t_config* conf) {
+//	t_config* pokemon = config_create(path);
+	config_set_value(conf,"OPEN","Y");
+	config_save(conf);
+//	config_destroy(pokemon);
 }
 
-void cerrar(char* path) {
-	t_config* pokemon = config_create(path);
-	config_set_value(pokemon,"OPEN","N");
-	config_save(pokemon);
-	config_destroy(pokemon);
+void cerrar(t_config* conf) {
+//	t_config* pokemon = config_create(path);
+	config_set_value(conf,"OPEN","N");
+	config_save(conf);
+//	config_destroy(pokemon);
 }
 
-bool esDirectorio(char* path) {
-	return sonIguales(leerDirectorio(path),"Y");
-}
-
-t_list* leerBlocks(char* path, int* cantBloques) {
+t_list* leerBlocks(int* cantBloques, t_config* conf) {
 
 	log_info(logger,"Leyendo el metadata para ver que bloques usa el pokemon");
 
-	t_config* pokemon = config_create(path);
+//	t_config* pokemon = config_create(path);
 
-	char** listaBloques = config_get_array_value(pokemon,"BLOCKS");
+	char** listaBloques = config_get_array_value(conf,"BLOCKS");
 
-	config_destroy(pokemon);
+//	config_destroy(pokemon);
 
 	while (listaBloques[*cantBloques] != NULL) (*cantBloques)++;
 
@@ -47,38 +46,22 @@ t_list* leerBlocks(char* path, int* cantBloques) {
 		*elem = strtol(listaBloques[i],NULL,10);
 		list_add(listaARetornar,elem);
 	}
+	for (int i = 0; i < list_size(listaARetornar); i++) {
+		free(listaBloques[i]);
+	}
+//	free(listaBloques);
 
 	return listaARetornar;
 }
 
-char* leerOpen(char* path) {
-	t_config* pokemon = config_create(path);
+char* leerOpen(t_config* conf) {
+//	t_config* pokemon = config_create(path);
 
-	char* open = config_get_string_value(pokemon,"OPEN");
+	char* open = config_get_string_value(conf,"OPEN");
 
-	config_destroy(pokemon);
+//	config_destroy(pokemon);
 
 	return open;
-}
-
-int leerSize(char* path) {
-	t_config* pokemon = config_create(path);
-
-	int size = config_get_int_value(pokemon,"SIZE");
-
-	config_destroy(pokemon);
-
-	return size;
-}
-
-char* leerDirectorio(char* path) {
-	t_config* pokemon = config_create(path);
-
-	char* directory = config_get_string_value(pokemon,"DIRECTORY");
-
-	config_destroy(pokemon);
-
-	return directory;
 }
 
 bool existeDirectorio(char* path) {
@@ -122,6 +105,7 @@ void crearDirectorioFiles() {
 				if (!sonIguales(entry->d_name,"metadata.bin") && !sonIguales(entry->d_name,".") && !sonIguales(entry->d_name,"..")) agregarNodo(directorioFiles(),crearNodo(entry->d_name));
 			}
 		}
+		closedir(files);
 	}
 	free(aux);
 }
@@ -214,7 +198,6 @@ void crearDirectorioMetadata() {
 void crearBitmap(char* path) {
 
 	log_info(logger,"Creando bitmap");
-
 	bitmap = bitarray_create_with_mode(string_repeat('\0',configFS.cantidadBlocks), configFS.cantidadBlocks, LSB_FIRST);
 
 	FILE* fBitmap = fopen(path,"wb+");
@@ -223,8 +206,7 @@ void crearBitmap(char* path) {
 }
 
 bool atraparPokemon(t_list* datosBloques, Posicion pos, t_list* numerosBloques, int* bytes) {
-	DatosBloques* posYCant = malloc(sizeof(DatosBloques));
-	posYCant = encontrarPosicion(datosBloques,pos);
+	DatosBloques* posYCant = encontrarPosicion(datosBloques,pos);
 
 	bool caught;
 
@@ -239,6 +221,7 @@ bool atraparPokemon(t_list* datosBloques, Posicion pos, t_list* numerosBloques, 
 		posYCant->cantidad-=1;
 		if (posYCant->cantidad == 0) list_remove_and_destroy_by_condition(datosBloques,(void*)&esPosicion,&free);
 		log_info(logger,"Atrapando pokemon...");
+
 		escribirListaEnArchivo(datosBloques,numerosBloques);
 		caught = true;
 	}
@@ -250,14 +233,13 @@ bool atraparPokemon(t_list* datosBloques, Posicion pos, t_list* numerosBloques, 
 
 int agregarCantidadEnPosicion(t_list* pokemon, DatosBloques posYCant, t_list* numerosBloques) {
 
-	DatosBloques* posicion = malloc(sizeof(DatosBloques));
-	posicion = encontrarPosicion(pokemon,posYCant.pos);
+	DatosBloques* posicion = encontrarPosicion(pokemon,posYCant.pos);
 
 	if(posicion == NULL) {
 
 		log_info(logger,"Agregando la posicion");
 
-		list_add(pokemon,&posYCant); //ACA NO SE PORQUE LE SUMA OTRO SI NO HAY NADA
+		list_add(pokemon,&posYCant);
 
 		int* valorRetorno = list_get(numerosBloques,list_size(numerosBloques)-1);
 
@@ -272,6 +254,8 @@ int agregarCantidadEnPosicion(t_list* pokemon, DatosBloques posYCant, t_list* nu
 			int tam = ftell(bloque);
 
 			int bytesDesocupados = configFS.tamanioBlocks - tam;
+
+//			pthread_mutex_lock(&semBitmap);
 
 			if (strlen(cadena) <= bytesDesocupados) {
 
@@ -292,6 +276,7 @@ int agregarCantidadEnPosicion(t_list* pokemon, DatosBloques posYCant, t_list* nu
 				fclose(f);
 				free(pathB);
 			}
+//			pthread_mutex_unlock(&semBitmap);
 
 			free(cadena);
 			free(path);
@@ -311,23 +296,36 @@ int agregarCantidadEnPosicion(t_list* pokemon, DatosBloques posYCant, t_list* nu
 	return configFS.tamanioBlocks*(list_size(numerosBloques) - 1) + tamanioBloque(list_get(numerosBloques,list_size(numerosBloques) - 1));
 }
 
-void escribirListaEnArchivo(t_list* pokemon, t_list* numerosBloques) {
+void escribirListaEnArchivo(t_list* datosBloques, t_list* numerosBloques) {
 
 	log_info(logger, "Actualizando los bloques");
 
 	char* cadenaGrande = string_new();
 
-	for (int i = 0; i < list_size(pokemon); i++) {
-		DatosBloques* pok = list_get(pokemon,i);
+	for (int i = 0; i < list_size(datosBloques); i++) {
+		DatosBloques* pok = list_get(datosBloques,i);
 		char* cadena = posicionAString(pok);
 		string_append(&cadenaGrande,cadena);
 	}
 
+//	pthread_mutex_lock(&semBitmap);
 	if (strlen(cadenaGrande) > configFS.tamanioBlocks*list_size(numerosBloques)) {
 		log_info(logger, "Pidiendo bloque");
 		int* nuevoBloque = pedirBloque();
 		list_add(numerosBloques,nuevoBloque);
 	}
+//	pthread_mutex_unlock(&semBitmap);
+// 	TODO VAN ESTOS DOS??
+//	pthread_mutex_lock(&semBitmap);
+	if (strlen(cadenaGrande) <= configFS.tamanioBlocks*(list_size(numerosBloques) - 1)) {
+		log_info(logger, "Borrando bloque");
+		int* index = list_get(numerosBloques,list_size(numerosBloques) - 1);
+		bitarray_clean_bit(bitmap,*index);
+		FILE* bloque = fopen(pathBloque(string_itoa(*index)),"wb+");
+		fclose(bloque);
+		list_remove_and_destroy_element(numerosBloques,list_size(numerosBloques) - 1, &free);
+	}
+//	pthread_mutex_unlock(&semBitmap);
 
 	int tamanioBloque = configFS.tamanioBlocks;
 
@@ -346,7 +344,7 @@ void escribirListaEnArchivo(t_list* pokemon, t_list* numerosBloques) {
 
 DatosBloques* encontrarPosicion(t_list* pokemon, Posicion pos) {
 
-	DatosBloques* dat = malloc(sizeof(DatosBloques));
+	DatosBloques* dat;
 	for (int i = 0; i < list_size(pokemon); i++) {
 		dat = list_get(pokemon,i);
 		Posicion pos2 = dat->pos;
@@ -367,7 +365,8 @@ NodoArbol* crearPokemon(char* nombre) {
 	string_append(&pathNodo,nodo->nombre);
 
 	mkdir(pathNodo,0700);
-	crearMetadataPokemon(pathNodo);
+
+	crearMetadataPokemon(nombre);
 
 	return nodo;
 }
@@ -375,10 +374,7 @@ NodoArbol* crearPokemon(char* nombre) {
 void crearMetadataPokemon(char* path) {
 
 	log_info(logger,"Creando metadata para el pokemon");
-
-	string_append(&path,"/metadata.bin");
-
-	FILE* metadata = fopen(path,"wb+");
+	FILE* metadata = fopen(pathPokemon(path),"wb+");
 
 	fprintf(metadata,"DIRECTORY=N\n");
 	fprintf(metadata,"SIZE=0\n");
@@ -386,14 +382,17 @@ void crearMetadataPokemon(char* path) {
 	int* nuevoBloque = pedirBloque();
 	char* bloques = string_new();
 	string_append(&bloques,"BLOCKS=[");
-	string_append(&bloques,string_itoa(*nuevoBloque));
+	char* nuevoB = string_itoa(*nuevoBloque);
+	string_append(&bloques,nuevoB);
 	string_append(&bloques,"]\n");
 	fputs(bloques,metadata);
 	fputs("OPEN=N\n",metadata);
 
+	free(nuevoB);
 	free(bloques);
 	free(nuevoBloque);
 	fclose(metadata);
+	free(path);
 }
 
 t_list* convertirBloques(t_list* bloques, int cantBloques) {
@@ -508,8 +507,7 @@ int tamanioBloque(int* nroBloque) {
 	return a;
 }
 
-void cambiarMetadataPokemon(char* pathPokemon, t_list* numerosBloques, int bytes) {
-	t_config* c = config_create(pathPokemon);
+void cambiarMetadataPokemon(t_config* c, t_list* numerosBloques, int bytes) {
 
 	config_set_value(c,"SIZE",string_itoa(bytes));
 
@@ -528,7 +526,6 @@ void cambiarMetadataPokemon(char* pathPokemon, t_list* numerosBloques, int bytes
 
 	free(bloques);
 	config_save(c);
-	config_destroy(c);
 }
 
 char* posicionAString(DatosBloques* d) {
