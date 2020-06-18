@@ -71,18 +71,21 @@ void Operacion_NEW_POKEMON(DATOS_NEW_POKEMON_ID* datos) {
 		agregarNodo(directorioFiles(),nodoPokemon);
 	}
 
-	char* path = pathPokemon(datos->datos.pokemon);
+	char* path = pathPokemon(nodoPokemon->nombre); // ACA CAMBIE ESTO POR SI EN ALGUN MOMENTO LEE MAL NOS VAMOS A DAR CUENTA
 
 //	if (filePokemon != NULL) {
 
 		if(estaAbierto(path)) {
+			//NO SE POR QUE PERO ROMPE ACA TAMBIEN
 			sleep(config_get_int_value(config,"TIEMPO_REINTENTO_OPERACION"));
 			Operacion_NEW_POKEMON(datos);
 		} else {
+			//ESTO LO PUSE ABAJO PORQUE NO TENDRIA PORQUE ABRIR EL ARCHIVO SI ESTABA ABIERTO. PODRIAMOS OMITIR ESTE FOPEN IGUAL
+			//EL CONFIG_SAVE HACE WB, PUEDE LLEGAR A HACER DESASTRES SI NO LO USAMOS BIEN
 			FILE* filePokemon = fopen(path,"ab+");
 
+			//TODO TIRA ERROR ACA, CREO QUE VA A HABER QUE VOLVER A MANDARLE EL PATH, PORQUE PUEDEN LLEGAR A HABER PROBLEMAS DE CONSISTENCIA/
 			t_config* pConfig = config_create(path);
-
 			abrir(pConfig);
 
 			int cantBloques =  0;
@@ -146,7 +149,8 @@ void Operacion_CATCH_POKEMON(DATOS_CATCH_POKEMON_ID* datos) {
 	if(nodoPokemon == NULL) {
 		log_error(logger, "No existe el pokemon");
 	} else {
-		char* path = pathPokemon(datos->datos.pokemon);
+
+		char* path = pathPokemon(nodoPokemon->nombre);
 
 //		if (filePokemon != NULL) {
 
@@ -224,7 +228,8 @@ void Operacion_GET_POKEMON(DATOS_GET_POKEMON_ID* datos) {
 	if(nodoPokemon == NULL) {
 		Enviar_LOCALIZED_POKEMON(datos,list_create());
 	} else {
-		char* path = pathPokemon(datos->datos.pokemon);
+
+		char* path = pathPokemon(nodoPokemon->nombre);
 
 //		if (filePokemon != NULL) {
 

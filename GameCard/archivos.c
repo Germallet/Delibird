@@ -3,13 +3,13 @@
 
 bool sonIguales(char* a, char* b)
 {
-	return strcmp(a, b) == 0;
+	return string_equals_ignore_case(a, b);
 }
 
 bool estaAbierto(char* path) {
 	char* a = leerOpen(path);
 	bool son = sonIguales(a,"Y");
-	free(a);
+//	free(a);
 	return son;
 }
 
@@ -94,7 +94,7 @@ void crearDirectorioFiles() {
 		fclose(metadata);
 	} else {
 		log_info(logger,"Levantando directorio files");
-		DIR* files = opendir(aux);
+		DIR* files = opendir(aux); // TODO SI NO BORRO EL CLOSEDIR SE BORRAN LOS NOMBRES DE LOS POKEMONS, ASI QUE HABRIA QUE CERRAR EL DIR EN TERMINAR PROGRAMA
 		struct dirent* entry;
 
 		if (files == NULL) {
@@ -102,10 +102,11 @@ void crearDirectorioFiles() {
 		} else {
 			while((entry = readdir(files))) {
 				log_info(logger,"Leyendo archivo %s",entry->d_name);
-				if (!sonIguales(entry->d_name,"metadata.bin") && !sonIguales(entry->d_name,".") && !sonIguales(entry->d_name,"..")) agregarNodo(directorioFiles(),crearNodo(entry->d_name));
+				if (!sonIguales(entry->d_name,"metadata.bin") && !sonIguales(entry->d_name,".") && !sonIguales(entry->d_name,".."))
+					agregarNodo(directorioFiles(),crearNodo(entry->d_name));
 			}
 		}
-		closedir(files);
+//		closedir(files);
 	}
 	free(aux);
 }
@@ -392,7 +393,7 @@ void crearMetadataPokemon(char* path) {
 	free(bloques);
 	free(nuevoBloque);
 	fclose(metadata);
-	free(path);
+//	free(path);
 }
 
 t_list* convertirBloques(t_list* bloques, int cantBloques) {
