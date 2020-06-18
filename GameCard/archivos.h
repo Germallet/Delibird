@@ -31,7 +31,7 @@ char* posicionAString(DatosBloques* d);
 t_list* convertirBloques(t_list* bloques, int cantBloques);
 t_list* interpretarCadena(char* cadenaDatos, int cantBloques);
 
-char* leerOpen(t_config* conf);
+char* leerOpen(char* conf);
 char* leerBlocksPorConfig(char* path);
 char* leerArchivos(t_list* bloques, int cantBloques);
 t_list* leerBlocks(int* cantBloques, t_config* conf);
@@ -39,7 +39,7 @@ t_list* leerBlocks(int* cantBloques, t_config* conf);
 int tamanioBloque(int* nroBloque);
 
 bool sonIguales(char* a, char* b);
-bool estaAbierto(t_config* conf);
+bool estaAbierto(char* path);
 bool existeDirectorio(char* path);
 short existeArchivo(char *path);
 

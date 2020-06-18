@@ -6,8 +6,8 @@ bool sonIguales(char* a, char* b)
 	return strcmp(a, b) == 0;
 }
 
-bool estaAbierto(t_config* conf) {
-	char* a = leerOpen(conf);
+bool estaAbierto(char* path) {
+	char* a = leerOpen(path);
 	bool son = sonIguales(a,"Y");
 	free(a);
 	return son;
@@ -54,12 +54,12 @@ t_list* leerBlocks(int* cantBloques, t_config* conf) {
 	return listaARetornar;
 }
 
-char* leerOpen(t_config* conf) {
-//	t_config* pokemon = config_create(path);
+char* leerOpen(char* path) {
+	t_config* pokemon = config_create(path);
 
-	char* open = config_get_string_value(conf,"OPEN");
+	char* open = config_get_string_value(pokemon,"OPEN");
 
-//	config_destroy(pokemon);
+	config_destroy(pokemon);
 
 	return open;
 }

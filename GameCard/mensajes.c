@@ -73,16 +73,16 @@ void Operacion_NEW_POKEMON(DATOS_NEW_POKEMON_ID* datos) {
 
 	char* path = pathPokemon(datos->datos.pokemon);
 
-	FILE* filePokemon = fopen(path,"ab+");
+//	if (filePokemon != NULL) {
 
-	t_config* pConfig = config_create(path);
-
-	if (filePokemon != NULL) {
-
-		if(estaAbierto(pConfig)) {
+		if(estaAbierto(path)) {
 			sleep(config_get_int_value(config,"TIEMPO_REINTENTO_OPERACION"));
 			Operacion_NEW_POKEMON(datos);
 		} else {
+			FILE* filePokemon = fopen(path,"ab+");
+
+			t_config* pConfig = config_create(path);
+
 			abrir(pConfig);
 
 			int cantBloques =  0;
@@ -116,9 +116,9 @@ void Operacion_NEW_POKEMON(DATOS_NEW_POKEMON_ID* datos) {
 			list_clean(datosBloques);
 			list_destroy(datosBloques);
 		}
-	} else {
-		log_error(logger,"Error al leer archivo de pokemon");
-	}
+//	} else {
+//		log_error(logger,"Error al leer archivo de pokemon");
+//	}
 }
 
 void Recibir_CATCH_POKEMON(Cliente* cliente, Paquete* paqueteRecibido) {
@@ -148,16 +148,17 @@ void Operacion_CATCH_POKEMON(DATOS_CATCH_POKEMON_ID* datos) {
 	} else {
 		char* path = pathPokemon(datos->datos.pokemon);
 
-		FILE* filePokemon = fopen(path,"ab+");
+//		if (filePokemon != NULL) {
 
-		t_config* pConfig = config_create(path);
-
-		if (filePokemon != NULL) {
-
-			if(estaAbierto(pConfig)) {
+			if(estaAbierto(path)) {
 				sleep(config_get_int_value(config,"TIEMPO_REINTENTO_OPERACION"));
 				Operacion_CATCH_POKEMON(datos);
 			} else {
+
+				FILE* filePokemon = fopen(path,"ab+");
+
+				t_config* pConfig = config_create(path);
+
 				abrir(pConfig);
 
 				int cantBloques =  0;
@@ -192,7 +193,7 @@ void Operacion_CATCH_POKEMON(DATOS_CATCH_POKEMON_ID* datos) {
 				list_clean(datosBloques);
 				list_destroy(datosBloques);
 			}
-		} else log_error(logger,"Error al leer archivo de pokemon");
+//		} else log_error(logger,"Error al leer archivo de pokemon");
 	}
 }
 
@@ -225,16 +226,17 @@ void Operacion_GET_POKEMON(DATOS_GET_POKEMON_ID* datos) {
 	} else {
 		char* path = pathPokemon(datos->datos.pokemon);
 
-		FILE* filePokemon = fopen(path,"ab+");
+//		if (filePokemon != NULL) {
 
-		t_config* pConfig = config_create(path);
-
-		if (filePokemon != NULL) {
-
-			if(estaAbierto(pConfig)) {
+			if(estaAbierto(path)) {
 				sleep(config_get_int_value(config,"TIEMPO_REINTENTO_OPERACION"));
 				Operacion_GET_POKEMON(datos);
 			} else {
+
+				FILE* filePokemon = fopen(path,"ab+");
+
+				t_config* pConfig = config_create(path);
+
 				abrir(pConfig);
 
 				int cantBloques =  0;
@@ -260,9 +262,9 @@ void Operacion_GET_POKEMON(DATOS_GET_POKEMON_ID* datos) {
 				list_clean(datosBloques);
 				list_destroy(datosBloques);
 			}
-		} else {
-			log_error(logger,"Error al leer archivo de pokemon");
-		}
+//		} else {
+//			log_error(logger,"Error al leer archivo de pokemon");
+//		}
 	}
 }
 
