@@ -77,7 +77,7 @@ void Operacion_NEW_POKEMON(DATOS_NEW_POKEMON_ID* datos) {
 
 		if(estaAbierto(path)) {
 			//NO SE POR QUE PERO ROMPE ACA TAMBIEN
-			sleep(config_get_int_value(config,"TIEMPO_REINTENTO_OPERACION"));
+			sleep(configFS.tiempoReintento);
 			Operacion_NEW_POKEMON(datos);
 		} else {
 			//ESTO LO PUSE ABAJO PORQUE NO TENDRIA PORQUE ABRIR EL ARCHIVO SI ESTABA ABIERTO. PODRIAMOS OMITIR ESTE FOPEN IGUAL
@@ -102,7 +102,7 @@ void Operacion_NEW_POKEMON(DATOS_NEW_POKEMON_ID* datos) {
 
 			int bytes = agregarCantidadEnPosicion(datosBloques,posYCant,numerosBloques);
 
-			sleep(config_get_int_value(config,"TIEMPO_RETARDO_OPERACION"));
+			sleep(configFS.tiempoRetardo);
 
 //			fclose(filePokemon);
 
@@ -155,7 +155,7 @@ void Operacion_CATCH_POKEMON(DATOS_CATCH_POKEMON_ID* datos) {
 //		if (filePokemon != NULL) {
 
 			if(estaAbierto(path)) {
-				sleep(config_get_int_value(config,"TIEMPO_REINTENTO_OPERACION"));
+				sleep(configFS.tiempoReintento);
 				Operacion_CATCH_POKEMON(datos);
 			} else {
 
@@ -180,7 +180,7 @@ void Operacion_CATCH_POKEMON(DATOS_CATCH_POKEMON_ID* datos) {
 
 				bool caught = atraparPokemon(datosBloques,posicion,numerosBloques,bytes);
 
-				sleep(config_get_int_value(config,"TIEMPO_RETARDO_OPERACION"));
+				sleep(configFS.tiempoRetardo);
 
 //				fclose(filePokemon);
 
@@ -234,7 +234,7 @@ void Operacion_GET_POKEMON(DATOS_GET_POKEMON_ID* datos) {
 //		if (filePokemon != NULL) {
 
 			if(estaAbierto(path)) {
-				sleep(config_get_int_value(config,"TIEMPO_REINTENTO_OPERACION"));
+				sleep(configFS.tiempoReintento);
 				Operacion_GET_POKEMON(datos);
 			} else {
 
@@ -250,7 +250,7 @@ void Operacion_GET_POKEMON(DATOS_GET_POKEMON_ID* datos) {
 
 				t_list* datosBloques = convertirBloques(numerosBloques,cantBloques); //DEVUELVE LA LISTA DE DATOSBLOQUES
 
-				sleep(config_get_int_value(config,"TIEMPO_RETARDO_OPERACION"));
+				sleep(configFS.tiempoRetardo);
 
 				Enviar_LOCALIZED_POKEMON(datos,datosBloques);
 

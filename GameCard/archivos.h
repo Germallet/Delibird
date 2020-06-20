@@ -19,6 +19,8 @@ typedef struct {
 	uint32_t tamanioBlocks;
 	uint32_t cantidadBlocks;
 	char* magicNumber;
+	uint32_t tiempoReintento;
+	uint32_t tiempoRetardo;
 } ConfigFS;
 
 ConfigFS configFS;

@@ -26,6 +26,8 @@ int main()
 
 	char* puntoMontaje = config_get_string_value(config,"PUNTO_MONTAJE_TALLGRASS");
 	int tiempoReintentoConexion = config_get_int_value(config,"TIEMPO_DE_REINTENTO_CONEXION");
+	configFS.tiempoReintento = config_get_int_value(config,"TIEMPO_DE_REINTENTO_OPERACION");
+	configFS.tiempoRetardo = config_get_int_value(config,"TIEMPO_RETARDO_OPERACION");
 
 	mensajesNoEnviadosAPPEARED = list_create();
 	mensajesNoEnviadosCAUGHT = list_create();
