@@ -82,7 +82,7 @@ void Operacion_NEW_POKEMON(DATOS_NEW_POKEMON_ID* datos) {
 		} else {
 			//ESTO LO PUSE ABAJO PORQUE NO TENDRIA PORQUE ABRIR EL ARCHIVO SI ESTABA ABIERTO. PODRIAMOS OMITIR ESTE FOPEN IGUAL
 			//EL CONFIG_SAVE HACE WB, PUEDE LLEGAR A HACER DESASTRES SI NO LO USAMOS BIEN
-			FILE* filePokemon = fopen(path,"ab+");
+//			FILE* filePokemon = fopen(path,"ab+");
 
 			//TODO TIRA ERROR ACA, CREO QUE VA A HABER QUE VOLVER A MANDARLE EL PATH, PORQUE PUEDEN LLEGAR A HABER PROBLEMAS DE CONSISTENCIA/
 			t_config* pConfig = config_create(path);
@@ -104,7 +104,7 @@ void Operacion_NEW_POKEMON(DATOS_NEW_POKEMON_ID* datos) {
 
 			sleep(config_get_int_value(config,"TIEMPO_RETARDO_OPERACION"));
 
-			fclose(filePokemon);
+//			fclose(filePokemon);
 
 			cambiarMetadataPokemon(pConfig,numerosBloques,bytes);
 
@@ -159,7 +159,7 @@ void Operacion_CATCH_POKEMON(DATOS_CATCH_POKEMON_ID* datos) {
 				Operacion_CATCH_POKEMON(datos);
 			} else {
 
-				FILE* filePokemon = fopen(path,"ab+");
+//				FILE* filePokemon = fopen(path,"ab+");
 
 				t_config* pConfig = config_create(path);
 
@@ -182,7 +182,7 @@ void Operacion_CATCH_POKEMON(DATOS_CATCH_POKEMON_ID* datos) {
 
 				sleep(config_get_int_value(config,"TIEMPO_RETARDO_OPERACION"));
 
-				fclose(filePokemon);
+//				fclose(filePokemon);
 
 				cambiarMetadataPokemon(pConfig,numerosBloques,*bytes);
 
@@ -238,7 +238,7 @@ void Operacion_GET_POKEMON(DATOS_GET_POKEMON_ID* datos) {
 				Operacion_GET_POKEMON(datos);
 			} else {
 
-				FILE* filePokemon = fopen(path,"ab+");
+//				FILE* filePokemon = fopen(path,"ab+");
 
 				t_config* pConfig = config_create(path);
 
@@ -258,7 +258,7 @@ void Operacion_GET_POKEMON(DATOS_GET_POKEMON_ID* datos) {
 
 				config_destroy(pConfig);
 
-				fclose(filePokemon);
+//				fclose(filePokemon);
 
 				free(path);
 
