@@ -9,33 +9,25 @@ bool sonIguales(char* a, char* b)
 bool estaAbierto(char* path) {
 	char* a = leerOpen(path);
 	bool son = sonIguales(a,"Y");
-//	free(a);
+	free(a);
 	return son;
 }
 
 void abrir(t_config* conf) {
-//	t_config* pokemon = config_create(path);
 	config_set_value(conf,"OPEN","Y");
 	config_save(conf);
-//	config_destroy(pokemon);
 }
 
 void cerrar(t_config* conf) {
-//	t_config* pokemon = config_create(path);
 	config_set_value(conf,"OPEN","N");
 	config_save(conf);
-//	config_destroy(pokemon);
 }
 
 t_list* leerBlocks(int* cantBloques, t_config* conf) {
 
 	log_info(logger,"Leyendo el metadata para ver que bloques usa el pokemon");
 
-//	t_config* pokemon = config_create(path);
-
 	char** listaBloques = config_get_array_value(conf,"BLOCKS");
-
-//	config_destroy(pokemon);
 
 	while (listaBloques[*cantBloques] != NULL) (*cantBloques)++;
 
@@ -57,7 +49,8 @@ t_list* leerBlocks(int* cantBloques, t_config* conf) {
 char* leerOpen(char* path) {
 	t_config* pokemon = config_create(path);
 
-	char* open = config_get_string_value(pokemon,"OPEN");
+	char* open = string_new();
+	strcpy(open,config_get_string_value(pokemon,"OPEN"));
 
 	config_destroy(pokemon);
 
@@ -102,11 +95,15 @@ void crearDirectorioFiles() {
 		} else {
 			while((entry = readdir(files))) {
 				log_info(logger,"Leyendo archivo %s",entry->d_name);
-				if (!sonIguales(entry->d_name,"metadata.bin") && !sonIguales(entry->d_name,".") && !sonIguales(entry->d_name,".."))
-					agregarNodo(directorioFiles(),crearNodo(entry->d_name));
+				if (!sonIguales(entry->d_name,"metadata.bin") && !sonIguales(entry->d_name,".") && !sonIguales(entry->d_name,"..")) {
+					char* nombre = string_new();
+					strcpy(nombre,entry->d_name);
+					agregarNodo(directorioFiles(),crearNodo(nombre));
+				}
+
 			}
 		}
-//		closedir(files);
+		closedir(files);
 	}
 	free(aux);
 }

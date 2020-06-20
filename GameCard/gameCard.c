@@ -35,9 +35,11 @@ int main()
 
 	SocketEscucha(miIp, miPuerto);
 
-	CrearHiloTimer(-1,tiempoReintentoConexion,&reconexion,NULL);
+	clienteBroker = NULL;
 
-	conectarse();
+	CrearHiloTimer(-1,tiempoReintentoConexion,&reconexion,clienteBroker);
+
+//	conectarse();
 
 	log_info(logger,"Creando tall-grass");
 
@@ -162,22 +164,34 @@ void conectarse() {
 	if(clienteBroker != NULL) SuscribirseColas(clienteBroker);
 }
 
-void reconexion(void* a) { //TODO ARREGLAR LO DE LOS MENSAJES
+void reconexion(void* info) { //TODO ARREGLAR LO DE LOS MENSAJES
 	if (clienteBroker == NULL) {
 		conectarse();
 
-		for (int i = 0; i < list_size(mensajesNoEnviadosAPPEARED); i++) {
-			EnviarMensaje(clienteBroker, APPEARED_POKEMON, list_get(mensajesNoEnviadosAPPEARED,i), (void*) &SerializarM_APPEARED_POKEMON_ID);
-		}
-		list_clean(mensajesNoEnviadosAPPEARED);
-		for (int i = 0; i < list_size(mensajesNoEnviadosCAUGHT); i++) {
-			EnviarMensaje(clienteBroker, CAUGHT_POKEMON, list_get(mensajesNoEnviadosCAUGHT,i), (void*) &SerializarM_CAUGHT_POKEMON_ID);
-		}
-		list_clean(mensajesNoEnviadosCAUGHT);
-		for (int i = 0; i < list_size(mensajesNoEnviadosLOCALIZED); i++) {
-			EnviarMensaje(clienteBroker, LOCALIZED_POKEMON, list_get(mensajesNoEnviadosLOCALIZED,i), (void*) &SerializarM_LOCALIZED_POKEMON);
-		}
-		list_clean(mensajesNoEnviadosLOCALIZED);
+		if (clienteBroker != NULL) {
+
+			log_info(logger, "Me conecte al broker");
+
+			for (int i = 0; i < list_size(mensajesNoEnviadosAPPEARED); i++) {
+				EnviarMensaje(clienteBroker, APPEARED_POKEMON, list_get(mensajesNoEnviadosAPPEARED,i), (void*) &SerializarM_APPEARED_POKEMON_ID);
+			}
+
+			list_clean(mensajesNoEnviadosAPPEARED);
+
+			for (int i = 0; i < list_size(mensajesNoEnviadosCAUGHT); i++) {
+				EnviarMensaje(clienteBroker, CAUGHT_POKEMON, list_get(mensajesNoEnviadosCAUGHT,i), (void*) &SerializarM_CAUGHT_POKEMON_ID);
+			}
+
+			list_clean(mensajesNoEnviadosCAUGHT);
+
+			for (int i = 0; i < list_size(mensajesNoEnviadosLOCALIZED); i++) {
+				EnviarMensaje(clienteBroker, LOCALIZED_POKEMON, list_get(mensajesNoEnviadosLOCALIZED,i), (void*) &SerializarM_LOCALIZED_POKEMON);
+			}
+
+			list_clean(mensajesNoEnviadosLOCALIZED);
+
+		} else log_info(logger, "No me pude conectar al broker");
+
 	}
 }
 

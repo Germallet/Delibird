@@ -39,7 +39,7 @@ pthread_mutex_t mx_main;
 void EscuchaSignal(int signo);
 char* pathBloque(char* nombre);
 void conectarse();
-void reconexion();
+void reconexion(void* info);
 void tallGrass_init(char* puntoMontaje);
 void crearDirectorio(char* path);
 void TerminarProgramaConError(char* error);
