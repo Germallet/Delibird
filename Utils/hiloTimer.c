@@ -20,6 +20,7 @@ void EjecucionTimer(HiloTimer* hiloTimer)
 	}
 	pthread_mutex_unlock(&(hiloTimer->mxHiloTimer));
 	sleep(hiloTimer->tiempo);
+	if (hiloTimer->repeticiones == -1) EjecucionTimer(hiloTimer);
 }
 
 HiloTimer* CrearHiloTimer(int repeticiones, unsigned int tiempo, void (*evento)(void*), void* info)

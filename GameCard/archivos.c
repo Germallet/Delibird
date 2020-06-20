@@ -1,16 +1,18 @@
 #include "archivos.h"
 #include <dirent.h>
 
-bool sonIguales(char* a, char* b)
-{
+bool sonIguales(char* a, char* b) {
 	return string_equals_ignore_case(a, b);
 }
 
 bool estaAbierto(char* path) {
-	char* a = leerOpen(path);
-	bool son = sonIguales(a,"Y");
-	free(a);
-	return son;
+	t_config* pConfig = config_create(path);
+	char* valor = config_get_string_value(pConfig,"OPEN");
+	bool open = sonIguales(valor,"Y");
+	log_info(logger,valor);
+	config_destroy(pConfig);
+	pthread_mutex_unlock(&semDeMierda);
+	return open;
 }
 
 void abrir(t_config* conf) {
@@ -41,20 +43,8 @@ t_list* leerBlocks(int* cantBloques, t_config* conf) {
 	for (int i = 0; i < list_size(listaARetornar); i++) {
 		free(listaBloques[i]);
 	}
-//	free(listaBloques);
 
 	return listaARetornar;
-}
-
-char* leerOpen(char* path) {
-	t_config* pokemon = config_create(path);
-
-	char* open = string_new();
-	strcpy(open,config_get_string_value(pokemon,"OPEN"));
-
-	config_destroy(pokemon);
-
-	return open;
 }
 
 bool existeDirectorio(char* path) {
@@ -87,7 +77,7 @@ void crearDirectorioFiles() {
 		fclose(metadata);
 	} else {
 		log_info(logger,"Levantando directorio files");
-		DIR* files = opendir(aux); // TODO SI NO BORRO EL CLOSEDIR SE BORRAN LOS NOMBRES DE LOS POKEMONS, ASI QUE HABRIA QUE CERRAR EL DIR EN TERMINAR PROGRAMA
+		DIR* files = opendir(aux);
 		struct dirent* entry;
 
 		if (files == NULL) {
@@ -96,14 +86,14 @@ void crearDirectorioFiles() {
 			while((entry = readdir(files))) {
 				log_info(logger,"Leyendo archivo %s",entry->d_name);
 				if (!sonIguales(entry->d_name,"metadata.bin") && !sonIguales(entry->d_name,".") && !sonIguales(entry->d_name,"..")) {
-					char* nombre = string_new();
-					strcpy(nombre,entry->d_name);
-					agregarNodo(directorioFiles(),crearNodo(nombre));
+//					char* nombre = string_new();
+//					strcpy(nombre,entry->d_name);
+					agregarNodo(directorioFiles(),crearNodo(entry->d_name));
 				}
 
 			}
 		}
-		closedir(files);
+//		closedir(files); TODO VER ESTO
 	}
 	free(aux);
 }

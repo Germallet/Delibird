@@ -7,9 +7,7 @@
 Eventos* eventos;
 
 /*
- * TODO MANEJAR MEJOR LOS ERRORES DE FALTA DE MEMORIA
  * TODO SINCRONIZAR BITMAP
- * TODO CATCH DEL CTRL C PARA TERMINAR DE ESCUCHAR
  */
 
 int main()
@@ -33,15 +31,15 @@ int main()
 	mensajesNoEnviadosCAUGHT = list_create();
 	mensajesNoEnviadosLOCALIZED = list_create();
 
-//	pthread_mutex_init(&semBitmap,NULL);
+	pthread_mutex_init(&semBitmap,NULL);
+	pthread_mutex_init(&semArbol,NULL);
+	pthread_mutex_init(&semDeMierda,NULL);
 
 	SocketEscucha(miIp, miPuerto);
 
 	clienteBroker = NULL;
 
 	CrearHiloTimer(-1,tiempoReintentoConexion,&reconexion,clienteBroker);
-
-//	conectarse();
 
 	log_info(logger,"Creando tall-grass");
 
@@ -77,6 +75,8 @@ void tallGrass_init(char* puntoMontaje) {
 }
 
 NodoArbol* encontrarPokemon(char* nombre) {
+
+	log_info(logger,"Buscando pokemon...");
 
 	NodoArbol* files = directorioFiles();
 
@@ -192,7 +192,7 @@ void reconexion(void* info) { //TODO ARREGLAR LO DE LOS MENSAJES
 
 			list_clean(mensajesNoEnviadosLOCALIZED);
 
-		} else log_info(logger, "No me pude conectar al broker");
+		} else log_info(logger, "No me pude reconectar al broker");
 
 	}
 }
@@ -214,6 +214,7 @@ void TerminarProgramaConError(char* error)
 void TerminarPrograma()
 {
 	log_info(logger,"Terminando programa");
+	//TODO freear el arbol entero
 	log_destroy(logger);
 	config_destroy(config);
 	bitarray_destroy(bitmap);

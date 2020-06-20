@@ -62,7 +62,7 @@ void Recibir_NEW_POKEMON(Cliente* cliente, Paquete* paqueteRecibido) {
 
 void Operacion_NEW_POKEMON(DATOS_NEW_POKEMON_ID* datos) {
 
-	log_info(logger,"Buscando pokemon...");
+	pthread_mutex_lock(&semArbol);
 
 	NodoArbol* nodoPokemon = encontrarPokemon(datos->datos.pokemon);
 
@@ -71,57 +71,51 @@ void Operacion_NEW_POKEMON(DATOS_NEW_POKEMON_ID* datos) {
 		agregarNodo(directorioFiles(),nodoPokemon);
 	}
 
-	char* path = pathPokemon(nodoPokemon->nombre); // ACA CAMBIE ESTO POR SI EN ALGUN MOMENTO LEE MAL NOS VAMOS A DAR CUENTA
+	pthread_mutex_unlock(&semArbol);
 
-//	if (filePokemon != NULL) {
+	char* path = pathPokemon(nodoPokemon->nombre);
 
-		if(estaAbierto(path)) {
-			//NO SE POR QUE PERO ROMPE ACA TAMBIEN
-			sleep(configFS.tiempoReintento);
-			Operacion_NEW_POKEMON(datos);
-		} else {
-			//ESTO LO PUSE ABAJO PORQUE NO TENDRIA PORQUE ABRIR EL ARCHIVO SI ESTABA ABIERTO. PODRIAMOS OMITIR ESTE FOPEN IGUAL
-			//EL CONFIG_SAVE HACE WB, PUEDE LLEGAR A HACER DESASTRES SI NO LO USAMOS BIEN
-//			FILE* filePokemon = fopen(path,"ab+");
+	pthread_mutex_lock(&semDeMierda);
 
-			//TODO TIRA ERROR ACA, CREO QUE VA A HABER QUE VOLVER A MANDARLE EL PATH, PORQUE PUEDEN LLEGAR A HABER PROBLEMAS DE CONSISTENCIA/
-			t_config* pConfig = config_create(path);
-			abrir(pConfig);
+	if(estaAbierto(path)) {
+		sleep(configFS.tiempoReintento);
+		Operacion_NEW_POKEMON(datos);
+	} else {
 
-			int cantBloques =  0;
+		t_config* pConfig = config_create(path);
 
-			t_list* numerosBloques = leerBlocks(&cantBloques, pConfig); //DEVUELVE LA LISTA DE INTS DE LOS NROS DE BLOQUE
+		abrir(pConfig);
 
-			t_list* datosBloques = convertirBloques(numerosBloques,cantBloques); //DEVUELVE LA LISTA DE DATOSBLOQUES
+		int cantBloques =  0;
 
-			DatosBloques posYCant;
+		t_list* numerosBloques = leerBlocks(&cantBloques, pConfig); //DEVUELVE LA LISTA DE INTS DE LOS NROS DE BLOQUE
 
-			posYCant.cantidad = datos->datos.cantidad;
-			posYCant.pos.posX = datos->datos.posicion.posX;
-			posYCant.pos.posY = datos->datos.posicion.posY;
+		t_list* datosBloques = convertirBloques(numerosBloques,cantBloques); //DEVUELVE LA LISTA DE DATOSBLOQUES
 
-			int bytes = agregarCantidadEnPosicion(datosBloques,posYCant,numerosBloques);
+		DatosBloques posYCant;
 
-			sleep(configFS.tiempoRetardo);
+		posYCant.cantidad = datos->datos.cantidad;
+		posYCant.pos.posX = datos->datos.posicion.posX;
+		posYCant.pos.posY = datos->datos.posicion.posY;
 
-//			fclose(filePokemon);
+		int bytes = agregarCantidadEnPosicion(datosBloques,posYCant,numerosBloques);
 
-			cambiarMetadataPokemon(pConfig,numerosBloques,bytes);
+		sleep(configFS.tiempoRetardo);
 
-			Enviar_APPEARED_POKEMON(datos);
+		cambiarMetadataPokemon(pConfig,numerosBloques,bytes);
 
-			free(path);
+		Enviar_APPEARED_POKEMON(datos);
 
-			config_destroy(pConfig);
+		free(path);
 
-			list_clean(numerosBloques);
-			list_destroy(numerosBloques);
-			list_clean(datosBloques);
-			list_destroy(datosBloques);
-		}
-//	} else {
-//		log_error(logger,"Error al leer archivo de pokemon");
-//	}
+		config_destroy(pConfig);
+		pthread_mutex_unlock(&semDeMierda);
+
+		list_clean(numerosBloques);
+		list_destroy(numerosBloques);
+		list_clean(datosBloques);
+		list_destroy(datosBloques);
+	}
 }
 
 void Recibir_CATCH_POKEMON(Cliente* cliente, Paquete* paqueteRecibido) {
@@ -142,7 +136,6 @@ void Recibir_CATCH_POKEMON(Cliente* cliente, Paquete* paqueteRecibido) {
 }
 
 void Operacion_CATCH_POKEMON(DATOS_CATCH_POKEMON_ID* datos) {
-	log_info(logger,"Buscando pokemon...");
 
 	NodoArbol* nodoPokemon = encontrarPokemon(datos->datos.pokemon);
 
@@ -152,52 +145,47 @@ void Operacion_CATCH_POKEMON(DATOS_CATCH_POKEMON_ID* datos) {
 
 		char* path = pathPokemon(nodoPokemon->nombre);
 
-//		if (filePokemon != NULL) {
+		pthread_mutex_lock(&semDeMierda);
 
-			if(estaAbierto(path)) {
-				sleep(configFS.tiempoReintento);
-				Operacion_CATCH_POKEMON(datos);
-			} else {
+		if(estaAbierto(path)) {
+			sleep(configFS.tiempoReintento);
+			Operacion_CATCH_POKEMON(datos);
+		} else {
 
-//				FILE* filePokemon = fopen(path,"ab+");
+			t_config* pConfig = config_create(path);
 
-				t_config* pConfig = config_create(path);
+			abrir(pConfig);
 
-				abrir(pConfig);
+			int cantBloques =  0;
 
-				int cantBloques =  0;
+			t_list* numerosBloques = leerBlocks(&cantBloques,pConfig); //DEVUELVE LA LISTA DE INTS DE LOS NROS DE BLOQUE
 
-				t_list* numerosBloques = leerBlocks(&cantBloques,pConfig); //DEVUELVE LA LISTA DE INTS DE LOS NROS DE BLOQUE
+			t_list* datosBloques = convertirBloques(numerosBloques,cantBloques); //DEVUELVE LA LISTA DE DATOSBLOQUES
 
-				t_list* datosBloques = convertirBloques(numerosBloques,cantBloques); //DEVUELVE LA LISTA DE DATOSBLOQUES
+			Posicion posicion;
 
-				Posicion posicion;
+			posicion.posX = datos->datos.posicion.posX;
+			posicion.posY = datos->datos.posicion.posY;
 
-				posicion.posX = datos->datos.posicion.posX;
-				posicion.posY = datos->datos.posicion.posY;
+			int* bytes = malloc(sizeof(int));
 
-				int* bytes = malloc(sizeof(int));
+			bool caught = atraparPokemon(datosBloques,posicion,numerosBloques,bytes);
 
-				bool caught = atraparPokemon(datosBloques,posicion,numerosBloques,bytes);
+			sleep(configFS.tiempoRetardo);
 
-				sleep(configFS.tiempoRetardo);
+			cambiarMetadataPokemon(pConfig,numerosBloques,*bytes);
 
-//				fclose(filePokemon);
+			Enviar_CAUGHT_POKEMON(datos,caught);
 
-				cambiarMetadataPokemon(pConfig,numerosBloques,*bytes);
+			free(path);
 
-				Enviar_CAUGHT_POKEMON(datos,caught);
+			config_destroy(pConfig);
 
-				free(path);
-
-				config_destroy(pConfig);
-
-				list_clean(numerosBloques);
-				list_destroy(numerosBloques);
-				list_clean(datosBloques);
-				list_destroy(datosBloques);
-			}
-//		} else log_error(logger,"Error al leer archivo de pokemon");
+			list_clean(numerosBloques);
+			list_destroy(numerosBloques);
+			list_clean(datosBloques);
+			list_destroy(datosBloques);
+		}
 	}
 }
 
@@ -220,56 +208,44 @@ void Recibir_GET_POKEMON(Cliente* cliente, Paquete* paqueteRecibido) {
 
 void Operacion_GET_POKEMON(DATOS_GET_POKEMON_ID* datos) {
 
-	log_info(logger,"llego");
-	log_info(logger,"Buscando pokemon...");
+	NodoArbol* nodoPokemon = encontrarPokemon(datos->datos.pokemon);
 
-	NodoArbol* nodoPokemon = encontrarPokemon(datos->datos.pokemon); //NO ESTA ENCONTRANDO POKEMONS QUE YA EXISTEN
-
-	if(nodoPokemon == NULL) {
-		Enviar_LOCALIZED_POKEMON(datos,list_create());
-	} else {
-
+	if(nodoPokemon == NULL) Enviar_LOCALIZED_POKEMON(datos,list_create());
+	else {
 		char* path = pathPokemon(nodoPokemon->nombre);
 
-//		if (filePokemon != NULL) {
+		pthread_mutex_lock(&semDeMierda);
 
-			if(estaAbierto(path)) {
-				sleep(configFS.tiempoReintento);
-				Operacion_GET_POKEMON(datos);
-			} else {
+		if(estaAbierto(path)) {
+			sleep(configFS.tiempoReintento);
+			Operacion_GET_POKEMON(datos);
+		} else {
 
-//				FILE* filePokemon = fopen(path,"ab+");
+			t_config* pConfig = config_create(path);
 
-				t_config* pConfig = config_create(path);
+			abrir(pConfig);
 
-				abrir(pConfig);
+			int cantBloques =  0;
 
-				int cantBloques =  0;
+			t_list* numerosBloques = leerBlocks(&cantBloques,pConfig); //DEVUELVE LA LISTA DE INTS DE LOS NROS DE BLOQUE
 
-				t_list* numerosBloques = leerBlocks(&cantBloques,pConfig); //DEVUELVE LA LISTA DE INTS DE LOS NROS DE BLOQUE
+			t_list* datosBloques = convertirBloques(numerosBloques,cantBloques); //DEVUELVE LA LISTA DE DATOSBLOQUES
 
-				t_list* datosBloques = convertirBloques(numerosBloques,cantBloques); //DEVUELVE LA LISTA DE DATOSBLOQUES
+			sleep(configFS.tiempoRetardo);
 
-				sleep(configFS.tiempoRetardo);
+			Enviar_LOCALIZED_POKEMON(datos,datosBloques);
 
-				Enviar_LOCALIZED_POKEMON(datos,datosBloques);
+			cerrar(pConfig);
 
-				cerrar(pConfig);
+			config_destroy(pConfig);
 
-				config_destroy(pConfig);
+			free(path);
 
-//				fclose(filePokemon);
-
-				free(path);
-
-				list_clean(numerosBloques);
-				list_destroy(numerosBloques);
-				list_clean(datosBloques);
-				list_destroy(datosBloques);
-			}
-//		} else {
-//			log_error(logger,"Error al leer archivo de pokemon");
-//		}
+			list_clean(numerosBloques);
+			list_destroy(numerosBloques);
+			list_clean(datosBloques);
+			list_destroy(datosBloques);
+		}
 	}
 }
 
