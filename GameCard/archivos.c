@@ -5,14 +5,8 @@ bool sonIguales(char* a, char* b) {
 	return string_equals_ignore_case(a, b);
 }
 
-bool estaAbierto(char* path) {
-	t_config* pConfig = config_create(path);
-	char* valor = config_get_string_value(pConfig,"OPEN");
-	bool open = sonIguales(valor,"Y");
-	log_info(logger,valor);
-	config_destroy(pConfig);
-	pthread_mutex_unlock(&semDeMierda);
-	return open;
+bool estaAbierto(t_config* pConfig) {
+	return sonIguales(config_get_string_value(pConfig,"OPEN"),"Y");
 }
 
 void abrir(t_config* conf) {

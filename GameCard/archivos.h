@@ -40,7 +40,7 @@ t_list* leerBlocks(int* cantBloques, t_config* conf);
 int tamanioBloque(int* nroBloque);
 
 bool sonIguales(char* a, char* b);
-bool estaAbierto(char* path);
+bool estaAbierto(t_config* conf);
 bool existeDirectorio(char* path);
 short existeArchivo(char *path);
 

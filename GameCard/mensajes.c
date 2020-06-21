@@ -77,7 +77,11 @@ void Operacion_NEW_POKEMON(DATOS_NEW_POKEMON_ID* datos) {
 
 	pthread_mutex_lock(&semDeMierda);
 
-	if(estaAbierto(path)) {
+	t_config* pConfig = config_create(path);
+
+	if(estaAbierto(pConfig)) {
+		config_destroy(pConfig);
+		pthread_mutex_unlock(&semDeMierda);
 		sleep(configFS.tiempoReintento);
 		Operacion_NEW_POKEMON(datos);
 	} else {
@@ -85,6 +89,8 @@ void Operacion_NEW_POKEMON(DATOS_NEW_POKEMON_ID* datos) {
 		t_config* pConfig = config_create(path);
 
 		abrir(pConfig);
+
+		pthread_mutex_unlock(&semDeMierda);
 
 		int cantBloques =  0;
 
@@ -109,7 +115,6 @@ void Operacion_NEW_POKEMON(DATOS_NEW_POKEMON_ID* datos) {
 		free(path);
 
 		config_destroy(pConfig);
-		pthread_mutex_unlock(&semDeMierda);
 
 		list_clean(numerosBloques);
 		list_destroy(numerosBloques);
@@ -147,14 +152,18 @@ void Operacion_CATCH_POKEMON(DATOS_CATCH_POKEMON_ID* datos) {
 
 		pthread_mutex_lock(&semDeMierda);
 
-		if(estaAbierto(path)) {
+		t_config* pConfig = config_create(path);
+
+		if(estaAbierto(pConfig)) {
+			config_destroy(pConfig);
+			pthread_mutex_unlock(&semDeMierda);
 			sleep(configFS.tiempoReintento);
 			Operacion_CATCH_POKEMON(datos);
 		} else {
 
-			t_config* pConfig = config_create(path);
-
 			abrir(pConfig);
+
+			pthread_mutex_unlock(&semDeMierda);
 
 			int cantBloques =  0;
 
@@ -210,20 +219,24 @@ void Operacion_GET_POKEMON(DATOS_GET_POKEMON_ID* datos) {
 
 	NodoArbol* nodoPokemon = encontrarPokemon(datos->datos.pokemon);
 
-	if(nodoPokemon == NULL) Enviar_LOCALIZED_POKEMON(datos,list_create());
+	if(nodoPokemon == NULL) Enviar_LOCALIZED_POKEMON(datos,NULL);
 	else {
 		char* path = pathPokemon(nodoPokemon->nombre);
 
 		pthread_mutex_lock(&semDeMierda);
 
-		if(estaAbierto(path)) {
+		t_config* pConfig = config_create(path);
+
+		if(estaAbierto(pConfig)) {
+			config_destroy(pConfig);
+			pthread_mutex_unlock(&semDeMierda);
 			sleep(configFS.tiempoReintento);
 			Operacion_GET_POKEMON(datos);
 		} else {
 
-			t_config* pConfig = config_create(path);
-
 			abrir(pConfig);
+
+			pthread_mutex_unlock(&semDeMierda);
 
 			int cantBloques =  0;
 
@@ -238,6 +251,8 @@ void Operacion_GET_POKEMON(DATOS_GET_POKEMON_ID* datos) {
 			cerrar(pConfig);
 
 			config_destroy(pConfig);
+
+			pthread_mutex_unlock(&semDeMierda);
 
 			free(path);
 
@@ -298,25 +313,25 @@ void Enviar_CAUGHT_POKEMON(DATOS_CATCH_POKEMON_ID* datos, bool caught) {
 void Enviar_LOCALIZED_POKEMON(DATOS_GET_POKEMON_ID* datos,t_list* datosArchivo) {
 	DATOS_LOCALIZED_POKEMON* datosAEnviar = malloc(sizeof(DATOS_LOCALIZED_POKEMON));
 
+	if (datosArchivo == NULL) {
+		datosAEnviar->cantidad = 0;
+		datosAEnviar->posiciones = NULL;
+	} else {
+		Posicion* posiciones = malloc(sizeof(Posicion));
+		for (int i = 0; i < list_size(datosArchivo); i++) {
+			posiciones[i].posX = 0;
+			posiciones[i].posY = 0;
+		}
+		for (int i = 0; i < list_size(datosArchivo); i++) {
+			DatosBloques* a = list_get(datosArchivo,i);
 
-	Posicion posiciones[list_size(datosArchivo)];
-
-	for (int i = 0; i < list_size(datosArchivo); i++) {
-		posiciones[i].posX = 0;
-		posiciones[i].posY = 0;
+			posiciones[i].posX = a->pos.posX;
+			posiciones[i].posY = a->pos.posY;
+		}
+		datosAEnviar->cantidad = list_size(datosArchivo);
+		datosAEnviar->posiciones = posiciones;
 	}
 
-	for (int i = 0; i < list_size(datosArchivo); i++) {
-		DatosBloques* a = list_get(datosArchivo,i);
-
-		posiciones[i].posX = a->pos.posX;
-		posiciones[i].posY = a->pos.posY;
-	}
-
-	if (list_size(datosArchivo) == 0) datosAEnviar->posiciones = NULL;
-	else datosAEnviar->posiciones = posiciones;
-
-	datosAEnviar->cantidad = list_size(datosArchivo);
 	datosAEnviar->idCorrelativa = datos->id;
 	datosAEnviar->pokemon = datos->datos.pokemon;
 
@@ -327,7 +342,6 @@ void Enviar_LOCALIZED_POKEMON(DATOS_GET_POKEMON_ID* datos,t_list* datosArchivo) 
 		log_info(logger, "Se guardo el mensaje para cuando se pueda volver a conectarse");
 		list_add(mensajesNoEnviadosLOCALIZED,datosAEnviar);
 	}
-
 	free(datos);
 }
 
