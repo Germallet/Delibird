@@ -9,6 +9,14 @@ bool estaAbierto(t_config* pConfig) {
 	return sonIguales(config_get_string_value(pConfig,"OPEN"),"Y");
 }
 
+bool estaAbiertoPath(char* path) {
+	pthread_mutex_lock(&semDeMierda);
+	t_config* c = config_create(path);
+	bool open = sonIguales(config_get_string_value(c,"OPEN"),"Y");
+	config_destroy(c);
+	return open;
+}
+
 void abrir(t_config* conf) {
 	config_set_value(conf,"OPEN","Y");
 	config_save(conf);
@@ -79,8 +87,8 @@ void crearDirectorioFiles() {
 			log_error(logger,"No se pudo abrir correctamente el directorio files"); //TODO TERMINAR PROGRAMA ??
 		} else {
 			while((entry = readdir(files))) {
-				log_info(logger,"Leyendo archivo %s",entry->d_name);
 				if (!sonIguales(entry->d_name,"metadata.bin") && !sonIguales(entry->d_name,".") && !sonIguales(entry->d_name,"..")) {
+					log_info(logger,"Leyendo archivo %s",entry->d_name);
 //					char* nombre = string_new();
 //					strcpy(nombre,entry->d_name);
 					agregarNodo(directorioFiles(),crearNodo(entry->d_name));
@@ -282,7 +290,7 @@ int agregarCantidadEnPosicion(t_list* pokemon, DatosBloques posYCant, t_list* nu
 
 void escribirListaEnArchivo(t_list* datosBloques, t_list* numerosBloques) {
 
-	log_info(logger, "Actualizando los bloques");
+//	log_info(logger, "Actualizando los bloques");
 
 	char* cadenaGrande = string_new();
 
@@ -356,7 +364,7 @@ DatosBloques* encontrarPosicion(t_list* pokemon, Posicion pos) {
 
 NodoArbol* crearPokemon(char* nombre) {
 
-	log_info(logger,"Creando directorio para el pokemon");
+//	log_info(logger,"Creando directorio para el pokemon");
 
 	NodoArbol* nodo = crearNodo(nombre);
 
@@ -374,7 +382,7 @@ NodoArbol* crearPokemon(char* nombre) {
 
 void crearMetadataPokemon(char* path) {
 
-	log_info(logger,"Creando metadata para el pokemon");
+//	log_info(logger,"Creando metadata para el pokemon");
 	char* pk = pathPokemon(path);
 
 	FILE* metadata = fopen(pk,"wb+");
@@ -416,8 +424,6 @@ char* leerArchivos(t_list* bloques, int cantBloques) {
 
 	char* datos = string_new();
 
-//	int* bloque = malloc(sizeof(int));
-
 	for(int i = 0; i < cantBloques; i++) {
 
 		int* bloque = list_get(bloques,i);
@@ -430,7 +436,7 @@ char* leerArchivos(t_list* bloques, int cantBloques) {
 
 		FILE* f = fopen(pathBlocks,"rb+");
 
-		if(f != NULL && !feof(f)) {
+		if(f != NULL || !feof(f) || tamanioArchivo(f) != 0) {
 			char* leidos = calloc(1,configFS.tamanioBlocks);
 			fread(leidos,configFS.tamanioBlocks,1,f);
 			if(string_is_empty(leidos)) log_error(logger,"Bloque Mal: %d",*bloque);
@@ -515,6 +521,11 @@ int tamanioBloque(int* nroBloque) {
 	free(path);
 
 	return a;
+}
+
+int tamanioArchivo(FILE* arch) {
+	fseek(arch,0,SEEK_END);
+	return ftell(arch);
 }
 
 void cambiarMetadataPokemon(t_config* c, t_list* numerosBloques, int bytes) {

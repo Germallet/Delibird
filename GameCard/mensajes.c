@@ -52,7 +52,7 @@ void Recibir_NEW_POKEMON(Cliente* cliente, Paquete* paqueteRecibido) {
 	if (stream->error)
 		log_error(logger,"Error al deserializar NEW_POKEMON");
 	else {
-		log_info(logger,"Tu mensaje llego correctamente");
+		log_info(logger,"NEW_POKEMON recibido");
 		EnviarID(cliente,id);
 		pthread_t thread;
 		pthread_create(&thread, NULL, (void*) Operacion_NEW_POKEMON,datos);
@@ -75,52 +75,49 @@ void Operacion_NEW_POKEMON(DATOS_NEW_POKEMON_ID* datos) {
 
 	char* path = pathPokemon(nodoPokemon->nombre);
 
-	pthread_mutex_lock(&semDeMierda);
+	while (estaAbiertoPath(path)) {
+		pthread_mutex_unlock(&semDeMierda);
+		sleep(configFS.tiempoReintento);
+	}
 
 	t_config* pConfig = config_create(path);
 
-	if(estaAbierto(pConfig)) {
-		config_destroy(pConfig);
-		pthread_mutex_unlock(&semDeMierda);
-		sleep(configFS.tiempoReintento);
-		Operacion_NEW_POKEMON(datos);
-	} else {
+	abrir(pConfig);
 
-		t_config* pConfig = config_create(path);
+	pthread_mutex_unlock(&semDeMierda);
 
-		abrir(pConfig);
+	int cantBloques =  0;
 
-		pthread_mutex_unlock(&semDeMierda);
+	t_list* numerosBloques = leerBlocks(&cantBloques, pConfig); //DEVUELVE LA LISTA DE INTS DE LOS NROS DE BLOQUE
 
-		int cantBloques =  0;
+	t_list* datosBloques = convertirBloques(numerosBloques,cantBloques); //DEVUELVE LA LISTA DE DATOSBLOQUES
 
-		t_list* numerosBloques = leerBlocks(&cantBloques, pConfig); //DEVUELVE LA LISTA DE INTS DE LOS NROS DE BLOQUE
+	DatosBloques posYCant;
 
-		t_list* datosBloques = convertirBloques(numerosBloques,cantBloques); //DEVUELVE LA LISTA DE DATOSBLOQUES
+	posYCant.cantidad = datos->datos.cantidad;
+	posYCant.pos.posX = datos->datos.posicion.posX;
+	posYCant.pos.posY = datos->datos.posicion.posY;
 
-		DatosBloques posYCant;
+	int bytes = agregarCantidadEnPosicion(datosBloques,posYCant,numerosBloques);
 
-		posYCant.cantidad = datos->datos.cantidad;
-		posYCant.pos.posX = datos->datos.posicion.posX;
-		posYCant.pos.posY = datos->datos.posicion.posY;
+	sleep(configFS.tiempoRetardo);
 
-		int bytes = agregarCantidadEnPosicion(datosBloques,posYCant,numerosBloques);
+//	pthread_mutex_lock(&semDeMierda);
+	cambiarMetadataPokemon(pConfig,numerosBloques,bytes);
+//	pthread_mutex_unlock(&semDeMierda);
 
-		sleep(configFS.tiempoRetardo);
+	Enviar_APPEARED_POKEMON(datos);
 
-		cambiarMetadataPokemon(pConfig,numerosBloques,bytes);
-
-		Enviar_APPEARED_POKEMON(datos);
-
-		config_destroy(pConfig);
-
-		list_clean(numerosBloques);
-		list_destroy(numerosBloques);
-		list_clean(datosBloques);
-		list_destroy(datosBloques);
-	}
-
+	config_destroy(pConfig);
 	free(path);
+
+	list_clean(numerosBloques);
+	list_destroy(numerosBloques);
+	list_clean(datosBloques);
+	list_destroy(datosBloques);
+
+//		pthread_mutex_unlock(&semDeMierda);
+//	}
 }
 
 void Recibir_CATCH_POKEMON(Cliente* cliente, Paquete* paqueteRecibido) {
@@ -131,13 +128,23 @@ void Recibir_CATCH_POKEMON(Cliente* cliente, Paquete* paqueteRecibido) {
 	datos->id = id;
 
 	if (stream->error)
-		log_error(logger, "Error al deserializar CATCH_POKEMON");
-	else
+		log_error(logger,"Error al deserializar CATCH_POKEMON");
+	else {
+		log_info(logger,"CATCH_POKEMON recibido");
 		EnviarID(cliente,id);
+		pthread_t thread;
+		pthread_create(&thread, NULL, (void*) Operacion_CATCH_POKEMON,datos);
+		pthread_detach(thread);
+	}
 
-	pthread_t thread;
-	pthread_create(&thread, NULL, (void*) Operacion_CATCH_POKEMON,datos);
-	pthread_detach(thread);
+//	if (stream->error)
+//		log_error(logger, "Error al deserializar CATCH_POKEMON");
+//	else
+//		EnviarID(cliente,id);
+//
+//	pthread_t thread;
+//	pthread_create(&thread, NULL, (void*) Operacion_CATCH_POKEMON,datos);
+//	pthread_detach(thread);
 }
 
 void Operacion_CATCH_POKEMON(DATOS_CATCH_POKEMON_ID* datos) {
@@ -150,53 +157,47 @@ void Operacion_CATCH_POKEMON(DATOS_CATCH_POKEMON_ID* datos) {
 
 		char* path = pathPokemon(nodoPokemon->nombre);
 
-		pthread_mutex_lock(&semDeMierda);
+		while (estaAbiertoPath(path)) {
+			pthread_mutex_unlock(&semDeMierda);
+			sleep(configFS.tiempoReintento);
+		}
 
 		t_config* pConfig = config_create(path);
 
-		if(estaAbierto(pConfig)) {
-			config_destroy(pConfig);
-			pthread_mutex_unlock(&semDeMierda);
-			sleep(configFS.tiempoReintento);
-			Operacion_CATCH_POKEMON(datos);
-		} else {
+		abrir(pConfig);
 
-			abrir(pConfig);
+		pthread_mutex_unlock(&semDeMierda);
 
-			pthread_mutex_unlock(&semDeMierda);
+		int cantBloques =  0;
 
-			int cantBloques =  0;
+		t_list* numerosBloques = leerBlocks(&cantBloques,pConfig); //DEVUELVE LA LISTA DE INTS DE LOS NROS DE BLOQUE
 
-			t_list* numerosBloques = leerBlocks(&cantBloques,pConfig); //DEVUELVE LA LISTA DE INTS DE LOS NROS DE BLOQUE
+		t_list* datosBloques = convertirBloques(numerosBloques,cantBloques); //DEVUELVE LA LISTA DE DATOSBLOQUES
 
-			t_list* datosBloques = convertirBloques(numerosBloques,cantBloques); //DEVUELVE LA LISTA DE DATOSBLOQUES
+		Posicion posicion;
 
-			Posicion posicion;
+		posicion.posX = datos->datos.posicion.posX;
+		posicion.posY = datos->datos.posicion.posY;
 
-			posicion.posX = datos->datos.posicion.posX;
-			posicion.posY = datos->datos.posicion.posY;
+		int* bytes = malloc(sizeof(int));
 
-			int* bytes = malloc(sizeof(int));
+		bool caught = atraparPokemon(datosBloques,posicion,numerosBloques,bytes);
 
-			bool caught = atraparPokemon(datosBloques,posicion,numerosBloques,bytes);
+		sleep(configFS.tiempoRetardo);
 
-			sleep(configFS.tiempoRetardo);
+		cambiarMetadataPokemon(pConfig,numerosBloques,*bytes);
 
-			cambiarMetadataPokemon(pConfig,numerosBloques,*bytes);
+		Enviar_CAUGHT_POKEMON(datos,caught);
 
-			Enviar_CAUGHT_POKEMON(datos,caught);
-
-			config_destroy(pConfig);
-
-			list_clean(numerosBloques);
-			list_destroy(numerosBloques);
-			list_clean(datosBloques);
-			list_destroy(datosBloques);
-		}
+		config_destroy(pConfig);
 
 		free(path);
-	}
 
+		list_clean(numerosBloques);
+		list_destroy(numerosBloques);
+		list_clean(datosBloques);
+		list_destroy(datosBloques);
+	}
 }
 
 void Recibir_GET_POKEMON(Cliente* cliente, Paquete* paqueteRecibido) {
@@ -207,13 +208,23 @@ void Recibir_GET_POKEMON(Cliente* cliente, Paquete* paqueteRecibido) {
 	datos->id = id;
 
 	if (stream->error)
-		log_error(logger, "Error al deserializar GET_POKEMON");
-	else
+		log_error(logger,"Error al deserializar GET_POKEMON");
+	else {
+		log_info(logger,"GET_POKEMON recibido");
 		EnviarID(cliente,id);
+		pthread_t thread;
+		pthread_create(&thread, NULL, (void*) Operacion_GET_POKEMON,datos);
+		pthread_detach(thread);
+	}
 
-	pthread_t thread;
-	pthread_create(&thread, NULL, (void*) Operacion_GET_POKEMON,datos);
-	pthread_detach(thread);
+//	if (stream->error)
+//		log_error(logger, "Error al deserializar GET_POKEMON");
+//	else
+//		EnviarID(cliente,id);
+//
+//	pthread_t thread;
+//	pthread_create(&thread, NULL, (void*) Operacion_GET_POKEMON,datos);
+//	pthread_detach(thread);
 }
 
 void Operacion_GET_POKEMON(DATOS_GET_POKEMON_ID* datos) {
@@ -224,44 +235,37 @@ void Operacion_GET_POKEMON(DATOS_GET_POKEMON_ID* datos) {
 	else {
 		char* path = pathPokemon(nodoPokemon->nombre);
 
-		pthread_mutex_lock(&semDeMierda);
+		while (estaAbiertoPath(path)) {
+			pthread_mutex_unlock(&semDeMierda);
+			sleep(configFS.tiempoReintento);
+		}
 
 		t_config* pConfig = config_create(path);
 
-		if(estaAbierto(pConfig)) {
-			config_destroy(pConfig);
-			pthread_mutex_unlock(&semDeMierda);
-			sleep(configFS.tiempoReintento);
-			Operacion_GET_POKEMON(datos);
-		} else {
+		abrir(pConfig);
 
-			abrir(pConfig);
+		pthread_mutex_unlock(&semDeMierda);
 
-			pthread_mutex_unlock(&semDeMierda);
+		int cantBloques =  0;
 
-			int cantBloques =  0;
+		t_list* numerosBloques = leerBlocks(&cantBloques,pConfig); //DEVUELVE LA LISTA DE INTS DE LOS NROS DE BLOQUE
 
-			t_list* numerosBloques = leerBlocks(&cantBloques,pConfig); //DEVUELVE LA LISTA DE INTS DE LOS NROS DE BLOQUE
+		t_list* datosBloques = convertirBloques(numerosBloques,cantBloques); //DEVUELVE LA LISTA DE DATOSBLOQUES
 
-			t_list* datosBloques = convertirBloques(numerosBloques,cantBloques); //DEVUELVE LA LISTA DE DATOSBLOQUES
+		sleep(configFS.tiempoRetardo);
 
-			sleep(configFS.tiempoRetardo);
+		Enviar_LOCALIZED_POKEMON(datos,datosBloques);
 
-			Enviar_LOCALIZED_POKEMON(datos,datosBloques);
+		cerrar(pConfig);
 
-			cerrar(pConfig);
-
-			config_destroy(pConfig);
-
-			pthread_mutex_unlock(&semDeMierda);
-
-			list_clean(numerosBloques);
-			list_destroy(numerosBloques);
-			list_clean(datosBloques);
-			list_destroy(datosBloques);
-		}
+		config_destroy(pConfig);
 
 		free(path);
+
+		list_clean(numerosBloques);
+		list_destroy(numerosBloques);
+		list_clean(datosBloques);
+		list_destroy(datosBloques);
 	}
 }
 
@@ -285,9 +289,9 @@ void Enviar_APPEARED_POKEMON(DATOS_NEW_POKEMON_ID* datos) {
 
 	if(clienteBroker != NULL) {
 		EnviarMensaje(clienteBroker, APPEARED_POKEMON, datosEnviar, (void*) &SerializarM_APPEARED_POKEMON_ID);
-		log_info(logger,"Se envio correctamente el appeared pokemon");
+		log_info(logger,"APPEARED_POKEMON enviado.");
 	} else {
-		log_info(logger, "Se guardo el mensaje para cuando se pueda volver a conectarse");
+		log_info(logger, "Sin conexion con el Broker. Mensaje Guardado.");
 		list_add(mensajesNoEnviadosAPPEARED,datosEnviar);
 	}
 
@@ -303,9 +307,9 @@ void Enviar_CAUGHT_POKEMON(DATOS_CATCH_POKEMON_ID* datos, bool caught) {
 
 	if(clienteBroker != NULL) {
 		EnviarMensaje(clienteBroker, CAUGHT_POKEMON, datosEnviar, (void*) &SerializarM_CAUGHT_POKEMON_ID);
-		log_info(logger,"Se envio correctamente el caught pokemon");
+		log_info(logger,"CAUGHT_POKEMON enviado.");
 	} else {
-		log_info(logger, "Se guardo el mensaje para cuando se pueda volver a conectarse");
+		log_info(logger, "Sin conexion con el Broker. Mensaje Guardado.");
 		list_add(mensajesNoEnviadosCAUGHT,datosEnviar);
 	}
 	free(datos);
@@ -338,11 +342,12 @@ void Enviar_LOCALIZED_POKEMON(DATOS_GET_POKEMON_ID* datos,t_list* datosArchivo) 
 
 	if(clienteBroker != NULL) {
 		EnviarMensaje(clienteBroker, LOCALIZED_POKEMON, datosAEnviar, (void*) &SerializarM_LOCALIZED_POKEMON);
-		log_info(logger,"Se envio correctamente el localized pokemon");
+		log_info(logger,"LOCALIZED_POKEMON enviado.");
 	} else {
-		log_info(logger, "Se guardo el mensaje para cuando se pueda volver a conectarse");
+		log_info(logger, "Sin conexion con el Broker. Mensaje guardado.");
 		list_add(mensajesNoEnviadosLOCALIZED,datosAEnviar);
 	}
+
 	free(datos);
 }
 

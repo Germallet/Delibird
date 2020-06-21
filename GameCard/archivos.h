@@ -38,9 +38,12 @@ char* leerArchivos(t_list* bloques, int cantBloques);
 t_list* leerBlocks(int* cantBloques, t_config* conf);
 
 int tamanioBloque(int* nroBloque);
+int tamanioArchivo(FILE* arch);
 
 bool sonIguales(char* a, char* b);
 bool estaAbierto(t_config* conf);
+bool estaAbiertoPath(char* path);
+
 bool existeDirectorio(char* path);
 short existeArchivo(char *path);
 
