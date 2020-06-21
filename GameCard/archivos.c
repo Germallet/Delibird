@@ -31,6 +31,8 @@ t_list* leerBlocks(int* cantBloques, t_config* conf) {
 
 	log_info(logger,"Leyendo el metadata para ver que bloques usa el pokemon");
 
+	//TODO HAY QUE VER QUE PASA CUANDO LE BORRAMOS TODOS DE UNA, HABRIA QUE VER
+	//COMO ASIGNARLE UNO
 	char** listaBloques = config_get_array_value(conf,"BLOCKS");
 
 	while (listaBloques[*cantBloques] != NULL) (*cantBloques)++;
@@ -217,7 +219,8 @@ bool atraparPokemon(t_list* datosBloques, Posicion pos, t_list* numerosBloques, 
 		caught = true;
 	}
 
-	*bytes = configFS.tamanioBlocks*(list_size(numerosBloques) - 1) + tamanioBloque(list_get(numerosBloques,list_size(numerosBloques) - 1));
+	if(list_size(numerosBloques) == 0) *bytes = 0;
+	else *bytes = configFS.tamanioBlocks*(list_size(numerosBloques) - 1) + tamanioBloque(list_get(numerosBloques,list_size(numerosBloques) - 1));
 
 	return caught;
 }
@@ -509,7 +512,6 @@ t_list* interpretarCadena(char* cadenaDatos, int cantBloques) {
 int tamanioBloque(int* nroBloque) {
 	char* bl = string_itoa(*nroBloque);
 	char* path = pathBloque(bl);
-	free(bl);
 
 	FILE* bloque = fopen(path,"rb");
 
@@ -518,6 +520,7 @@ int tamanioBloque(int* nroBloque) {
 
 	fclose(bloque);
 
+	free(bl);
 	free(path);
 
 	return a;
