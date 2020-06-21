@@ -34,6 +34,7 @@ t_list* leerBlocks(int* cantBloques, t_config* conf) {
 		*elem = strtol(listaBloques[i],NULL,10);
 		list_add(listaARetornar,elem);
 	}
+
 	for (int i = 0; i < list_size(listaARetornar); i++) {
 		free(listaBloques[i]);
 	}
@@ -225,7 +226,9 @@ int agregarCantidadEnPosicion(t_list* pokemon, DatosBloques posYCant, t_list* nu
 
 		int* valorRetorno = list_get(numerosBloques,list_size(numerosBloques)-1);
 
-		char* path = pathBloque(string_itoa(*valorRetorno));
+		char* val = string_itoa(*valorRetorno);
+		char* path = pathBloque(val);
+		free(val);
 
 		FILE* bloque = fopen(path,"ab+");
 
@@ -288,6 +291,7 @@ void escribirListaEnArchivo(t_list* datosBloques, t_list* numerosBloques) {
 		DatosBloques* pok = list_get(datosBloques,i);
 		char* cadena = posicionAString(pok);
 		string_append(&cadenaGrande,cadena);
+		free(cadena);
 	}
 
 //	pthread_mutex_lock(&semBitmap);
@@ -314,7 +318,10 @@ void escribirListaEnArchivo(t_list* datosBloques, t_list* numerosBloques) {
 	for (int i = 0; i < list_size(numerosBloques); i++) {
 		int* a = list_get(numerosBloques,i);
 		log_info(logger, "Escribiendo bloque n%d", *a);
-		FILE* f = fopen(pathBloque(string_itoa(*a)),"wb+");
+
+		char* bl = string_itoa(*a);
+		FILE* f = fopen(pathBloque(bl),"wb+");
+		free(bl);
 
 		if (strlen(cadenaGrande) < configFS.tamanioBlocks) tamanioBloque = strlen(cadenaGrande);
 		fwrite(cadenaGrande,tamanioBloque,1,f);
@@ -344,7 +351,7 @@ NodoArbol* crearPokemon(char* nombre) {
 	char* pathNodo = string_new();
 	string_append(&pathNodo,pathPtoMnt());
 	string_append(&pathNodo,"/Files/");
-	string_append(&pathNodo,nodo->nombre);
+	string_append(&pathNodo,nombre);
 
 	mkdir(pathNodo,0700);
 
@@ -395,13 +402,17 @@ char* leerArchivos(t_list* bloques, int cantBloques) {
 
 	char* datos = string_new();
 
-	int* bloque = malloc(sizeof(int));
+//	int* bloque = malloc(sizeof(int));
 
 	for(int i = 0; i < cantBloques; i++) {
 
-		bloque = list_get(bloques,i);
+		int* bloque = list_get(bloques,i);
 
-		char* pathBlocks = pathBloque(string_itoa(*bloque));
+		char* bl = string_itoa(*bloque);
+
+		char* pathBlocks = pathBloque(bl);
+
+		free(bl);
 
 		FILE* f = fopen(pathBlocks,"rb+");
 
@@ -475,7 +486,9 @@ t_list* interpretarCadena(char* cadenaDatos, int cantBloques) {
 }
 
 int tamanioBloque(int* nroBloque) {
-	char* path = pathBloque(string_itoa(*nroBloque));
+	char* bl = string_itoa(*nroBloque);
+	char* path = pathBloque(bl);
+	free(bl);
 
 	FILE* bloque = fopen(path,"rb");
 
@@ -491,13 +504,17 @@ int tamanioBloque(int* nroBloque) {
 
 void cambiarMetadataPokemon(t_config* c, t_list* numerosBloques, int bytes) {
 
-	config_set_value(c,"SIZE",string_itoa(bytes));
+	char* size = string_itoa(bytes);
+	config_set_value(c,"SIZE",size);
+	free(size);
 
 	char* bloques = string_new();
 	string_append(&bloques,"[");
 	for(int i = 0; i < list_size(numerosBloques); i++) {
 		int* a = list_get(numerosBloques,i);
-		string_append(&bloques,string_itoa(*a));
+		char* bl = string_itoa(*a);
+		string_append(&bloques,bl);
+		free(bl);
 		string_append(&bloques,",");
 	}
 
