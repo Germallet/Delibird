@@ -112,8 +112,6 @@ void Operacion_NEW_POKEMON(DATOS_NEW_POKEMON_ID* datos) {
 
 		Enviar_APPEARED_POKEMON(datos);
 
-		free(path);
-
 		config_destroy(pConfig);
 
 		list_clean(numerosBloques);
@@ -121,6 +119,8 @@ void Operacion_NEW_POKEMON(DATOS_NEW_POKEMON_ID* datos) {
 		list_clean(datosBloques);
 		list_destroy(datosBloques);
 	}
+
+	free(path);
 }
 
 void Recibir_CATCH_POKEMON(Cliente* cliente, Paquete* paqueteRecibido) {
@@ -186,8 +186,6 @@ void Operacion_CATCH_POKEMON(DATOS_CATCH_POKEMON_ID* datos) {
 
 			Enviar_CAUGHT_POKEMON(datos,caught);
 
-			free(path);
-
 			config_destroy(pConfig);
 
 			list_clean(numerosBloques);
@@ -195,7 +193,10 @@ void Operacion_CATCH_POKEMON(DATOS_CATCH_POKEMON_ID* datos) {
 			list_clean(datosBloques);
 			list_destroy(datosBloques);
 		}
+
+		free(path);
 	}
+
 }
 
 void Recibir_GET_POKEMON(Cliente* cliente, Paquete* paqueteRecibido) {
@@ -254,13 +255,13 @@ void Operacion_GET_POKEMON(DATOS_GET_POKEMON_ID* datos) {
 
 			pthread_mutex_unlock(&semDeMierda);
 
-			free(path);
-
 			list_clean(numerosBloques);
 			list_destroy(numerosBloques);
 			list_clean(datosBloques);
 			list_destroy(datosBloques);
 		}
+
+		free(path);
 	}
 }
 
