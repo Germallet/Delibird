@@ -83,30 +83,42 @@ void IniciarMemoria(int tamanioMemoria, int _tamanioMinimo, char* algoritmoMemor
 	pthread_mutex_init(&mutexMemoria, NULL);
 }
 
-void GuardarMensaje(Mensaje* mensaje, CodigoDeCola tipoDeMensaje, Stream* contenido)
+static Particion* SeleccionDeParticion(int tamanio)
 {
 	Particion* particion = NULL;
 	int intentos = 0;
 
-	pthread_mutex_lock(&mutexMemoria);
+	particion = seleccionar(tamanio);
+	if (particion != NULL)
+		return particion;
+	intentos++;
+
 	while(true)
 	{
-		particion = seleccionar(contenido->tamanio);
-		if (particion != NULL)
-			break;
-		intentos++;
-
-		if (compactar != NULL)
+		if (compactar != NULL && intentos == frecuenciaCompactacion/* || (frecuenciaCompactacion == -1 && particiones->elements_count == 1 && !((Particion*)(list_get(particiones, 0)))->ocupado)*/)
 		{
-			if (intentos == frecuenciaCompactacion/* || (frecuenciaCompactacion == -1 && particiones->elements_count == 1 && !((Particion*)(list_get(particiones, 0)))->ocupado)*/)
-			{
-				compactar();
-				intentos = 0;
-			}
+			log_info(logger, "Compactando");
+			compactar();
+			intentos = 0;
+
+			particion = seleccionar(tamanio);
+			if (particion != NULL)
+				return particion;
 		}
-		else
-			eliminarParticion();
+
+		eliminarParticion();
+
+		particion = seleccionar(tamanio);
+		if (particion != NULL)
+			return particion;
+		intentos++;
 	}
+	return NULL;
+}
+void GuardarMensaje(Mensaje* mensaje, CodigoDeCola tipoDeMensaje, Stream* contenido)
+{
+	pthread_mutex_lock(&mutexMemoria);
+	Particion* particion = SeleccionDeParticion(contenido->tamanio);
 
 	particion->id = mensaje->id;
 	particion->ocupado = true;
@@ -124,6 +136,7 @@ void* ObtenerContenidoMensaje(Mensaje* mensaje)
 	void* contenido = malloc(mensaje->tamanio);
 	pthread_mutex_lock(&mutexMemoria);
 	memcpy(contenido, memoria + mensaje->particion->base, mensaje->tamanio);
+	mensaje->particion->tiempoUpdated = clock();
 	pthread_mutex_unlock(&mutexMemoria);
 	return contenido;
 }

@@ -41,9 +41,10 @@ void Particion_Dump(Particion* particion, FILE* archivo, int numero)
 		);
 }
 
-Particion* Particon_Combinar(Particion* particionA, Particion* particionB)
+Particion* Particion_Combinar(Particion* particionA, Particion* particionB, int posA, int posB)
 {
 	particionA->tamanio += particionB->tamanio;
 	Particion_Destruir(particionB);
+	log_info(logger, "Particiones consolidadas (%d, %d)", posA, posB);
 	return particionA;
 }

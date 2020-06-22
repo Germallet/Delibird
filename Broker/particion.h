@@ -17,4 +17,4 @@ typedef struct {
 Particion* Particion_Crear(int inicio, int tamanio);
 void Particion_Destruir(Particion* particion);
 void Particion_Dump(Particion* particion, FILE* archivo, int numero);
-Particion* Particon_Combinar(Particion* particionA, Particion* particionB);
+Particion* Particion_Combinar(Particion* particionA, Particion* particionB, int posA, int posB);

@@ -1,10 +1,21 @@
 #include "buddySystem.h"
 #include "memoria.h"
+#include "broker.h"
 #include "../Utils/dictionaryInt.h"
 #include <string.h>
 #include <math.h>
 
 t_list* particiones;
+
+static int ObtenerPosicion(Particion* particion)
+{
+	for (int indice = 0; indice < particiones->elements_count; indice++)
+	{
+		if((Particion*)(list_get(particiones, indice)) == particion)
+			return indice;
+	}
+	return -1;
+}
 
 void BS_Inicializar(int tamanio)
 {
@@ -48,8 +59,13 @@ Particion* BS_Seleccionar(int tamanio)
 				seleccionado = particion;
 		}
 	}
-	if (seleccionado->tamanio > tamanio)
-		Subparticionar(seleccionado, tamanio);
+
+	if (seleccionado != NULL)
+	{
+		if (seleccionado->tamanio > tamanio)
+			Subparticionar(seleccionado, tamanio);
+		log_info(logger, "Particion ocupada (n: %d, pos: %d, tam: %d)", ObtenerPosicion(seleccionado), seleccionado->base, seleccionado->tamanio);
+	}
 
 	return seleccionado;
 }
@@ -65,17 +81,19 @@ static Particion* ObtenerBuddy(Particion* particion)
 	bool EsBuddy(Particion* particionB) {return SonBuddy(particion, particionB);}
 	return (Particion*)list_find(particiones, (void*)&EsBuddy);
 }
+
 static void BS_Consolidar(Particion* particion)
 {
 	Particion* particionBuddy = ObtenerBuddy(particion);
 	if(!particionBuddy->ocupado)
 	{
-		particion = Particon_Combinar(particion, particionBuddy);
+		particion = Particion_Combinar(particion, particionBuddy, ObtenerPosicion(particion), ObtenerPosicion(particionBuddy));
 		BS_Consolidar(particion);
 	}
 }
 static void BS_Eliminar(Particion* particion)
 {
+	log_info(logger, "Particion eliminada (%d)", ObtenerPosicion(particion));
 	particion->ocupado = false;
 	BS_Consolidar(particion);
 }
