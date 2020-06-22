@@ -25,6 +25,17 @@ typedef enum
 	INTERCAMBIAR_POKEMON_FINALIZADO = 4
 }Tipo_Accion;
 
+typedef enum
+{
+	FIN_QUANTUM = 0,
+	IO = 1,
+	FIN_EXEC = 2,
+	CAPTURA = 3,
+	INTERCAMBIO = 4,
+	A_EXEC = 5,
+	A_EXIT = 6
+}Razon;
+
 typedef struct
 {
 	Tipo_Accion tipo_accion;
@@ -69,9 +80,10 @@ void capturo_pokemon(Entrenador* entrenador);
 void fallo_captura_pokemon(Entrenador* entrenador);
 void habilitar_entrenador(Entrenador* entrenador);
 void deshabilitar_entrenador(Entrenador* entrenador);
-void cambiar_estado_a(Entrenador* entrenador, Estado_Entrenador estado);
+void cambiar_estado_a(Entrenador* entrenador, Estado_Entrenador estado, Razon razon);
 void pokemons_que_van_a_intercambiar(Entrenador* entrenador_1, Entrenador* entrenador_2, char** pokemon1, char** pokemon2);
 bool puede_seguir_atrapando_pokemons(Entrenador* entrenador);
 bool puede_planificarse_para_atrapar(void* entrenador);
 bool esta_en_EXIT(Entrenador* entrenador);
+bool hay_entrenador_en_ejecucion();
 bool estamos_en_deadlock();

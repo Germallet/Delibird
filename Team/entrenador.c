@@ -18,10 +18,14 @@ t_list* cola_BLOCKED;
 t_list* cola_EXIT;
 t_dictionaryInt* diccionario_acciones;
 t_dictionaryInt* diccionario_colas;
+t_dictionaryInt* diccionario_razones;
+t_dictionaryInt* diccionario_estado_string;
 
 static void ciclo(Entrenador* entrenador);
 static void inicializar_diccionario_acciones();
 static void inicializar_diccionario_colas();
+static void inicializar_diccionario_razones();
+static void inicializar_diccionario_estado_string();
 
 //-----------ENTRENADOR-----------//
 Entrenador* crear_entrenador(char* posicion, char* pokemons_atrapados, char* pokemons_objetivo, int ID)
@@ -158,28 +162,31 @@ static void meter_en_cola_READY(Entrenador* entrenador)
 	if(es_planificacion_tipo("SJF-CD"))
 	{
 		insertar_SJF(entrenador);
-		if(entrenador_EXEC != NULL)
+		if(hay_entrenador_en_ejecucion())
 		{
 			insertar_SJF(entrenador_EXEC);
-			entrenador_EXEC->estado = READY;
+			entrenador_EXEC->estado = READY;/////////////////////////////////////////////////////////////////
 			entrenador_EXEC = NULL;
 		}
 	}
 }
 
-void poner_entrenador_en_EXEC() { cambiar_estado_a(tomar_entrenador(cola_READY), EXEC); }
-void cambiar_estado_a(Entrenador* entrenador, Estado_Entrenador estado)
+void poner_entrenador_en_EXEC() { cambiar_estado_a(tomar_entrenador(cola_READY), EXEC, A_EXEC); }
+void cambiar_estado_a(Entrenador* entrenador, Estado_Entrenador estado, Razon razon)
 {
+	t_list* cola_anterior = dictionaryInt_get(diccionario_colas, entrenador->estado);
+	t_list* cola_nueva = dictionaryInt_get(diccionario_colas, estado);
 	sacar_de_cola_actual(entrenador);
+
 	if(estado==EXEC)
 		entrenador_EXEC = entrenador;
 	else if(estado==READY)
 		meter_en_cola_READY(entrenador);
 	else
-		list_add(dictionaryInt_get(diccionario_colas, estado), entrenador);
+		list_add(cola_nueva, entrenador);
 	entrenador->estado = estado;
-	if(estado==EXIT)
-		log_info(logger, "Finalizo el entrenador %d.", entrenador->ID);
+
+	if(cola_anterior != cola_nueva) log_info(logger, "El entrenador %d paso a la cola %s por %s.", entrenador->ID, dictionaryInt_get(diccionario_estado_string, estado), dictionaryInt_get(diccionario_razones, razon));
 }
 
 bool puede_seguir_atrapando_pokemons(Entrenador* entrenador) { return cantidad_de_pokemons_en_lista(entrenador->pokemons_atrapados) < cantidad_de_pokemons_en_lista(entrenador->pokemons_objetivo); }
@@ -322,6 +329,8 @@ void obtener_entrenadores()
 {
 	inicializar_diccionario_acciones();
 	inicializar_diccionario_colas();
+	inicializar_diccionario_razones();
+	inicializar_diccionario_estado_string();
 
 	char* entrenadores = config_get_string_value(config,"POSICIONES_ENTRENADORES");
 
@@ -361,12 +370,12 @@ void actualizar_estado(Entrenador* entrenador)
 	if(tiene_todos_sus_pokemons(entrenador))
 	{
 		terminar_hilo(entrenador);
-		cambiar_estado_a(entrenador, EXIT);
+		cambiar_estado_a(entrenador, EXIT, A_EXIT);
 	}
 	else
 	{
 		habilitar_entrenador(entrenador);
-		cambiar_estado_a(entrenador, BLOCKED);
+		cambiar_estado_a(entrenador, BLOCKED, FIN_EXEC);
 	}
 }
 
@@ -387,7 +396,7 @@ void fallo_captura_pokemon(Entrenador* entrenador)
 
 void ejecutar_entrenador_actual()
 {
-	if(entrenador_EXEC!=NULL)
+	if(hay_entrenador_en_ejecucion())
 		pthread_mutex_unlock(&(entrenador_EXEC->mutex));
 	else
 	{
@@ -454,7 +463,8 @@ bool tienen_pokemons_para_intercambiar(Entrenador* entrenador_1, Entrenador* ent
 	return tienen;
 }
 
-bool estamos_en_deadlock() { return !necesitamos_pokemons() && entrenador_EXEC==NULL && cola_BLOCKED->elements_count > 1;}
+bool hay_entrenador_en_ejecucion() { return entrenador_EXEC!=NULL; }
+bool estamos_en_deadlock() { return !necesitamos_pokemons() && !hay_entrenador_en_ejecucion() && cola_BLOCKED->elements_count > 1;}
 
 t_list* obtener_entrenadores_que_podrian_intercambiar()
 {
@@ -604,3 +614,27 @@ static void inicializar_diccionario_colas()
 	dictionaryInt_put(diccionario_colas, EXIT, cola_EXIT);
 }
 
+//-----------DICCIONARIO DE ESTADO_STRING-----------//
+static void inicializar_diccionario_estado_string()
+{
+	diccionario_estado_string = dictionaryInt_create();
+	dictionaryInt_put(diccionario_estado_string, NEW, "NEW");
+	dictionaryInt_put(diccionario_estado_string, EXEC, "EXEC");
+	dictionaryInt_put(diccionario_estado_string, READY, "READY");
+	dictionaryInt_put(diccionario_estado_string, BLOCKED, "BLOCKED");
+	dictionaryInt_put(diccionario_estado_string, EXIT, "EXIT");
+}
+
+//-----------DICCIONARIO DE RAZONES-----------//
+
+static void inicializar_diccionario_razones()
+{
+	diccionario_razones = dictionaryInt_create();
+	dictionaryInt_put(diccionario_razones, FIN_QUANTUM, "fin de quantum");
+	dictionaryInt_put(diccionario_razones, IO, "entreda/salida");
+	dictionaryInt_put(diccionario_razones, FIN_EXEC, "fin de ejecucion");
+	dictionaryInt_put(diccionario_razones, CAPTURA, "asignarsele una captura pokemon");
+	dictionaryInt_put(diccionario_razones, INTERCAMBIO, "asignarsele un intercambio");
+	dictionaryInt_put(diccionario_razones, A_EXEC, "ser el primero en cola ready");
+	dictionaryInt_put(diccionario_razones, A_EXIT, "haber obtenido todos sus pokemons");
+}

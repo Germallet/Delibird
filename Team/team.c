@@ -12,6 +12,7 @@
 #include <commons/config.h>
 #include <commons/collections/list.h>
 
+int cantidad_ciclos;
 t_log* logger;
 t_config* config;
 pthread_mutex_t mutex_team;
@@ -48,21 +49,33 @@ static void inicializar_datos()
 	pokemons_mapa = list_create();
 	especies_localizadas = list_create();
 
-	//HILO TIMER
-	//inicializar_hilo_reconexion(); TODO reconexion
+	//DEADLOCK
+	deadlocks = list_create();
 
 	//INTERRUPCIONES
 	inicializar_interrupciones();
 
-	//INTERRUPCIONES
-	deadlocks = list_create();
+	//CONTADOR DE CICLOS
+	cantidad_ciclos = 0;
+	quantum = 0;
 
 	//MUTEX
 	pthread_mutex_init(&(mutex_team), NULL);
 	pthread_mutex_lock(&(mutex_team));
 }
 
-static void esperar_fin_de_ciclo() { pthread_mutex_lock(&mutex_team); }
+static void esperar_fin_de_ciclo()
+{
+	pthread_mutex_lock(&mutex_team);
+	cantidad_ciclos++;
+	if(es_planificacion_tipo("RR"))
+	{
+		if(hay_entrenador_en_ejecucion())
+			aumentar_quantum();
+		else
+			reiniciar_quantum();
+	}
+}
 
 static void solicitar_pokemons_para_objetivo_global_test()
 {

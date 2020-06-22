@@ -5,10 +5,10 @@
 #include "planificacion.h"
 #include "interrupciones.h"
 
+int quantum;
 bool deadlocks_estan_identificados = false;
 t_list* deadlocks;
 
-bool hay_entrenador_en_ejecucion() { return entrenador_EXEC != NULL; }
 bool hay_entrenadores_READY() { return !list_is_empty(cola_READY); }
 bool hay_pokemons_para_atrapar() { return !list_is_empty(pokemons_mapa); }
 bool necesitamos_pokemons() { return !list_is_empty(pokemons_necesarios); }
@@ -67,6 +67,19 @@ static int ciclos_estimados(Deadlock* deadlock)
 	int distancia = distancia_entre(deadlock->entrenador1->posicion, deadlock->entrenador2->posicion);
 	return distancia + 5;
 }
+
+void reiniciar_quantum() { quantum = 0;}
+
+void aumentar_quantum()
+{
+	quantum++;
+	if(quantum == 3)
+	{
+		cambiar_estado_a(entrenador_EXEC, READY, FIN_QUANTUM);
+		reiniciar_quantum();
+	}
+}
+
 static void insertar_FIFO(Deadlock* deadlock) { list_add(deadlocks, deadlock); }
 void insertar_SJF(Deadlock* deadlock)
 {
@@ -134,7 +147,7 @@ void planificar_atrapar_pokemon()
 	strcpy(especie, pokemon->especie);
 	cargar_accion(entrenador, CAPTURAR_POKEMON, especie);
 
-	cambiar_estado_a(entrenador, READY);
+	cambiar_estado_a(entrenador, READY, CAPTURA);
 
 	se_asigno_para_capturar(pokemon);
 }
@@ -156,12 +169,12 @@ void planificar_intercambiar_pokemon()
 	cargar_accion(entrenador_1, INTERCAMBIAR_POKEMON_EN_PROGRESO, entrenador_2);
 	cargar_accion(entrenador_1, INTERCAMBIAR_POKEMON_FINALIZADO, entrenador_2);
 
-	cambiar_estado_a(entrenador_1, READY);
+	cambiar_estado_a(entrenador_1, READY, INTERCAMBIO);
 }
 
 void terminar_team()
 {
-	log_info(logger, "GAME OVER.");
+	log_info(logger, "El Team atrapo todos los pokemons que necesitaban sus entrenadores en %d ciclos.", cantidad_ciclos);
 	//TODO
 	/*if(logger != NULL) log_destroy(logger);
 	if(config != NULL) config_destroy(config);

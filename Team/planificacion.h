@@ -3,6 +3,7 @@ bool hay_pokemons_para_atrapar();
 bool hay_entrenadores_disponibles();
 
 extern t_list* deadlocks;
+extern int quantum;
 
 typedef struct
 {
@@ -16,5 +17,7 @@ void planificar_entrenador_si_es_necesario();
 void destruir_interrupcion(void* interrupcion);
 void identificar_deadlocks();
 void terminar_team();
+void reiniciar_quantum();
+void aumentar_quantum();
 bool necesitamos_pokemons();
 bool es_planificacion_tipo(char* tipo);
