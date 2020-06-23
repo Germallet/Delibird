@@ -65,7 +65,6 @@ void resetear_acciones(Entrenador* entrenador)
 	{
 		if(((Datos_Accion*) datos_accion)->info != NULL)
 			free(((Datos_Accion*) datos_accion)->info);
-		((Datos_Accion*) datos_accion)->info = NULL;
 		free(datos_accion);
 		datos_accion = NULL;
 	}
@@ -85,7 +84,6 @@ void destruir_entrenador(void* entrenador_void)
 	free(entrenador->id_mensaje_espera);
 	list_destroy_and_destroy_elements(entrenador->pokemons_atrapados, &destruir_pokemon);
 	list_destroy_and_destroy_elements(entrenador->pokemons_objetivo, &destruir_pokemon);
-
 	resetear_acciones(entrenador);
 	list_destroy(entrenador->datos_acciones);
 	free(entrenador);
@@ -551,14 +549,17 @@ static void capturar_pokemon(void* entrenador_void)
 
 	log_info(logger, "El entrenador %d intenta atrapar un %s en la posicion (%d,%d)", entrenador->ID, especie_pokemon_a_atrapar, entrenador->posicion.posX, entrenador->posicion.posY);
 
-	Cliente* cliente = crear_cliente_de_broker(Eventos_Crear0());
+	Cliente* cliente = crear_cliente_de_broker();
 	if(cliente != NULL)
 	{
-		DATOS_CATCH_POKEMON* datos = malloc(sizeof(DATOS_GET_POKEMON));
+		DATOS_CATCH_POKEMON* datos = malloc(sizeof(DATOS_CATCH_POKEMON));
 		datos->pokemon = especie_pokemon_a_atrapar;
 		datos->posicion = entrenador->posicion;
-
-		EnviarMensaje(cliente, GET_POKEMON, datos, (Serializador) &SerializarM_CATCH_POKEMON);
+		cliente->info = entrenador;
+		EnviarMensajeSinFree(cliente, CATCH_POKEMON, datos, (Serializador) &SerializarM_CATCH_POKEMON);
+		free(datos);
+		deshabilitar_entrenador(entrenador);
+		cambiar_estado_a(entrenador, BLOCKED, ESPERA_POKEMON);
 	}
 	else
 		capturo_pokemon(entrenador);
@@ -566,12 +567,13 @@ static void capturar_pokemon(void* entrenador_void)
 static void intercambiar_pokemon_en_progreso(Entrenador* entrenador)
 {
 	log_info(logger, "Los entrenadores %d y %d estan intercambiando pokemons en la posicion (%d,%d)", entrenador->ID, ((Entrenador*) datos_accion_actual(entrenador)->info)->ID, entrenador->posicion.posX, entrenador->posicion.posY);
+	datos_accion_actual(entrenador)->info = NULL;
 	siguiente_accion(entrenador);
 }
 static void intercambiar_pokemon_finalizado(Entrenador* entrenador)
 {
 	Entrenador* entrenador2 = datos_accion_actual(entrenador)->info;
-
+	datos_accion_actual(entrenador)->info = NULL;
 	char* pokemon1 = entrenador->info;
 	char* pokemon2 = entrenador2->info;
 
@@ -635,6 +637,7 @@ static void inicializar_diccionario_razones()
 	dictionaryInt_put(diccionario_razones, FIN_EXEC, "fin de ejecucion");
 	dictionaryInt_put(diccionario_razones, CAPTURA, "asignarsele una captura pokemon");
 	dictionaryInt_put(diccionario_razones, INTERCAMBIO, "asignarsele un intercambio");
-	dictionaryInt_put(diccionario_razones, A_EXEC, "ser el primero en cola ready");
+	dictionaryInt_put(diccionario_razones, A_EXEC, "ser elegido por el planificador");
 	dictionaryInt_put(diccionario_razones, A_EXIT, "haber obtenido todos sus pokemons");
+	dictionaryInt_put(diccionario_razones, ESPERA_POKEMON, "estar intentando atrapar un pokemon");
 }

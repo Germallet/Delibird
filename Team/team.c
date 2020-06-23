@@ -94,8 +94,8 @@ int main()
 	identificar_objetivo_global();
 	IniciarServidorTeam(config_get_string_value(config,"IP_TEAM"), config_get_int_value(config,"PUERTO_TEAM"));
 	solicitar_pokemons_para_objetivo_global_test();
-	//solicitar_pokemons_para_objetivo_global();
-	//conectarse_y_suscribirse_a_colas();
+	solicitar_pokemons_para_objetivo_global();
+	conectarse_y_suscribirse_a_colas();
 
 	while(true)
 	{

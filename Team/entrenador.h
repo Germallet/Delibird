@@ -33,7 +33,8 @@ typedef enum
 	CAPTURA = 3,
 	INTERCAMBIO = 4,
 	A_EXEC = 5,
-	A_EXIT = 6
+	A_EXIT = 6,
+	ESPERA_POKEMON = 7
 }Razon;
 
 typedef struct

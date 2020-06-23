@@ -175,12 +175,11 @@ void planificar_intercambiar_pokemon()
 void terminar_team()
 {
 	log_info(logger, "El Team atrapo todos los pokemons que necesitaban sus entrenadores en %d ciclos.", cantidad_ciclos);
-	//TODO
-	/*if(logger != NULL) log_destroy(logger);
+
+	if(logger != NULL) log_destroy(logger);
 	if(config != NULL) config_destroy(config);
 	list_destroy(deadlocks);
 
-	//if(entrenador_EXEC!=NULL) destruir_entrenador(entrenador_EXEC);
 	list_destroy(cola_NEW);
 	list_destroy(cola_READY);
 	list_destroy(cola_BLOCKED);
@@ -188,7 +187,7 @@ void terminar_team()
 
 	list_destroy_and_destroy_elements(cola_INTERRUPCIONES, &destruir_interrupcion);
 	list_destroy_and_destroy_elements(pokemons_necesarios, &destruir_pokemon);
-	list_destroy_and_destroy_elements(pokemons_mapa, &destruir_pokemon_mapa);*/
+	list_destroy_and_destroy_elements(pokemons_mapa, &destruir_pokemon_mapa);
 
 	exit(0);
 }
