@@ -67,11 +67,12 @@ static void operacion_CONECTADO(Cliente* cliente, CodigoDeCola cola)
 	Stream* stream = SerializarM_BROKER_SUSCRIBIRSE(&datos_broker);
 
 	Socket_Enviar(BROKER_SUSCRIBIRSE, stream->base, stream->tamanio, cliente->socket);
+	Stream_DestruirConBuffer(stream);
 }
 
-static void operacion_CONECTADO_CAUGHT_POKEMON(Cliente* cliente) { operacion_CONECTADO(cliente, CAUGHT_POKEMON); }
-static void operacion_CONECTADO_APPEARED_POKEMON(Cliente* cliente) { operacion_CONECTADO(cliente, APPEARED_POKEMON); }
-static void operacion_CONECTADO_LOCALIZED_POKEMON(Cliente* cliente) { operacion_CONECTADO(cliente, LOCALIZED_POKEMON); }
+static void operacion_CONECTADO_CAUGHT_POKEMON(Cliente* cliente) { operacion_CONECTADO(cliente, COLA_CAUGHT_POKEMON); }
+static void operacion_CONECTADO_APPEARED_POKEMON(Cliente* cliente) { operacion_CONECTADO(cliente, COLA_APPEARED_POKEMON); }
+static void operacion_CONECTADO_LOCALIZED_POKEMON(Cliente* cliente) { operacion_CONECTADO(cliente, COLA_LOCALIZED_POKEMON); }
 
 static void conectarse_y_suscribirse_a_cola(CodigoDeOperacion cod_op, EventoOperacion operacion, void (*alConectarse)(Cliente*))
 {
@@ -103,8 +104,6 @@ void solicitar_pokemons_para_objetivo_global()
 			free(datos);
 			DestruirCliente(cliente);
 		}
-		else
-			;//TODO
 	}
 }
 

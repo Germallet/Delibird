@@ -398,7 +398,6 @@ void ejecutar_entrenador_actual()
 	else
 	{
 		log_info(logger, "IDLE");
-		terminar_team();
 		sleep((unsigned) config_get_int_value(config,"RETARDO_CICLO_CPU"));
 		pthread_mutex_unlock(&(mutex_team));
 	}
@@ -572,6 +571,7 @@ static void capturar_pokemon(void* entrenador_void)
 		free(datos);
 		deshabilitar_entrenador(entrenador);
 		cambiar_estado_a(entrenador, BLOCKED, ESPERA_POKEMON);
+		capturo_pokemon(entrenador);
 	}
 	else
 		capturo_pokemon(entrenador);
