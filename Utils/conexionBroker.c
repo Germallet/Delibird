@@ -6,10 +6,12 @@
 static void reconexion(void* info)
 {
 	ConexionBroker* conexion = (ConexionBroker*)info;
+	if(conexion->clienteBroker != NULL) return;
 
-	/*conexion->clienteBroker = CrearCliente(conexion->ip, conexion->puerto, conexion->eventos);
+	conexion->clienteBroker = CrearCliente(conexion->ip, conexion->puerto, conexion->eventos);
 	if(conexion->clienteBroker != NULL)
 	{
+		conexion->clienteBroker->info = conexion;
 		if(conexion->datosConectado == NULL)
 			Socket_Enviar(BROKER_CONECTAR, NULL, 0, conexion->clienteBroker->socket);
 		else
@@ -17,7 +19,14 @@ static void reconexion(void* info)
 			Stream* stream = SerializarM_BROKER_CONECTADO(conexion->datosConectado);
 			Socket_Enviar(BROKER_RECONECTAR, stream->base, stream->tamanio, conexion->clienteBroker->socket);
 		}
-	}*/
+	}
+}
+
+static void ConexionColas(Cliente* cliente, Paquete* paquete) {
+	ConexionBroker* nuevaConexion = (ConexionBroker*) cliente->info;
+	nuevaConexion->datosConectado = malloc(sizeof(BROKER_DATOS_CONECTADO));
+	DeserializarM_BROKER_CONECTADO(paquete, nuevaConexion->datosConectado);
+	nuevaConexion->alConectarse(cliente);
 }
 
 ConexionBroker* ConectarseABroker(char* ip, int puerto, Eventos* eventos, void (*alConectarse)(Cliente*), int tiempoReintentoConexion)
@@ -30,11 +39,6 @@ ConexionBroker* ConectarseABroker(char* ip, int puerto, Eventos* eventos, void (
 	nuevaConexion->eventos = eventos;
 	nuevaConexion->alConectarse = alConectarse;
 
-	void ConexionColas(Cliente* cliente, Paquete* paquete) {
-		nuevaConexion->datosConectado = malloc(sizeof(BROKER_DATOS_CONECTADO));
-		DeserializarM_BROKER_CONECTADO(paquete, nuevaConexion->datosConectado);
-		nuevaConexion->alConectarse(nuevaConexion->clienteBroker);
-	}
 	Eventos_AgregarOperacion(nuevaConexion->eventos, BROKER_CONECTADO, (EventoOperacion)&ConexionColas);
 
 	CrearHiloTimer(-1, tiempoReintentoConexion, &reconexion, nuevaConexion);

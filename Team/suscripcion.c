@@ -55,49 +55,36 @@ void operacion_LOCALIZED_POKEMON(Cliente* cliente, Paquete* paquete)
 
 	Stream_DestruirConBuffer(stream_lectura);
 }
-void operacion_ASIGNACION_ID(Cliente* cliente, Paquete* paquete)
-{
-	DATOS_ID_MENSAJE datos;
-	if(!DeserializarM_ID_MENSAJE(paquete, &datos)) log_error(logger, "Error al intentar deserializar el mensaje.");
 
-	uint32_t* id_mensaje = malloc(sizeof(uint32_t));
-	*id_mensaje = datos.id;
-
-	list_add(id_mensajes_esperados, &(datos.id));
-	Entrenador* entrenador = cliente->info;
-	asignar_id_mensaje_espera(entrenador, id_mensaje);
-}
 
 //-----------SUSCRIPCION-----------//
-Cliente* crear_cliente_de_broker()
+Cliente* crear_cliente_de_broker() { return CrearCliente(config_get_string_value(config, "IP_BROKER"), config_get_int_value(config, "PUERTO_BROKER"), Eventos_Crear0()); }
+
+static void operacion_CONECTADO(Cliente* cliente, CodigoDeCola cola)
 {
-	Eventos* eventos = Eventos_Crear0();
-	Eventos_AgregarOperacion(eventos, BROKER_ID_MENSAJE, (EventoOperacion) &operacion_ASIGNACION_ID);
-	return CrearCliente(config_get_string_value(config, "IP_BROKER"), config_get_int_value(config, "PUERTO_BROKER"),  eventos);
+	BROKER_DATOS_SUSCRIBIRSE datos_broker;
+	datos_broker.cola = cola;
+	Stream* stream = SerializarM_BROKER_SUSCRIBIRSE(&datos_broker);
+
+	Socket_Enviar(BROKER_SUSCRIBIRSE, stream->base, stream->tamanio, cliente->socket);
 }
 
-static void conectarse_y_suscribirse_a_cola(CodigoDeOperacion cod_op, EventoOperacion operacion, CodigoDeCola cola)
+static void operacion_CONECTADO_CAUGHT_POKEMON(Cliente* cliente) { operacion_CONECTADO(cliente, CAUGHT_POKEMON); }
+static void operacion_CONECTADO_APPEARED_POKEMON(Cliente* cliente) { operacion_CONECTADO(cliente, APPEARED_POKEMON); }
+static void operacion_CONECTADO_LOCALIZED_POKEMON(Cliente* cliente) { operacion_CONECTADO(cliente, LOCALIZED_POKEMON); }
+
+static void conectarse_y_suscribirse_a_cola(CodigoDeOperacion cod_op, EventoOperacion operacion, void (*alConectarse)(Cliente*))
 {
 	Eventos* eventos = Eventos_Crear0();
 	Eventos_AgregarOperacion(eventos, cod_op, operacion);
-
-	void operacion_CONECTADO(Cliente* cliente)
-	{
-		BROKER_DATOS_SUSCRIBIRSE datos_broker;
-		datos_broker.cola = cola;
-		Stream* stream = SerializarM_BROKER_SUSCRIBIRSE(&datos_broker);
-
-		Socket_Enviar(BROKER_SUSCRIBIRSE, stream->base, stream->tamanio, cliente->socket);
-	}
-
-	ConectarseABroker(config_get_string_value(config, "IP_BROKER"), config_get_int_value(config, "PUERTO_BROKER"), eventos, &operacion_CONECTADO, config_get_int_value(config, "TIEMPO_RECONEXION"));
+	ConectarseABroker(config_get_string_value(config, "IP_BROKER"), config_get_int_value(config, "PUERTO_BROKER"), eventos, alConectarse, config_get_int_value(config, "TIEMPO_RECONEXION"));
 }
 
 void conectarse_y_suscribirse_a_colas()
 {
-	conectarse_y_suscribirse_a_cola(CAUGHT_POKEMON, (EventoOperacion) &operacion_CAUGHT_POKEMON, COLA_CAUGHT_POKEMON);
-	conectarse_y_suscribirse_a_cola(APPEARED_POKEMON, (EventoOperacion) &operacion_APPEARED_POKEMON, COLA_APPEARED_POKEMON);
-	conectarse_y_suscribirse_a_cola(LOCALIZED_POKEMON, (EventoOperacion) &operacion_LOCALIZED_POKEMON, COLA_LOCALIZED_POKEMON);
+	conectarse_y_suscribirse_a_cola(CAUGHT_POKEMON, (EventoOperacion) &operacion_CAUGHT_POKEMON, &operacion_CONECTADO_CAUGHT_POKEMON);
+	conectarse_y_suscribirse_a_cola(APPEARED_POKEMON, (EventoOperacion) &operacion_APPEARED_POKEMON, &operacion_CONECTADO_APPEARED_POKEMON);
+	conectarse_y_suscribirse_a_cola(LOCALIZED_POKEMON, (EventoOperacion) &operacion_LOCALIZED_POKEMON, &operacion_CONECTADO_LOCALIZED_POKEMON);
 }
 
 //-----------GET POKEMON-----------//
@@ -106,14 +93,16 @@ void solicitar_pokemons_para_objetivo_global()
 	for(int i=0;i<pokemons_necesarios->elements_count;i++)
 	{
 		char* especie_pokemon = ((Pokemon*) list_get(pokemons_necesarios, i))->especie;
-
-		DATOS_GET_POKEMON* datos = malloc(sizeof(DATOS_GET_POKEMON));
-		datos->pokemon = especie_pokemon;
-
 		Cliente* cliente = crear_cliente_de_broker();
 
 		if(cliente != NULL)
+		{
+			DATOS_GET_POKEMON* datos = malloc(sizeof(DATOS_GET_POKEMON));
+			datos->pokemon = especie_pokemon;
 			EnviarMensaje(cliente, GET_POKEMON, datos, (Serializador) &SerializarM_GET_POKEMON);
+			free(datos);
+			DestruirCliente(cliente);
+		}
 		else
 			;//TODO
 	}

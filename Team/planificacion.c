@@ -73,7 +73,7 @@ void reiniciar_quantum() { quantum = 0;}
 void aumentar_quantum()
 {
 	quantum++;
-	if(quantum == 3)
+	if(quantum == config_get_int_value(config, "QUANTUM"))
 	{
 		cambiar_estado_a(entrenador_EXEC, READY, FIN_QUANTUM);
 		reiniciar_quantum();

@@ -55,6 +55,9 @@ static void inicializar_datos()
 	//INTERRUPCIONES
 	inicializar_interrupciones();
 
+	//MENSAJES ESPERADOS
+	id_mensajes_esperados = list_create();
+
 	//CONTADOR DE CICLOS
 	cantidad_ciclos = 0;
 	quantum = 0;

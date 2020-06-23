@@ -2,6 +2,8 @@
 #include "../Utils/eventos.h"
 #include "../Utils/protocolo.h"
 
+extern t_list* id_mensajes_esperados;
+
 typedef struct
 {
 	Cliente* cliente;
