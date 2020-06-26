@@ -60,3 +60,4 @@ int* pedirBloque();
 NodoArbol* directorioMetadata();
 int buscarPosicionLibre();
 NodoArbol* directorio(char* str);
+void freeArbol();

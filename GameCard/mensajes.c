@@ -75,10 +75,9 @@ void Operacion_NEW_POKEMON(DATOS_NEW_POKEMON_ID* datos) {
 
 	char* path = pathPokemon(nodoPokemon->nombre);
 
-	while (estaAbiertoPath(path)) {
-		pthread_mutex_unlock(&semDeMierda);
-		sleep(configFS.tiempoReintento);
-	}
+	while (estaAbiertoPath(path)) sleep(configFS.tiempoReintento);
+
+	pthread_mutex_lock(&semDeMierda);
 
 	t_config* pConfig = config_create(path);
 
@@ -86,7 +85,7 @@ void Operacion_NEW_POKEMON(DATOS_NEW_POKEMON_ID* datos) {
 
 	pthread_mutex_unlock(&semDeMierda);
 
-	int cantBloques =  0;
+	int cantBloques = 0;
 
 	t_list* numerosBloques = leerBlocks(&cantBloques, pConfig); //DEVUELVE LA LISTA DE INTS DE LOS NROS DE BLOQUE
 
@@ -102,9 +101,11 @@ void Operacion_NEW_POKEMON(DATOS_NEW_POKEMON_ID* datos) {
 
 	sleep(configFS.tiempoRetardo);
 
-//	pthread_mutex_lock(&semDeMierda);
+	pthread_mutex_lock(&semDeMierda);
+
 	cambiarMetadataPokemon(pConfig,numerosBloques,bytes);
-//	pthread_mutex_unlock(&semDeMierda);
+
+	pthread_mutex_unlock(&semDeMierda);
 
 	Enviar_APPEARED_POKEMON(datos);
 
@@ -115,9 +116,6 @@ void Operacion_NEW_POKEMON(DATOS_NEW_POKEMON_ID* datos) {
 	list_destroy(numerosBloques);
 	list_clean(datosBloques);
 	list_destroy(datosBloques);
-
-//		pthread_mutex_unlock(&semDeMierda);
-//	}
 }
 
 void Recibir_CATCH_POKEMON(Cliente* cliente, Paquete* paqueteRecibido) {
@@ -136,15 +134,6 @@ void Recibir_CATCH_POKEMON(Cliente* cliente, Paquete* paqueteRecibido) {
 		pthread_create(&thread, NULL, (void*) Operacion_CATCH_POKEMON,datos);
 		pthread_detach(thread);
 	}
-
-//	if (stream->error)
-//		log_error(logger, "Error al deserializar CATCH_POKEMON");
-//	else
-//		EnviarID(cliente,id);
-//
-//	pthread_t thread;
-//	pthread_create(&thread, NULL, (void*) Operacion_CATCH_POKEMON,datos);
-//	pthread_detach(thread);
 }
 
 void Operacion_CATCH_POKEMON(DATOS_CATCH_POKEMON_ID* datos) {
@@ -157,10 +146,9 @@ void Operacion_CATCH_POKEMON(DATOS_CATCH_POKEMON_ID* datos) {
 
 		char* path = pathPokemon(nodoPokemon->nombre);
 
-		while (estaAbiertoPath(path)) {
-			pthread_mutex_unlock(&semDeMierda);
-			sleep(configFS.tiempoReintento);
-		}
+		while (estaAbiertoPath(path)) sleep(configFS.tiempoReintento);
+
+		pthread_mutex_lock(&semDeMierda);
 
 		t_config* pConfig = config_create(path);
 
@@ -185,7 +173,11 @@ void Operacion_CATCH_POKEMON(DATOS_CATCH_POKEMON_ID* datos) {
 
 		sleep(configFS.tiempoRetardo);
 
+		pthread_mutex_lock(&semDeMierda);
+
 		cambiarMetadataPokemon(pConfig,numerosBloques,*bytes);
+
+		pthread_mutex_unlock(&semDeMierda);
 
 		Enviar_CAUGHT_POKEMON(datos,caught);
 
@@ -216,15 +208,6 @@ void Recibir_GET_POKEMON(Cliente* cliente, Paquete* paqueteRecibido) {
 		pthread_create(&thread, NULL, (void*) Operacion_GET_POKEMON,datos);
 		pthread_detach(thread);
 	}
-
-//	if (stream->error)
-//		log_error(logger, "Error al deserializar GET_POKEMON");
-//	else
-//		EnviarID(cliente,id);
-//
-//	pthread_t thread;
-//	pthread_create(&thread, NULL, (void*) Operacion_GET_POKEMON,datos);
-//	pthread_detach(thread);
 }
 
 void Operacion_GET_POKEMON(DATOS_GET_POKEMON_ID* datos) {
@@ -235,10 +218,9 @@ void Operacion_GET_POKEMON(DATOS_GET_POKEMON_ID* datos) {
 	else {
 		char* path = pathPokemon(nodoPokemon->nombre);
 
-		while (estaAbiertoPath(path)) {
-			pthread_mutex_unlock(&semDeMierda);
-			sleep(configFS.tiempoReintento);
-		}
+		while (estaAbiertoPath(path)) sleep(configFS.tiempoReintento);
+
+		pthread_mutex_lock(&semDeMierda);
 
 		t_config* pConfig = config_create(path);
 

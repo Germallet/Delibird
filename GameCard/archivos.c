@@ -12,6 +12,7 @@ bool estaAbierto(t_config* pConfig) {
 bool estaAbiertoPath(char* path) {
 	pthread_mutex_lock(&semDeMierda);
 	t_config* c = config_create(path);
+	pthread_mutex_unlock(&semDeMierda);
 	bool open = sonIguales(config_get_string_value(c,"OPEN"),"Y");
 	config_destroy(c);
 	return open;
@@ -95,7 +96,6 @@ void crearDirectorioFiles() {
 //					strcpy(nombre,entry->d_name);
 					agregarNodo(directorioFiles(),crearNodo(entry->d_name));
 				}
-
 			}
 		}
 //		closedir(files); TODO VER ESTO
@@ -304,15 +304,14 @@ void escribirListaEnArchivo(t_list* datosBloques, t_list* numerosBloques) {
 		free(cadena);
 	}
 
-//	pthread_mutex_lock(&semBitmap);
+	pthread_mutex_lock(&semBitmap);
+
 	if (strlen(cadenaGrande) > configFS.tamanioBlocks*list_size(numerosBloques)) {
 		log_info(logger, "Pidiendo bloque");
 		int* nuevoBloque = pedirBloque();
 		list_add(numerosBloques,nuevoBloque);
 	}
-//	pthread_mutex_unlock(&semBitmap);
-// 	TODO VAN ESTOS DOS??
-//	pthread_mutex_lock(&semBitmap);
+
 	if (strlen(cadenaGrande) <= configFS.tamanioBlocks*(list_size(numerosBloques) - 1)) {
 		log_info(logger, "Borrando bloque");
 
@@ -331,7 +330,7 @@ void escribirListaEnArchivo(t_list* datosBloques, t_list* numerosBloques) {
 
 		list_remove_and_destroy_element(numerosBloques,list_size(numerosBloques) - 1, &free);
 	}
-//	pthread_mutex_unlock(&semBitmap);
+	pthread_mutex_unlock(&semBitmap);
 
 	int tamanioBloque = configFS.tamanioBlocks;
 
@@ -537,22 +536,28 @@ void cambiarMetadataPokemon(t_config* c, t_list* numerosBloques, int bytes) {
 	config_set_value(c,"SIZE",size);
 	free(size);
 
-	char* bloques = string_new();
-	string_append(&bloques,"[");
-	for(int i = 0; i < list_size(numerosBloques); i++) {
-		int* a = list_get(numerosBloques,i);
-		char* bl = string_itoa(*a);
-		string_append(&bloques,bl);
-		free(bl);
-		string_append(&bloques,",");
-	}
+	if (list_size(numerosBloques) == 0) {
+		config_set_value(c,"BLOCKS","[]");
+	} else {
+		char* bloques = string_new();
+		string_append(&bloques,"[");
+		for(int i = 0; i < list_size(numerosBloques); i++) {
+			int* a = list_get(numerosBloques,i);
+			char* bl = string_itoa(*a);
+			string_append(&bloques,bl);
+			free(bl);
+			string_append(&bloques,",");
+		}
 
-	bloques[string_length(bloques)-1] = ']';
-	config_set_value(c,"BLOCKS",bloques);
+		bloques[string_length(bloques)-1] = ']';
+		config_set_value(c,"BLOCKS",bloques);
+
+
+		free(bloques);
+	}
 
 	config_set_value(c,"OPEN","N");
 
-	free(bloques);
 	config_save(c);
 }
 

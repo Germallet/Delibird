@@ -275,7 +275,7 @@ DATOS_GET_POKEMON_ID* convertir_GET_POKEMON_ID(int cantParametros, char* paramet
 	DATOS_GET_POKEMON_ID* datos = malloc(sizeof(DATOS_GET_POKEMON_ID));
 
 	datos->datos = *convertir_GET_POKEMON(cantParametros - 1, parametros);
-	datos->id = strtol(parametros[7], NULL, 10);
+	datos->id = strtol(parametros[4], NULL, 10);
 
 	return datos;
 }

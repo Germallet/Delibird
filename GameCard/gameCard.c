@@ -214,7 +214,7 @@ void TerminarProgramaConError(char* error)
 void TerminarPrograma()
 {
 	log_info(logger,"Terminando programa");
-	//TODO freear el arbol entero
+	freeArbol();
 	log_destroy(logger);
 	config_destroy(config);
 	bitarray_destroy(bitmap);
@@ -233,4 +233,8 @@ void TerminarPrograma()
 	list_clean(raiz->hijos);
 	list_destroy(raiz->hijos);
 	free(raiz);
+}
+
+void freeArbol() {
+
 }
