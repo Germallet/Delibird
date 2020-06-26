@@ -324,9 +324,9 @@ void Enviar_LOCALIZED_POKEMON(DATOS_GET_POKEMON_ID* datos,t_list* datosArchivo) 
 
 	if(clienteBroker != NULL) {
 		EnviarMensaje(clienteBroker, LOCALIZED_POKEMON, datosAEnviar, (void*) &SerializarM_LOCALIZED_POKEMON);
-		log_info(logger,"LOCALIZED_POKEMON enviado.");
+//		log_info(logger,"LOCALIZED_POKEMON enviado.");
 	} else {
-		log_info(logger, "Sin conexion con el Broker. Mensaje guardado.");
+//		log_info(logger, "Sin conexion con el Broker. Mensaje guardado.");
 		list_add(mensajesNoEnviadosLOCALIZED,datosAEnviar);
 	}
 

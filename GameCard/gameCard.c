@@ -6,10 +6,6 @@
 
 Eventos* eventos;
 
-/*
- * TODO SINCRONIZAR BITMAP
- */
-
 int main()
 {
 	raiz = malloc(sizeof(NodoArbol));
@@ -166,7 +162,7 @@ void conectarse() {
 	if(clienteBroker != NULL) SuscribirseColas(clienteBroker);
 }
 
-void reconexion(void* info) { //TODO ARREGLAR LO DE LOS MENSAJES
+void reconexion(void* info) {
 	if (clienteBroker == NULL) {
 		conectarse();
 
@@ -193,7 +189,6 @@ void reconexion(void* info) { //TODO ARREGLAR LO DE LOS MENSAJES
 			list_clean(mensajesNoEnviadosLOCALIZED);
 
 		} else log_info(logger, "No me pude reconectar al broker");
-
 	}
 }
 
