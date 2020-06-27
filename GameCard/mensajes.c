@@ -89,7 +89,9 @@ void Operacion_NEW_POKEMON(DATOS_NEW_POKEMON_ID* datos) {
 
 	t_list* numerosBloques = leerBlocks(&cantBloques, pConfig); //DEVUELVE LA LISTA DE INTS DE LOS NROS DE BLOQUE
 
-	t_list* datosBloques = convertirBloques(numerosBloques,cantBloques); //DEVUELVE LA LISTA DE DATOSBLOQUES
+	int tamanio = config_get_int_value(pConfig,"SIZE");
+
+	t_list* datosBloques = convertirBloques(numerosBloques,cantBloques,tamanio); //DEVUELVE LA LISTA DE DATOSBLOQUES
 
 	DatosBloques posYCant;
 
@@ -112,9 +114,8 @@ void Operacion_NEW_POKEMON(DATOS_NEW_POKEMON_ID* datos) {
 	config_destroy(pConfig);
 	free(path);
 
-	list_clean(numerosBloques);
-	list_destroy(numerosBloques);
-	list_clean(datosBloques);
+	list_destroy_and_destroy_elements(numerosBloques,&free);
+
 	list_destroy(datosBloques);
 }
 
@@ -160,22 +161,24 @@ void Operacion_CATCH_POKEMON(DATOS_CATCH_POKEMON_ID* datos) {
 
 		t_list* numerosBloques = leerBlocks(&cantBloques,pConfig); //DEVUELVE LA LISTA DE INTS DE LOS NROS DE BLOQUE
 
-		t_list* datosBloques = convertirBloques(numerosBloques,cantBloques); //DEVUELVE LA LISTA DE DATOSBLOQUES
+		int tamanio = config_get_int_value(pConfig,"SIZE");
+
+		t_list* datosBloques = convertirBloques(numerosBloques,cantBloques,tamanio); //DEVUELVE LA LISTA DE DATOSBLOQUES
 
 		Posicion posicion;
 
 		posicion.posX = datos->datos.posicion.posX;
 		posicion.posY = datos->datos.posicion.posY;
 
-		int* bytes = malloc(sizeof(int));
+		int bytes = 0;
 
-		bool caught = atraparPokemon(datosBloques,posicion,numerosBloques,bytes);
+		bool caught = atraparPokemon(datosBloques,posicion,numerosBloques,&bytes,nodoPokemon->nombre);
 
 		sleep(configFS.tiempoRetardo);
 
 		pthread_mutex_lock(&semDeMierda);
 
-		cambiarMetadataPokemon(pConfig,numerosBloques,*bytes);
+		cambiarMetadataPokemon(pConfig,numerosBloques,bytes);
 
 		pthread_mutex_unlock(&semDeMierda);
 
@@ -185,9 +188,8 @@ void Operacion_CATCH_POKEMON(DATOS_CATCH_POKEMON_ID* datos) {
 
 		free(path);
 
-		list_clean(numerosBloques);
-		list_destroy(numerosBloques);
-		list_clean(datosBloques);
+		list_destroy_and_destroy_elements(numerosBloques,&free);
+
 		list_destroy(datosBloques);
 	}
 }
@@ -232,7 +234,9 @@ void Operacion_GET_POKEMON(DATOS_GET_POKEMON_ID* datos) {
 
 		t_list* numerosBloques = leerBlocks(&cantBloques,pConfig); //DEVUELVE LA LISTA DE INTS DE LOS NROS DE BLOQUE
 
-		t_list* datosBloques = convertirBloques(numerosBloques,cantBloques); //DEVUELVE LA LISTA DE DATOSBLOQUES
+		int tamanio = config_get_int_value(pConfig,"SIZE");
+
+		t_list* datosBloques = convertirBloques(numerosBloques,cantBloques,tamanio); //DEVUELVE LA LISTA DE DATOSBLOQUES
 
 		sleep(configFS.tiempoRetardo);
 
@@ -244,9 +248,8 @@ void Operacion_GET_POKEMON(DATOS_GET_POKEMON_ID* datos) {
 
 		free(path);
 
-		list_clean(numerosBloques);
-		list_destroy(numerosBloques);
-		list_clean(datosBloques);
+		list_destroy_and_destroy_elements(numerosBloques,&free);
+
 		list_destroy(datosBloques);
 	}
 }
@@ -333,3 +336,6 @@ void Recibir_ID(Cliente* cliente, Paquete* paqueteRecibido) {
 	Stream* stream = Stream_CrearLecturaPaquete(paqueteRecibido);
 	Deserializar_uint32(stream);
 }
+
+
+

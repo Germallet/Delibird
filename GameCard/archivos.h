@@ -30,11 +30,11 @@ void abrir(t_config* conf);
 
 char* pathMetadataBinDe(char* path, char* nombreArchivo);
 char* posicionAString(DatosBloques* d);
-t_list* convertirBloques(t_list* bloques, int cantBloques);
+t_list* convertirBloques(t_list* bloques, int cantBloques, int tamanio);
 t_list* interpretarCadena(char* cadenaDatos, int cantBloques);
 
 char* leerBlocksPorConfig(char* path);
-char* leerArchivos(t_list* bloques, int cantBloques);
+char* leerArchivos(t_list* bloques, int cantBloques, int tamanio);
 t_list* leerBlocks(int* cantBloques, t_config* conf);
 
 int tamanioBloque(int* nroBloque);
@@ -62,4 +62,4 @@ DatosBloques* encontrarPosicion(t_list* pokemon, Posicion pos);
 int agregarCantidadEnPosicion(t_list* pokemon, DatosBloques posYCant, t_list* numerosBloques);
 void escribirListaEnArchivo(t_list* pokemon, t_list* numerosBloques);
 void cambiarMetadataPokemon(t_config* c, t_list* numerosBloques, int bytes);
-bool atraparPokemon(t_list* datosBloques, Posicion pos, t_list* numerosBloques, int* bytes);
+bool atraparPokemon(t_list* datosBloques, Posicion pos, t_list* numerosBloques, int* bytes, char* pokemon);
