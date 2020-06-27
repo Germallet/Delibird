@@ -298,35 +298,31 @@ void Enviar_CAUGHT_POKEMON(DATOS_CATCH_POKEMON_ID* datos, bool caught) {
 }
 
 void Enviar_LOCALIZED_POKEMON(DATOS_GET_POKEMON_ID* datos,t_list* datosArchivo) {
-	DATOS_LOCALIZED_POKEMON* datosAEnviar = malloc(sizeof(DATOS_LOCALIZED_POKEMON));
+	DATOS_LOCALIZED_POKEMON_ID* datosAEnviar = malloc(sizeof(DATOS_LOCALIZED_POKEMON_ID));
 
 	if (datosArchivo == NULL) {
-		datosAEnviar->cantidad = 0;
-		datosAEnviar->posiciones = NULL;
+		datosAEnviar->datos.cantidad = 0;
+		datosAEnviar->datos.posiciones = NULL;
 	} else {
-		Posicion* posiciones = malloc(sizeof(Posicion));
-		for (int i = 0; i < list_size(datosArchivo); i++) {
-			posiciones[i].posX = 0;
-			posiciones[i].posY = 0;
-		}
+		Posicion* posiciones = malloc(sizeof(Posicion)*list_size(datosArchivo));
 		for (int i = 0; i < list_size(datosArchivo); i++) {
 			DatosBloques* a = list_get(datosArchivo,i);
 
 			posiciones[i].posX = a->pos.posX;
 			posiciones[i].posY = a->pos.posY;
 		}
-		datosAEnviar->cantidad = list_size(datosArchivo);
-		datosAEnviar->posiciones = posiciones;
+		datosAEnviar->datos.cantidad = list_size(datosArchivo);
+		datosAEnviar->datos.posiciones = posiciones;
 	}
 
-	datosAEnviar->idCorrelativa = datos->id;
-	datosAEnviar->pokemon = datos->datos.pokemon;
+	datosAEnviar->id = datos->id;
+	datosAEnviar->datos.pokemon = datos->datos.pokemon;
 
 	if(clienteBroker != NULL) {
-		EnviarMensaje(clienteBroker, LOCALIZED_POKEMON, datosAEnviar, (void*) &SerializarM_LOCALIZED_POKEMON);
-//		log_info(logger,"LOCALIZED_POKEMON enviado.");
+		EnviarMensaje(clienteBroker, LOCALIZED_POKEMON, datosAEnviar, (void*) &SerializarM_LOCALIZED_POKEMON_ID);
+		log_info(logger,"LOCALIZED_POKEMON enviado.");
 	} else {
-//		log_info(logger, "Sin conexion con el Broker. Mensaje guardado.");
+		log_info(logger, "Sin conexion con el Broker. Mensaje guardado.");
 		list_add(mensajesNoEnviadosLOCALIZED,datosAEnviar);
 	}
 

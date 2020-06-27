@@ -84,8 +84,6 @@ void Serializar_LOCALIZED_POKEMON(Stream* stream, DATOS_LOCALIZED_POKEMON* datos
 		Serializar_uint32(stream, datos->posiciones[i].posX);
 		Serializar_uint32(stream, datos->posiciones[i].posY);
 	}
-
-	Serializar_uint32(stream, datos->idCorrelativa);
 }
 DATOS_LOCALIZED_POKEMON Deserializar_LOCALIZED_POKEMON(Stream* stream)
 {
@@ -100,8 +98,6 @@ DATOS_LOCALIZED_POKEMON Deserializar_LOCALIZED_POKEMON(Stream* stream)
 		datos.posiciones[i].posX = Deserializar_uint32(stream);
 		datos.posiciones[i].posY = Deserializar_uint32(stream);
 	}
-
-	datos.idCorrelativa = Deserializar_uint32(stream);
 
 	return datos;
 }

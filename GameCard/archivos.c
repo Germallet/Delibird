@@ -32,8 +32,6 @@ t_list* leerBlocks(int* cantBloques, t_config* conf) {
 
 	log_info(logger,"Leyendo el metadata para ver que bloques usa el pokemon");
 
-	//TODO HAY QUE VER QUE PASA CUANDO LE BORRAMOS TODOS DE UNA, HABRIA QUE VER
-	//COMO ASIGNARLE UNO
 	char** listaBloques = config_get_array_value(conf,"BLOCKS");
 
 	while (listaBloques[*cantBloques] != NULL) (*cantBloques)++;
@@ -87,7 +85,7 @@ void crearDirectorioFiles() {
 		struct dirent* entry;
 
 		if (files == NULL) {
-			log_error(logger,"No se pudo abrir correctamente el directorio files"); //TODO TERMINAR PROGRAMA ??
+			log_error(logger,"No se pudo abrir correctamente el directorio files");
 		} else {
 			while((entry = readdir(files))) {
 				if (!sonIguales(entry->d_name,"metadata.bin") && !sonIguales(entry->d_name,".") && !sonIguales(entry->d_name,"..")) {
@@ -98,8 +96,7 @@ void crearDirectorioFiles() {
 				}
 			}
 		}
-//		closedir(files); TODO VER ESTO
-	}
+//		closedir(files); //TODO verestp perefiinatr ??
 	free(aux);
 }
 

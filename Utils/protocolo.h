@@ -65,7 +65,6 @@ typedef struct {
 
 // LOCALIZED_POKEMON
 typedef struct {
-	uint32_t idCorrelativa;
 	char* pokemon;
 	uint32_t cantidad;
 	Posicion* posiciones;

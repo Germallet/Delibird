@@ -6,6 +6,9 @@
 
 Eventos* eventos;
 
+//TODO VER RECONEXION
+//TODO VER MMAP
+
 int main()
 {
 	raiz = malloc(sizeof(NodoArbol));
@@ -143,7 +146,7 @@ int buscarPosicionLibre() {
 	string_append(&pathMetadata,pathPtoMnt());
 	string_append(&pathMetadata,"/Metadata/bitmap.bin");
 
-	FILE* file = fopen(pathMetadata,"wb+"); //TODO VER COMO ESCRIBIR UN SOLO BIT
+	FILE* file = fopen(pathMetadata,"wb+");
 	fwrite(bitmap->bitarray,bitmap->size,1,file);
 	fclose(file);
 	free(pathMetadata);
@@ -183,7 +186,7 @@ void reconexion(void* info) {
 			list_clean(mensajesNoEnviadosCAUGHT);
 
 			for (int i = 0; i < list_size(mensajesNoEnviadosLOCALIZED); i++) {
-				EnviarMensaje(clienteBroker, LOCALIZED_POKEMON, list_get(mensajesNoEnviadosLOCALIZED,i), (void*) &SerializarM_LOCALIZED_POKEMON);
+				EnviarMensaje(clienteBroker, LOCALIZED_POKEMON, list_get(mensajesNoEnviadosLOCALIZED,i), (void*) &SerializarM_LOCALIZED_POKEMON_ID);
 			}
 
 			list_clean(mensajesNoEnviadosLOCALIZED);

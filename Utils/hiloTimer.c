@@ -4,23 +4,19 @@
 
 void EjecucionTimer(HiloTimer* hiloTimer)
 {
-	pthread_mutex_lock(&(hiloTimer->mxHiloTimer));
-	if (hiloTimer->evento != NULL && hiloTimer->repeticiones != 0)
-	{
+	while (hiloTimer->evento != NULL && hiloTimer->repeticiones != 0) {
+		pthread_mutex_lock(&(hiloTimer->mxHiloTimer));
 		(hiloTimer->evento)(hiloTimer->info);
-		if (hiloTimer->repeticiones != -1)
-			hiloTimer->repeticiones--;
+
+		if (hiloTimer->repeticiones != -1) hiloTimer->repeticiones--;
+
+		pthread_mutex_unlock(&(hiloTimer->mxHiloTimer));
+		sleep(hiloTimer->tiempo);
 	}
-	else
-	{
-		if (hiloTimer->info != NULL)
-			free(hiloTimer->info);
-		free(hiloTimer);
-		pthread_exit(0);
-	}
-	pthread_mutex_unlock(&(hiloTimer->mxHiloTimer));
-	sleep(hiloTimer->tiempo);
-	if (hiloTimer->repeticiones == -1) EjecucionTimer(hiloTimer);
+	if (hiloTimer->info != NULL) free(hiloTimer->info);
+
+	free(hiloTimer);
+	pthread_exit(0);
 }
 
 HiloTimer* CrearHiloTimer(int repeticiones, unsigned int tiempo, void (*evento)(void*), void* info)
