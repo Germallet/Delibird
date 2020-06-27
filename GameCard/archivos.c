@@ -99,6 +99,7 @@ void crearDirectorioFiles() {
 //		closedir(files); //TODO verestp perefiinatr ??
 	free(aux);
 }
+}
 
 void crearDirectorioBlocks() {
 
@@ -290,8 +291,6 @@ int agregarCantidadEnPosicion(t_list* pokemon, DatosBloques posYCant, t_list* nu
 
 void escribirListaEnArchivo(t_list* datosBloques, t_list* numerosBloques) {
 
-//	log_info(logger, "Actualizando los bloques");
-
 	char* cadenaGrande = string_new();
 
 	for (int i = 0; i < list_size(datosBloques); i++) {
@@ -363,7 +362,7 @@ DatosBloques* encontrarPosicion(t_list* pokemon, Posicion pos) {
 
 NodoArbol* crearPokemon(char* nombre) {
 
-//	log_info(logger,"Creando directorio para el pokemon");
+	log_info(logger,"Creando pokemon");
 
 	NodoArbol* nodo = crearNodo(nombre);
 
@@ -380,8 +379,6 @@ NodoArbol* crearPokemon(char* nombre) {
 }
 
 void crearMetadataPokemon(char* path) {
-
-//	log_info(logger,"Creando metadata para el pokemon");
 	char* pk = pathPokemon(path);
 
 	FILE* metadata = fopen(pk,"wb+");
@@ -527,6 +524,28 @@ int tamanioArchivo(FILE* arch) {
 	return ftell(arch);
 }
 
+char* posicionAString(DatosBloques* d) {
+	char* cadena = string_new();
+
+	char* posx = string_itoa(d->pos.posX);
+	char* posy = string_itoa(d->pos.posY);
+	char* cant = string_itoa(d->cantidad);
+
+	string_append(&cadena,posx);
+	string_append(&cadena,"-");
+	string_append(&cadena,posy);
+	string_append(&cadena,"=");
+	string_append(&cadena,cant);
+	string_append(&cadena,"\n");
+
+	free(posx);
+	free(posy);
+	free(cant);
+
+	return cadena;
+}
+
+
 void cambiarMetadataPokemon(t_config* c, t_list* numerosBloques, int bytes) {
 
 	char* size = string_itoa(bytes);
@@ -556,24 +575,4 @@ void cambiarMetadataPokemon(t_config* c, t_list* numerosBloques, int bytes) {
 	config_set_value(c,"OPEN","N");
 
 	config_save(c);
-}
-
-char* posicionAString(DatosBloques* d) {
-	char* cadena = string_new();
-
-	char* posx = string_itoa(d->pos.posX);
-	char* posy = string_itoa(d->pos.posY);
-	char* cant = string_itoa(d->cantidad);
-
-	string_append(&cadena,posx);
-	string_append(&cadena,"-");
-	string_append(&cadena,posy);
-	string_append(&cadena,"=");
-	string_append(&cadena,cant);
-	string_append(&cadena,"\n");
-
-	free(posx);
-	free(posy);
-	free(cant);
-	return cadena;
 }

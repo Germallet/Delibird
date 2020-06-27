@@ -1,3 +1,4 @@
+#pragma once
 #include "../Utils/net.h"
 
 typedef struct {

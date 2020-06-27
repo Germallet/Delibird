@@ -269,8 +269,8 @@ void Enviar_APPEARED_POKEMON(DATOS_NEW_POKEMON_ID* datos) {
 	datosEnviar->datos.pokemon = datos->datos.pokemon;
 	datosEnviar->datos.posicion = datos->datos.posicion;
 
-	if(clienteBroker != NULL) {
-		EnviarMensaje(clienteBroker, APPEARED_POKEMON, datosEnviar, (void*) &SerializarM_APPEARED_POKEMON_ID);
+	if(clienteBroker->clienteBroker != NULL) {
+		EnviarMensaje(clienteBroker->clienteBroker, APPEARED_POKEMON, datosEnviar, (void*) &SerializarM_APPEARED_POKEMON_ID);
 		log_info(logger,"APPEARED_POKEMON enviado.");
 	} else {
 		log_info(logger, "Sin conexion con el Broker. Mensaje Guardado.");
@@ -287,8 +287,8 @@ void Enviar_CAUGHT_POKEMON(DATOS_CATCH_POKEMON_ID* datos, bool caught) {
 	datosEnviar->idCorrelativa = datos->id;
 	datosEnviar->datos.capturado = caught;
 
-	if(clienteBroker != NULL) {
-		EnviarMensaje(clienteBroker, CAUGHT_POKEMON, datosEnviar, (void*) &SerializarM_CAUGHT_POKEMON_ID);
+	if(clienteBroker->clienteBroker != NULL) {
+		EnviarMensaje(clienteBroker->clienteBroker, CAUGHT_POKEMON, datosEnviar, (void*) &SerializarM_CAUGHT_POKEMON_ID);
 		log_info(logger,"CAUGHT_POKEMON enviado.");
 	} else {
 		log_info(logger, "Sin conexion con el Broker. Mensaje Guardado.");
@@ -318,8 +318,8 @@ void Enviar_LOCALIZED_POKEMON(DATOS_GET_POKEMON_ID* datos,t_list* datosArchivo) 
 	datosAEnviar->id = datos->id;
 	datosAEnviar->datos.pokemon = datos->datos.pokemon;
 
-	if(clienteBroker != NULL) {
-		EnviarMensaje(clienteBroker, LOCALIZED_POKEMON, datosAEnviar, (void*) &SerializarM_LOCALIZED_POKEMON_ID);
+	if(clienteBroker->clienteBroker != NULL) {
+		EnviarMensaje(clienteBroker->clienteBroker, LOCALIZED_POKEMON, datosAEnviar, (void*) &SerializarM_LOCALIZED_POKEMON_ID);
 		log_info(logger,"LOCALIZED_POKEMON enviado.");
 	} else {
 		log_info(logger, "Sin conexion con el Broker. Mensaje guardado.");

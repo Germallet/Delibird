@@ -10,13 +10,14 @@
 #include "archivos.h"
 #include "../Utils/socket.h"
 #include "../Utils/hiloTimer.h"
+#include "../Utils/conexionBroker.h"
 #include <unistd.h>
 #include <fcntl.h>
 #include <errno.h>
 
 t_log* logger;
 
-Cliente* clienteBroker;
+ConexionBroker* clienteBroker;
 
 t_config* config;
 
@@ -60,4 +61,5 @@ int* pedirBloque();
 NodoArbol* directorioMetadata();
 int buscarPosicionLibre();
 NodoArbol* directorio(char* str);
+void EnviarMensajesGuardados(Cliente* cliente);
 void freeArbol();

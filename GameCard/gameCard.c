@@ -22,7 +22,7 @@ int main()
 	int miPuerto = config_get_int_value(config,"PUERTO_GAMECARD");
 
 	char* puntoMontaje = config_get_string_value(config,"PUNTO_MONTAJE_TALLGRASS");
-	int tiempoReintentoConexion = config_get_int_value(config,"TIEMPO_DE_REINTENTO_CONEXION");
+
 	configFS.tiempoReintento = config_get_int_value(config,"TIEMPO_DE_REINTENTO_OPERACION");
 	configFS.tiempoRetardo = config_get_int_value(config,"TIEMPO_RETARDO_OPERACION");
 
@@ -36,9 +36,7 @@ int main()
 
 	SocketEscucha(miIp, miPuerto);
 
-	clienteBroker = NULL;
-
-	CrearHiloTimer(-1,tiempoReintentoConexion,&reconexion,clienteBroker);
+	conectarse();
 
 	log_info(logger,"Creando tall-grass");
 
@@ -158,41 +156,31 @@ void conectarse() {
 
 	char* ipBroker = config_get_string_value(config,"IP_BROKER");
 	int puertoBroker = config_get_int_value(config,"PUERTO_BROKER");
+	int tiempoReintentoConexion = config_get_int_value(config,"TIEMPO_DE_REINTENTO_CONEXION");
 
 	eventos = Eventos_Crear0();
-	clienteBroker = CrearCliente(ipBroker,puertoBroker,eventos);
 
-	if(clienteBroker != NULL) SuscribirseColas(clienteBroker);
+	clienteBroker = ConectarseABroker(ipBroker,puertoBroker,eventos,&SuscribirseColas,&EnviarMensajesGuardados,tiempoReintentoConexion);
+
 }
 
-void reconexion(void* info) {
-	if (clienteBroker == NULL) {
-		conectarse();
+void EnviarMensajesGuardados(Cliente* cliente) {
+	log_info(logger, "Me conecte al broker");
 
-		if (clienteBroker != NULL) {
+	for (int i = 0; i < list_size(mensajesNoEnviadosAPPEARED); i++)
+		EnviarMensaje(cliente, APPEARED_POKEMON, list_get(mensajesNoEnviadosAPPEARED,i), (void*) &SerializarM_APPEARED_POKEMON_ID);
 
-			log_info(logger, "Me conecte al broker");
+	list_clean(mensajesNoEnviadosAPPEARED);
 
-			for (int i = 0; i < list_size(mensajesNoEnviadosAPPEARED); i++) {
-				EnviarMensaje(clienteBroker, APPEARED_POKEMON, list_get(mensajesNoEnviadosAPPEARED,i), (void*) &SerializarM_APPEARED_POKEMON_ID);
-			}
+	for (int i = 0; i < list_size(mensajesNoEnviadosCAUGHT); i++)
+		EnviarMensaje(cliente, CAUGHT_POKEMON, list_get(mensajesNoEnviadosCAUGHT,i), (void*) &SerializarM_CAUGHT_POKEMON_ID);
 
-			list_clean(mensajesNoEnviadosAPPEARED);
+	list_clean(mensajesNoEnviadosCAUGHT);
 
-			for (int i = 0; i < list_size(mensajesNoEnviadosCAUGHT); i++) {
-				EnviarMensaje(clienteBroker, CAUGHT_POKEMON, list_get(mensajesNoEnviadosCAUGHT,i), (void*) &SerializarM_CAUGHT_POKEMON_ID);
-			}
+	for (int i = 0; i < list_size(mensajesNoEnviadosLOCALIZED); i++)
+		EnviarMensaje(cliente, LOCALIZED_POKEMON, list_get(mensajesNoEnviadosLOCALIZED,i), (void*) &SerializarM_LOCALIZED_POKEMON_ID);
 
-			list_clean(mensajesNoEnviadosCAUGHT);
-
-			for (int i = 0; i < list_size(mensajesNoEnviadosLOCALIZED); i++) {
-				EnviarMensaje(clienteBroker, LOCALIZED_POKEMON, list_get(mensajesNoEnviadosLOCALIZED,i), (void*) &SerializarM_LOCALIZED_POKEMON_ID);
-			}
-
-			list_clean(mensajesNoEnviadosLOCALIZED);
-
-		} else log_info(logger, "No me pude reconectar al broker");
-	}
+	list_clean(mensajesNoEnviadosLOCALIZED);
 }
 
 void EsperarHilos()
@@ -216,7 +204,7 @@ void TerminarPrograma()
 	log_destroy(logger);
 	config_destroy(config);
 	bitarray_destroy(bitmap);
-	if (clienteBroker != NULL) DestruirCliente(clienteBroker);
+//	if (clienteBroker != NULL) DestruirConexion(clienteBroker);
 	DestruirServidor(servidor);
 	list_clean(mensajesNoEnviadosAPPEARED);
 	list_destroy(mensajesNoEnviadosAPPEARED);
