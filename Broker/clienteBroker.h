@@ -9,5 +9,7 @@ typedef struct
 	uint32_t id;
 } ClienteBroker;
 
+void InicializarClienteBroker();
+void AvanzarIDCliente(uint32_t anterior);
 ClienteBroker* CrearClienteBroker(Cliente* cliente);
 ClienteBroker* ObtenerClienteBroker(uint32_t id);

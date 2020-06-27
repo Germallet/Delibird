@@ -1,20 +1,6 @@
 #include "mensajes.h"
 #include "gameCard.h"
 
-void SuscribirseColas(Cliente* cliente) {
-
-	Eventos_AgregarOperacion(cliente->eventos, BROKER_CONECTADO, (EventoOperacion) &ConexionColas);
-	Eventos_AgregarOperacion(cliente->eventos, NEW_POKEMON, (EventoOperacion)&Recibir_NEW_POKEMON);
-	Eventos_AgregarOperacion(cliente->eventos, CATCH_POKEMON, (EventoOperacion)&Recibir_CATCH_POKEMON);
-	Eventos_AgregarOperacion(cliente->eventos, GET_POKEMON, (EventoOperacion)&Recibir_GET_POKEMON);
-	Eventos_AgregarOperacion(cliente->eventos, BROKER_ID_MENSAJE, (EventoOperacion)&Recibir_ID);
-
-	if (Socket_Enviar(BROKER_CONECTAR, NULL, 0, cliente->socket) < 0) {
-		free(cliente->info);
-		TerminarProgramaConError("ERROR EN CONEXION CON EL BROKER");
-	}
-}
-
 void SocketEscucha(char* ip, int puerto) {
 
 	Eventos* eventos = Eventos_Crear0();
@@ -26,7 +12,7 @@ void SocketEscucha(char* ip, int puerto) {
 	servidor = CrearServidor(ip,puerto,eventos);
 }
 
-void ConexionColas(Cliente* cliente, Paquete* paquete) {
+void ConexionColas(Cliente* cliente) {
 	BROKER_DATOS_SUSCRIBIRSE datosNEW;
 	BROKER_DATOS_SUSCRIBIRSE datosCATCH;
 	BROKER_DATOS_SUSCRIBIRSE datosGET;
@@ -35,11 +21,9 @@ void ConexionColas(Cliente* cliente, Paquete* paquete) {
 	datosCATCH.cola = COLA_CATCH_POKEMON;
 	datosGET.cola = COLA_GET_POKEMON;
 
-	EnviarMensajeSinFree(cliente, BROKER_SUSCRIBIRSE, &datosNEW, (void*) &SerializarM_BROKER_SUSCRIBIRSE);
-	EnviarMensajeSinFree(cliente, BROKER_SUSCRIBIRSE, &datosCATCH, (void*) &SerializarM_BROKER_SUSCRIBIRSE);
-	EnviarMensajeSinFree(cliente, BROKER_SUSCRIBIRSE, &datosGET, (void*) &SerializarM_BROKER_SUSCRIBIRSE);
-
-	free(cliente->info);
+	EnviarMensaje(cliente, BROKER_SUSCRIBIRSE, &datosNEW, (void*) &SerializarM_BROKER_SUSCRIBIRSE);
+	EnviarMensaje(cliente, BROKER_SUSCRIBIRSE, &datosCATCH, (void*) &SerializarM_BROKER_SUSCRIBIRSE);
+	EnviarMensaje(cliente, BROKER_SUSCRIBIRSE, &datosGET, (void*) &SerializarM_BROKER_SUSCRIBIRSE);
 }
 
 void Recibir_NEW_POKEMON(Cliente* cliente, Paquete* paqueteRecibido) {

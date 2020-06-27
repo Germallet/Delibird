@@ -10,11 +10,16 @@ pthread_mutex_t mutexClientes;
 uint32_t siguienteIDCliente = 0;
 pthread_mutex_t mutexIDCliente;
 
-void Inicializar()
+void InicializarClienteBroker()
 {
 	clientes = dictionaryInt_create();
 	pthread_mutex_init(&mutexClientes, NULL);
 	pthread_mutex_init(&mutexIDCliente, NULL);
+}
+
+void AvanzarIDCliente(uint32_t anterior)
+{
+	siguienteIDCliente = anterior++;
 }
 
 ClienteBroker* CrearClienteBroker(Cliente* cliente)

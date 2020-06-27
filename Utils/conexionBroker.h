@@ -9,6 +9,8 @@ typedef struct {
 	Eventos* eventos;
 	void (*alConectarse)(Cliente*);
 	void (*alReconectarse)(Cliente*);
+	void (*intentoFallido)();
+
 } ConexionBroker;
 
-ConexionBroker* ConectarseABroker(char* ip, int puerto, Eventos* eventos, void (*alConectarse)(Cliente*), void (*alReconectarse)(Cliente*), int tiempoReintentoConexion);
+ConexionBroker* ConectarseABroker(char* ip, int puerto, Eventos* eventos, void (*alConectarse)(Cliente*), void (*alReconectarse)(Cliente*), /*void (*intentoFallido)(),*/ int tiempoReintentoConexion);

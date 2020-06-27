@@ -7,8 +7,7 @@
 #include "archivos.h"
 
 void SocketEscucha();
-void SuscribirseColas(Cliente* cliente);
-void ConexionColas(Cliente* cliente, Paquete* paquete);
+void ConexionColas(Cliente* cliente);
 
 void Recibir_NEW_POKEMON(Cliente* cliente, Paquete* paqueteRecibido);
 void Operacion_NEW_POKEMON(DATOS_NEW_POKEMON_ID* datos);

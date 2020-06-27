@@ -36,10 +36,10 @@ void IniciarServidorBroker(char* ip, int puerto)
 	Eventos_AgregarOperacion(eventos, GET_POKEMON, (EventoOperacion)&Operacion_GET_POKEMON);
 	Eventos_AgregarOperacion(eventos, LOCALIZED_POKEMON, (EventoOperacion)&Operacion_LOCALIZED_POKEMON);
 
+	pthread_mutex_init(&mutexRecepcion, NULL);
+
 	servidor = CrearServidor(ip, puerto, eventos);
 	if (servidor == NULL) log_error(logger, "Error al iniciar escucha (%s:%d)", ip, puerto);
-
-	pthread_mutex_init(&mutexRecepcion, NULL);
 }
 void FinalizarServidorBroker()
 {
@@ -50,7 +50,7 @@ static void Operacion_CONECTAR(Cliente* cliente, Paquete* paqueteRecibido)
 {
 	if (cliente->info != NULL)
 	{
-		log_error(logger, "El cliente ya está conectado");
+		//log_error(logger, "El cliente ya está conectado");
 		return;
 	}
 
@@ -73,7 +73,7 @@ void Operacion_RECONECTAR(Cliente* cliente, Paquete* paqueteRecibido)
 {
 	if (cliente->info != NULL)
 	{
-		log_error(logger, "El cliente ya está conectado");
+		//log_error(logger, "El cliente ya está conectado");
 		return;
 	}
 
@@ -85,7 +85,16 @@ void Operacion_RECONECTAR(Cliente* cliente, Paquete* paqueteRecibido)
 		ClienteBroker* clienteBroker = ObtenerClienteBroker(datos.id);
 		if (clienteBroker == NULL)
 		{
-			log_error(logger, "El cliente no puede reconectar");
+			AvanzarIDCliente(datos.id);
+			ClienteBroker* clienteBroker = CrearClienteBroker(cliente);
+			cliente->info = clienteBroker;
+			BROKER_DATOS_RECONECTAR datos;
+			datos.id = clienteBroker->id;
+			Stream* stream = SerializarM_BROKER_CONECTADO(&datos);
+			Socket_Enviar(BROKER_CONECTADO, stream->base, stream->tamanio, cliente->socket);
+			Stream_DestruirConBuffer(stream);
+
+			log_info(logger, "Un cliente no registrado se reconecto");
 			return;
 		}
 		else
