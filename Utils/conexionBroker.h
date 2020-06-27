@@ -7,6 +7,7 @@ typedef struct {
 	int puerto;
 	Eventos* eventos;
 	void (*alConectarse)(Cliente*);
+	void (*alReconectarse)(Cliente*);
 } ConexionBroker;
 
-ConexionBroker* ConectarseABroker(char* ip, int puerto, Eventos* eventos, void (*alConectarse)(Cliente*), int tiempoReintentoConexion);
+ConexionBroker* ConectarseABroker(char* ip, int puerto, Eventos* eventos, void (*alConectarse)(Cliente*), void (*alReconectarse)(Cliente*), int tiempoReintentoConexion);

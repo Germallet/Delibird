@@ -24,12 +24,20 @@ static void reconexion(void* info)
 
 static void ConexionColas(Cliente* cliente, Paquete* paquete) {
 	ConexionBroker* nuevaConexion = (ConexionBroker*) cliente->info;
+	bool primeraVez = (nuevaConexion->datosConectado == NULL);
+
 	nuevaConexion->datosConectado = malloc(sizeof(BROKER_DATOS_CONECTADO));
 	DeserializarM_BROKER_CONECTADO(paquete, nuevaConexion->datosConectado);
-	nuevaConexion->alConectarse(cliente);
+
+	if (primeraVez)
+	{
+		if (nuevaConexion->alConectarse != NULL) nuevaConexion->alConectarse(cliente);
+	}
+	else if (nuevaConexion->alReconectarse != NULL)
+		nuevaConexion->alReconectarse(cliente);
 }
 
-ConexionBroker* ConectarseABroker(char* ip, int puerto, Eventos* eventos, void (*alConectarse)(Cliente*), int tiempoReintentoConexion)
+ConexionBroker* ConectarseABroker(char* ip, int puerto, Eventos* eventos, void (*alConectarse)(Cliente*), void (*alReconectarse)(Cliente*), int tiempoReintentoConexion)
 {
 	ConexionBroker* nuevaConexion = malloc(sizeof(ConexionBroker));
 	nuevaConexion->clienteBroker = NULL;
@@ -38,6 +46,7 @@ ConexionBroker* ConectarseABroker(char* ip, int puerto, Eventos* eventos, void (
 	nuevaConexion->puerto = puerto;
 	nuevaConexion->eventos = eventos;
 	nuevaConexion->alConectarse = alConectarse;
+	nuevaConexion->alConectarse = alReconectarse;
 
 	Eventos_AgregarOperacion(nuevaConexion->eventos, BROKER_CONECTADO, (EventoOperacion)&ConexionColas);
 
