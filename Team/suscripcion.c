@@ -78,7 +78,7 @@ static void conectarse_y_suscribirse_a_cola(CodigoDeOperacion cod_op, EventoOper
 {
 	Eventos* eventos = Eventos_Crear0();
 	Eventos_AgregarOperacion(eventos, cod_op, operacion);
-	ConectarseABroker(config_get_string_value(config, "IP_BROKER"), config_get_int_value(config, "PUERTO_BROKER"), eventos, alConectarse, config_get_int_value(config, "TIEMPO_RECONEXION"));
+	ConectarseABroker(config_get_string_value(config, "IP_BROKER"), config_get_int_value(config, "PUERTO_BROKER"), eventos, alConectarse, NULL, config_get_int_value(config, "TIEMPO_RECONEXION"));
 }
 
 void conectarse_y_suscribirse_a_colas()
