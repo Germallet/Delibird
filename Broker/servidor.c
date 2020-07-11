@@ -121,8 +121,8 @@ static void EnviarIDMensaje(uint32_t idMensaje, Cliente* cliente)
 }
 static void RecibirMensaje(Cliente* cliente, CodigoDeCola tipoDeMensaje, uint32_t idMensaje, uint32_t idCorrelativo, Stream* contenido)
 {
-	if (!CorresponderRecibirRespuesta(tipoDeMensaje, idCorrelativo))
-		return;
+	//if (!CorresponderRecibirRespuesta(tipoDeMensaje, idCorrelativo))
+	//	return;
 
 	pthread_mutex_lock(&mutexRecepcion);
 	Mensaje* nuevoMensaje = CrearMensaje(tipoDeMensaje, idMensaje, idCorrelativo, contenido->tamanio);
