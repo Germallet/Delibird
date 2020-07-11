@@ -6,9 +6,6 @@
 
 Eventos* eventos;
 
-//TODO VER RECONEXION
-//TODO VER MMAP
-
 int main()
 {
 	raiz = malloc(sizeof(NodoArbol));

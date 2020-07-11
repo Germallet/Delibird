@@ -240,6 +240,8 @@ void Operacion_GET_POKEMON(DATOS_GET_POKEMON_ID* datos) {
 
 		list_destroy(datosBloques);
 	}
+
+	pthread_exit(0);
 }
 
 void EnviarID(Cliente* cliente, uint32_t identificador)

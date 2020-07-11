@@ -22,6 +22,13 @@ void AvanzarIDCliente(uint32_t anterior)
 	siguienteIDCliente = anterior++;
 }
 
+void AgregarClienteBroker(ClienteBroker* cliente)
+{
+	pthread_mutex_lock(&mutexClientes);
+	dictionaryInt_put(clientes, cliente->id, cliente);
+	pthread_mutex_unlock(&mutexClientes);
+}
+
 ClienteBroker* CrearClienteBroker(Cliente* cliente)
 {
 	ClienteBroker* clienteBroker = malloc(sizeof(ClienteBroker));
@@ -32,15 +39,12 @@ ClienteBroker* CrearClienteBroker(Cliente* cliente)
 	siguienteIDCliente++;
 	pthread_mutex_unlock(&mutexIDCliente);
 
+	AgregarClienteBroker(clienteBroker);
+
 	return clienteBroker;
 }
 
-void AgregarClienteBroker(ClienteBroker* cliente)
-{
-	pthread_mutex_lock(&mutexClientes);
-	dictionaryInt_put(clientes, cliente->id, cliente);
-	pthread_mutex_unlock(&mutexClientes);
-}
+
 
 ClienteBroker* ObtenerClienteBroker(uint32_t id)
 {
