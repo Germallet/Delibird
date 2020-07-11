@@ -9,6 +9,7 @@
 #include <commons/bitarray.h>
 #include "arbol.h"
 #include "gameCard.h"
+#include "configLindas.h"
 
 typedef struct {
 	Posicion pos;

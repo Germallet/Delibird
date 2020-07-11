@@ -86,6 +86,37 @@ NodoArbol* encontrarPokemon(char* nombre) {
 	return NULL;
 }
 
+int encontrarIndicePokemon(char* nombre) {
+
+	log_info(logger,"Buscando pokemon...");
+
+	NodoArbol* files = directorioFiles();
+
+	if(list_is_empty(files->hijos)) return -1;
+	for (int i = 0; i < list_size(files->hijos); i++) {
+		NodoArbol* pok = list_get(files->hijos,i);
+		if (sonIguales(pok->nombre,nombre)) return i;
+	}
+
+	return -1;
+}
+
+int eliminarPokemon(t_list* pokemons, char* nombre) {
+	int pokemonAEliminar = encontrarIndicePokemon(nombre);
+
+	list_remove_and_destroy_element(pokemons,pokemonAEliminar, (void*)&eliminarNodoPokemon);
+
+//	free(dat);
+
+	return pokemonAEliminar;
+}
+
+void eliminarNodoPokemon(NodoArbol* nodo) {
+	list_destroy(nodo->hijos);
+	free(nodo);
+}
+
+
 char* pathPtoMnt() {
 	return raiz->nombre;
 }

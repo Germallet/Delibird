@@ -10,9 +10,9 @@ bool estaAbierto(t_config* pConfig) {
 }
 
 bool estaAbiertoPath(char* path) {
-	pthread_mutex_lock(&semDeMierda);
-	t_config* c = config_create(path);
-	pthread_mutex_unlock(&semDeMierda);
+//	pthread_mutex_lock(&semDeMierda);
+	t_config* c = CrearConfig(path);
+//	pthread_mutex_unlock(&semDeMierda);
 	bool open = sonIguales(config_get_string_value(c,"OPEN"),"Y");
 	config_destroy(c);
 	return open;
@@ -20,12 +20,12 @@ bool estaAbiertoPath(char* path) {
 
 void abrir(t_config* conf) {
 	config_set_value(conf,"OPEN","Y");
-	config_save(conf);
+	ActualizarConfig(conf);
 }
 
 void cerrar(t_config* conf) {
 	config_set_value(conf,"OPEN","N");
-	config_save(conf);
+	ActualizarConfig(conf);
 }
 
 t_list* leerBlocks(int* cantBloques, t_config* conf) {
@@ -82,13 +82,13 @@ void crearDirectorioFiles() {
 		fclose(metadata);
 	} else {
 		log_info(logger,"Levantando directorio files");
-		DIR* files = opendir(aux);
+		DIR* dir = opendir(aux);
 		struct dirent* entry;
 
-		if (files == NULL) {
+		if (dir == NULL) {
 			log_error(logger,"No se pudo abrir correctamente el directorio files");
 		} else {
-			while((entry = readdir(files))) {
+			while((entry = readdir(dir))) {
 				if (!sonIguales(entry->d_name,"metadata.bin") && !sonIguales(entry->d_name,".") && !sonIguales(entry->d_name,"..")) {
 					log_info(logger,"Leyendo archivo %s",entry->d_name);
 //					char* nombre = string_new();
@@ -97,7 +97,7 @@ void crearDirectorioFiles() {
 				}
 			}
 		}
-//		closedir(files); //TODO verestp perefiinatr ??
+//	closedir(dir);//TODO verestp perefiinatr ??
 	free(aux);
 }
 }
@@ -215,15 +215,20 @@ bool atraparPokemon(t_list* datosBloques, Posicion pos, t_list* numerosBloques, 
 		log_info(logger,"Atrapando pokemon...");
 
 		if(list_size(datosBloques) == 0) {
+
 			log_info(logger,"Eliminando pokemon del filesystem");
 			NodoArbol* files = directorioFiles();
 			char* pathDir = string_new();
+			pthread_mutex_lock(&semArbol);
+			int exito = eliminarPokemon(files->hijos,pokemon);
+			pthread_mutex_unlock(&semArbol);
+			if (exito == -1) log_error(logger, "Error eliminando pokemon" );
 			string_append(&pathDir,(raiz->nombre));
 			string_append(&pathDir,(files->nombre));
+			string_append(&pathDir,"/");
 			string_append(&pathDir,pokemon);
 			remove(pathPokemon(pokemon));
 			rmdir(pathDir);
-			free(files);
 			free(pathDir);
 		}
 
@@ -260,7 +265,6 @@ int agregarCantidadEnPosicion(t_list* pokemon, DatosBloques posYCant, t_list* nu
 
 			fseek(bloque,0,SEEK_END);
 			int tam = ftell(bloque);
-
 			int bytesDesocupados = configFS.tamanioBlocks - tam;
 
 			if (strlen(cadena) <= bytesDesocupados) {
@@ -292,13 +296,12 @@ int agregarCantidadEnPosicion(t_list* pokemon, DatosBloques posYCant, t_list* nu
 			log_error(logger,"No se pudo abrir el archivo del bloque");
 		}
 		free(path);
+//		free(posicion);
 	} else {
 		log_info(logger,"Sumando la cantidad en la posicion");
 		posicion->cantidad += posYCant.cantidad;
 		escribirListaEnArchivo(pokemon,numerosBloques);
 	}
-
-	free(posicion);
 
 	return configFS.tamanioBlocks*(list_size(numerosBloques) - 1) + tamanioBloque(list_get(numerosBloques,list_size(numerosBloques) - 1));
 }
@@ -448,13 +451,11 @@ char* leerArchivos(t_list* bloques, int cantBloques, int tamanio) {
 
 			FILE* f = fopen(pathBlocks,"rb+");
 
-			fseek(f,0,SEEK_END);
-
 			if(f != NULL) {
 				char* leidos = calloc(1,configFS.tamanioBlocks);
 				fread(leidos,configFS.tamanioBlocks,1,f);
 				if(string_is_empty(leidos)) log_error(logger,"Bloque Mal: %d",*bloque);
-				string_append(&datos,leidos);
+				else string_append(&datos,leidos);
 				free(leidos);
 			} else log_error(logger,"No se pudo abrir el archivo");
 
@@ -521,7 +522,8 @@ t_list* interpretarCadena(char* cadenaDatos, int cantBloques) {
 }
 
 int tamanioBloque(int* nroBloque) {
-	char* bl = string_itoa(*nroBloque);
+	char* bl = string_new();
+	string_append(&bl,string_itoa(*nroBloque));
 	char* path = pathBloque(bl);
 
 	FILE* bloque = fopen(path,"rb");
