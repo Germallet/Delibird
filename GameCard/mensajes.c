@@ -61,13 +61,13 @@ void Operacion_NEW_POKEMON(DATOS_NEW_POKEMON_ID* datos) {
 
 	while (estaAbiertoPath(path)) sleep(configFS.tiempoReintento);
 
-	pthread_mutex_lock(&semDeMierda);
+//	pthread_mutex_lock(&semDeMierda);
 
-	t_config* pConfig = config_create(path);
+	t_config* pConfig = CrearConfig(path);
 
 	abrir(pConfig);
 
-	pthread_mutex_unlock(&semDeMierda);
+//	pthread_mutex_unlock(&semDeMierda);
 
 	int cantBloques = 0;
 
@@ -87,11 +87,11 @@ void Operacion_NEW_POKEMON(DATOS_NEW_POKEMON_ID* datos) {
 
 	sleep(configFS.tiempoRetardo);
 
-	pthread_mutex_lock(&semDeMierda);
+//	pthread_mutex_lock(&semDeMierda);
 
 	cambiarMetadataPokemon(pConfig,numerosBloques,bytes);
 
-	pthread_mutex_unlock(&semDeMierda);
+//	pthread_mutex_unlock(&semDeMierda);
 
 	Enviar_APPEARED_POKEMON(datos);
 
@@ -123,7 +123,9 @@ void Recibir_CATCH_POKEMON(Cliente* cliente, Paquete* paqueteRecibido) {
 
 void Operacion_CATCH_POKEMON(DATOS_CATCH_POKEMON_ID* datos) {
 
+	pthread_mutex_lock(&semArbol);
 	NodoArbol* nodoPokemon = encontrarPokemon(datos->datos.pokemon);
+	pthread_mutex_unlock(&semArbol);
 
 	if(nodoPokemon == NULL) {
 		log_error(logger, "No existe el pokemon");
@@ -133,13 +135,13 @@ void Operacion_CATCH_POKEMON(DATOS_CATCH_POKEMON_ID* datos) {
 
 		while (estaAbiertoPath(path)) sleep(configFS.tiempoReintento);
 
-		pthread_mutex_lock(&semDeMierda);
+//		pthread_mutex_lock(&semDeMierda);
 
 		t_config* pConfig = config_create(path);
 
 		abrir(pConfig);
 
-		pthread_mutex_unlock(&semDeMierda);
+//		pthread_mutex_unlock(&semDeMierda);
 
 		int cantBloques =  0;
 
@@ -160,11 +162,11 @@ void Operacion_CATCH_POKEMON(DATOS_CATCH_POKEMON_ID* datos) {
 
 		sleep(configFS.tiempoRetardo);
 
-		pthread_mutex_lock(&semDeMierda);
+//		pthread_mutex_lock(&semDeMierda);
 
 		cambiarMetadataPokemon(pConfig,numerosBloques,bytes);
 
-		pthread_mutex_unlock(&semDeMierda);
+//		pthread_mutex_unlock(&semDeMierda);
 
 		Enviar_CAUGHT_POKEMON(datos,caught);
 
@@ -198,7 +200,9 @@ void Recibir_GET_POKEMON(Cliente* cliente, Paquete* paqueteRecibido) {
 
 void Operacion_GET_POKEMON(DATOS_GET_POKEMON_ID* datos) {
 
+	pthread_mutex_lock(&semArbol);
 	NodoArbol* nodoPokemon = encontrarPokemon(datos->datos.pokemon);
+	pthread_mutex_unlock(&semArbol);
 
 	if(nodoPokemon == NULL) Enviar_LOCALIZED_POKEMON(datos,NULL);
 	else {
@@ -206,13 +210,13 @@ void Operacion_GET_POKEMON(DATOS_GET_POKEMON_ID* datos) {
 
 		while (estaAbiertoPath(path)) sleep(configFS.tiempoReintento);
 
-		pthread_mutex_lock(&semDeMierda);
+//		pthread_mutex_lock(&semDeMierda);
 
 		t_config* pConfig = config_create(path);
 
 		abrir(pConfig);
 
-		pthread_mutex_unlock(&semDeMierda);
+//		pthread_mutex_unlock(&semDeMierda);
 
 		int cantBloques =  0;
 
