@@ -94,7 +94,7 @@ void Operacion_RECONECTAR(Cliente* cliente, Paquete* paqueteRecibido)
 			Socket_Enviar(BROKER_CONECTADO, stream->base, stream->tamanio, cliente->socket);
 			Stream_DestruirConBuffer(stream);
 
-			log_info(logger, "Un cliente no registrado se reconecto");
+			log_info(logger, "Un cliente no registrado se reconecto (ID previa: %d)", datos.id);
 			return;
 		}
 		else
