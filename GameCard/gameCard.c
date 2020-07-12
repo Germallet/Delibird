@@ -101,9 +101,8 @@ int encontrarIndicePokemon(char* nombre) {
 int eliminarPokemon(t_list* pokemons, char* nombre) {
 	int pokemonAEliminar = encontrarIndicePokemon(nombre);
 
-	list_remove_and_destroy_element(pokemons,pokemonAEliminar, (void*)&eliminarNodoPokemon);
-
-//	free(dat);
+	if (pokemonAEliminar != -1) list_remove_and_destroy_element(pokemons,pokemonAEliminar, (void*)&eliminarNodoPokemon);
+	else log_error(logger,"No existe pokemonnnnnnnnnnnnnnn");
 
 	return pokemonAEliminar;
 }

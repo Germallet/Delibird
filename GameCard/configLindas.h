@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <sys/file.h>
 
 #include <commons/config.h>
 #include <commons/string.h>
