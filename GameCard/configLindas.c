@@ -1,7 +1,8 @@
 #include "configLindas.h"
 
 t_config *CrearConfig(char *path) {
-	FILE* file = fopen(path, "r");
+	FILE* file = fopen(path, "rb+");
+
 	flockfile(file);
 
 	if (file == NULL) {
@@ -41,7 +42,9 @@ t_config *CrearConfig(char *path) {
 
 	free(lines);
 	free(buffer);
+
 	funlockfile(file);
+
 	fclose(file);
 
 	return config;
@@ -49,6 +52,7 @@ t_config *CrearConfig(char *path) {
 
 int GuardarConfig(t_config *self, char* path) {
 	FILE* file = fopen(path, "wb+");
+
 	flockfile(file);
 
 	if (file == NULL) {
