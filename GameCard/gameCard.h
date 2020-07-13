@@ -53,7 +53,7 @@ void EsperarHilos();
 bool existePokemon(char* nombre);
 NodoArbol* encontrarPokemon(char* nombre);
 int encontrarIndicePokemon(char* nombre);
-int eliminarPokemon(t_list* pokemons, char* nombre);
+int eliminarPokemon(char* nombre);
 NodoArbol* directorioFiles();
 NodoArbol* directorioBlocks();
 char* pathDeNodo(NodoArbol* nodo);

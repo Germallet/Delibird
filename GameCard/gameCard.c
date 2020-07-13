@@ -79,39 +79,30 @@ NodoArbol* encontrarPokemon(char* nombre) {
 		NodoArbol* pok = list_get(files->hijos,i);
 		if (sonIguales(pok->nombre,nombre)) return pok;
 	}
-
 	return NULL;
 }
 
-int encontrarIndicePokemon(char* nombre) {
-
-	log_info(logger,"Buscando pokemon...");
+int eliminarPokemon(char* nombre) {
 
 	NodoArbol* files = directorioFiles();
 
 	if(list_is_empty(files->hijos)) return -1;
 	for (int i = 0; i < list_size(files->hijos); i++) {
 		NodoArbol* pok = list_get(files->hijos,i);
-		if (sonIguales(pok->nombre,nombre)) return i;
+		if (sonIguales(pok->nombre,nombre)) {
+			list_remove_and_destroy_element(files->hijos,i,(void*)&eliminarNodoPokemon);
+			return i;
+		}
 	}
 
 	return -1;
 }
 
-int eliminarPokemon(t_list* pokemons, char* nombre) {
-	int pokemonAEliminar = encontrarIndicePokemon(nombre);
-
-	if (pokemonAEliminar != -1) list_remove_and_destroy_element(pokemons,pokemonAEliminar, (void*)&eliminarNodoPokemon);
-	else log_error(logger,"No existe pokemonnnnnnnnnnnnnnn");
-
-	return pokemonAEliminar;
-}
-
 void eliminarNodoPokemon(NodoArbol* nodo) {
 	list_destroy(nodo->hijos);
+	//free(nodo->nombre);
 	free(nodo);
 }
-
 
 char* pathPtoMnt() {
 	return raiz->nombre;
@@ -231,7 +222,7 @@ void TerminarProgramaConError(char* error)
 void TerminarPrograma()
 {
 	log_info(logger,"Terminando programa");
-	freeArbol();
+	freeArbol(); //TODO ELIMINAR EL DIRECTORIO POKEMON Y TODO. EL RESTO
 	log_destroy(logger);
 	config_destroy(config);
 	bitarray_destroy(bitmap);

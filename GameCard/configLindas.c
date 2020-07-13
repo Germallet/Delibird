@@ -3,11 +3,13 @@
 t_config *CrearConfig(char *path) {
 	FILE* file = fopen(path, "rb+");
 
-	flockfile(file);
+	if (file != NULL) flockfile(file);
+	else return NULL;
 
-	if (file == NULL) {
-		return NULL;
-	}
+//	if (file == NULL) {
+//		return NULL;
+//	}
+
 
 	struct stat stat_file;
 	stat(path, &stat_file);

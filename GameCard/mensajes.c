@@ -47,14 +47,12 @@ void Recibir_NEW_POKEMON(Cliente* cliente, Paquete* paqueteRecibido) {
 void Operacion_NEW_POKEMON(DATOS_NEW_POKEMON_ID* datos) {
 
 	pthread_mutex_lock(&semArbol);
-
 	NodoArbol* nodoPokemon = encontrarPokemon(datos->datos.pokemon);
 
 	if(nodoPokemon == NULL) {
 		nodoPokemon = crearPokemon(datos->datos.pokemon);
 		agregarNodo(directorioFiles(),nodoPokemon);
 	}
-
 	pthread_mutex_unlock(&semArbol);
 
 	char* path = pathPokemon(nodoPokemon->nombre);
@@ -101,6 +99,8 @@ void Operacion_NEW_POKEMON(DATOS_NEW_POKEMON_ID* datos) {
 	list_destroy_and_destroy_elements(numerosBloques,&free);
 
 	list_destroy(datosBloques);
+
+	pthread_exit(0);
 }
 
 void Recibir_CATCH_POKEMON(Cliente* cliente, Paquete* paqueteRecibido) {
@@ -178,6 +178,8 @@ void Operacion_CATCH_POKEMON(DATOS_CATCH_POKEMON_ID* datos) {
 
 		list_destroy(datosBloques);
 	}
+
+	pthread_exit(0);
 }
 
 void Recibir_GET_POKEMON(Cliente* cliente, Paquete* paqueteRecibido) {

@@ -10,13 +10,14 @@ bool estaAbierto(t_config* pConfig) {
 }
 
 bool estaAbiertoPath(char* path) {
-	pthread_mutex_lock(&semDeMierda);
+//	pthread_mutex_lock(&semDeMierda);
 	t_config* c = CrearConfig(path);
-	pthread_mutex_unlock(&semDeMierda);
 	bool open = sonIguales(config_get_string_value(c,"OPEN"),"Y");
 	config_destroy(c);
 	return open;
 }
+//	pthread_mutex_unlock(&semDeMierda);
+
 
 void abrir(t_config* conf) {
 	config_set_value(conf,"OPEN","Y");
@@ -216,13 +217,15 @@ bool atraparPokemon(t_list* datosBloques, Posicion pos, t_list* numerosBloques, 
 
 		if(list_size(datosBloques) == 0) {
 
+			pthread_mutex_lock(&semArbol);
 			log_info(logger,"Eliminando pokemon del filesystem");
 			NodoArbol* files = directorioFiles();
 			char* pathDir = string_new();
-//			pthread_mutex_lock(&semArbol);
-			int exito = eliminarPokemon(files->hijos,pokemon);
-//			pthread_mutex_unlock(&semArbol);
+
+			int exito = eliminarPokemon(pokemon);
+
 			if (exito == -1) log_error(logger, "Error eliminando pokemon" );
+
 			string_append(&pathDir,(raiz->nombre));
 			string_append(&pathDir,(files->nombre));
 			string_append(&pathDir,"/");
@@ -230,7 +233,10 @@ bool atraparPokemon(t_list* datosBloques, Posicion pos, t_list* numerosBloques, 
 			remove(pathPokemon(pokemon));
 			rmdir(pathDir);
 			free(pathDir);
-		} else escribirListaEnArchivo(datosBloques,numerosBloques);
+			pthread_mutex_unlock(&semArbol);
+		}
+
+		escribirListaEnArchivo(datosBloques,numerosBloques);
 
 		caught = true;
 	}
@@ -593,5 +599,5 @@ void cambiarMetadataPokemon(t_config* c, t_list* numerosBloques, int bytes) {
 
 	config_set_value(c,"OPEN","N");
 
-	config_save(c);
+	ActualizarConfig(c);
 }
