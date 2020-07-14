@@ -7,7 +7,7 @@
 typedef struct {
 	char* nombre;
 	t_list* hijos;
-	void* padre;
+//	void* padre;
 } NodoArbol;
 
 NodoArbol* crearNodo(char* puntoMontaje);
