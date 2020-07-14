@@ -6,11 +6,6 @@
 
 Eventos* eventos;
 
-//TODO ELIMINAR LOS POKEMONS CON SIZE = 0
-//TODO ELIMINAR EL ARBOL
-//TODO CERRAR AL DIRECTORIO CUANDO SE TERMINAN DE LEER
-
-
 int main()
 {
 	raiz = malloc(sizeof(NodoArbol));
@@ -97,18 +92,12 @@ int eliminarPokemon(char* nombre) {
 	for (int i = 0; i < list_size(files->hijos); i++) {
 		NodoArbol* pok = list_get(files->hijos,i);
 		if (sonIguales(pok->nombre,nombre)) {
-			list_remove_and_destroy_element(files->hijos,i,(void*)&eliminarNodoPokemon);
+			list_remove_and_destroy_element(files->hijos,i,(void* )&DestruirNodo);
 			return i;
 		}
 	}
 
 	return -1;
-}
-
-void eliminarNodoPokemon(NodoArbol* nodo) {
-	list_destroy(nodo->hijos);
-	//free(nodo->nombre);
-	free(nodo);
 }
 
 char* pathPtoMnt() {
@@ -131,6 +120,10 @@ char* pathBloque(char* nombre) {
 	string_append(&path,nombre);
 	string_append(&path,".bin");
 	return path;
+}
+
+t_list* directorioPokemon() {
+	return directorioFiles()->hijos;
 }
 
 NodoArbol* directorioFiles() {
@@ -196,18 +189,27 @@ void conectarse() {
 void EnviarMensajesGuardados(Cliente* cliente) {
 	log_info(logger, "Me conecte al broker");
 
-	for (int i = 0; i < list_size(mensajesNoEnviadosAPPEARED); i++)
-		EnviarMensaje(cliente, APPEARED_POKEMON, list_get(mensajesNoEnviadosAPPEARED,i), (void*) &SerializarM_APPEARED_POKEMON_ID);
+	for (int i = 0; i < list_size(mensajesNoEnviadosAPPEARED); i++) {
+		DATOS_APPEARED_POKEMON_ID* dat = list_get(mensajesNoEnviadosAPPEARED,i);
+		EnviarMensaje(cliente, APPEARED_POKEMON, dat, (void*) &SerializarM_APPEARED_POKEMON_ID);
+		free(dat);
+	}
 
 	list_clean(mensajesNoEnviadosAPPEARED);
 
-	for (int i = 0; i < list_size(mensajesNoEnviadosCAUGHT); i++)
-		EnviarMensaje(cliente, CAUGHT_POKEMON, list_get(mensajesNoEnviadosCAUGHT,i), (void*) &SerializarM_CAUGHT_POKEMON_ID);
+	for (int i = 0; i < list_size(mensajesNoEnviadosCAUGHT); i++)  {
+		DATOS_CAUGHT_POKEMON_ID* dat = list_get(mensajesNoEnviadosCAUGHT,i);
+		EnviarMensaje(cliente, CAUGHT_POKEMON, dat, (void*) &SerializarM_CAUGHT_POKEMON_ID);
+		free(dat);
+	}
 
 	list_clean(mensajesNoEnviadosCAUGHT);
 
-	for (int i = 0; i < list_size(mensajesNoEnviadosLOCALIZED); i++)
+	for (int i = 0; i < list_size(mensajesNoEnviadosLOCALIZED); i++) {
+		DATOS_LOCALIZED_POKEMON_ID* dat = list_get(mensajesNoEnviadosLOCALIZED,i);
 		EnviarMensaje(cliente, LOCALIZED_POKEMON, list_get(mensajesNoEnviadosLOCALIZED,i), (void*) &SerializarM_LOCALIZED_POKEMON_ID);
+		free(dat);
+	}
 
 	list_clean(mensajesNoEnviadosLOCALIZED);
 }
@@ -229,50 +231,60 @@ void TerminarProgramaConError(char* error)
 void TerminarPrograma()
 {
 	log_info(logger,"Terminando programa");
-	freeArbol();
 	eliminarPokemonsNoExistentes();
 	log_destroy(logger);
 	config_destroy(config);
 	bitarray_destroy(bitmap);
 	DestruirServidor(servidor);
-	list_clean(mensajesNoEnviadosAPPEARED);
-	list_destroy(mensajesNoEnviadosAPPEARED);
-	list_clean(mensajesNoEnviadosCAUGHT);
-	list_destroy(mensajesNoEnviadosCAUGHT);
-	list_clean(mensajesNoEnviadosLOCALIZED);
-	list_destroy(mensajesNoEnviadosLOCALIZED);
-	NodoArbol* files = directorioFiles();
-	list_clean(files->hijos);
-	list_destroy(files->hijos);
-	free(files);
-	list_clean(raiz->hijos);
-	list_destroy(raiz->hijos);
-	free(raiz);
+	DestruirCliente(clienteBroker->clienteBroker);
+	list_destroy_and_destroy_elements(mensajesNoEnviadosAPPEARED,(void*) &BorrarMensajesAppeared);
+	list_destroy_and_destroy_elements(mensajesNoEnviadosCAUGHT,(void*) &free);
+	list_destroy_and_destroy_elements(mensajesNoEnviadosLOCALIZED,(void*) &BorrarMensajesLocalized);
+	freeArbol();
 }
 
 void freeArbol() {
+	list_clean_and_destroy_elements(directorioPokemon(),(void*) &DestruirNodo);
+	list_clean_and_destroy_elements(raiz->hijos,(void*) &DestruirNodo);
+	DestruirNodo(raiz);
+}
 
+void DestruirNodo(NodoArbol* pok) {
+	free(pok->nombre);
+	list_destroy(pok->hijos);
+	free(pok);
+}
+
+void BorrarMensajesLocalized(DATOS_LOCALIZED_POKEMON_ID* dat) {
+	free(dat->datos.posiciones);
+	free(dat->datos.pokemon);
+	free(dat);
+}
+
+void BorrarMensajesAppeared(DATOS_APPEARED_POKEMON_ID* dat) {
+	free(dat->datos.pokemon);
+	free(dat);
 }
 
 void eliminarPokemonsNoExistentes() {
 
 }
 
-//void nuevoSemaforo(char* key) {
-//	pthread_mutex_t sem;
-//	pthread_mutex_init(&sem, NULL);
-//	pthread_mutex_lock(&semDiccionario);
-//	dictionary_put(semaforos, key, &sem);
-//	pthread_mutex_unlock(&semDiccionario);
-//}
-//
-//pthread_mutex_t* obtenerSemaforo(char* key) {
-//	pthread_mutex_lock(&semDiccionario);
-//	pthread_mutex_t* sem = dictionary_get(semaforos, key);
-//	pthread_mutex_unlock(&semDiccionario);
-//	return sem;
-//}
-//
-//void destruirDiccionario() {
-//	dictionary_destroy_and_destroy_elements(semaforos, (void*)&pthread_mutexattr_destroy);
-//}
+void nuevoSemaforo(char* key) {
+	pthread_mutex_t* sem = malloc(sizeof(pthread_mutex_t));
+	pthread_mutex_init(sem, NULL);
+	pthread_mutex_lock(&semDiccionario);
+	dictionary_put(semaforos, key, sem);
+	pthread_mutex_unlock(&semDiccionario);
+}
+
+pthread_mutex_t* obtenerSemaforo(char* key) {
+	pthread_mutex_lock(&semDiccionario);
+	pthread_mutex_t* sem = dictionary_get(semaforos, key);
+	pthread_mutex_unlock(&semDiccionario);
+	return sem;
+}
+
+void destruirDiccionario() {
+	dictionary_destroy_and_destroy_elements(semaforos, (void*)&pthread_mutexattr_destroy);
+}

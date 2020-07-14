@@ -42,6 +42,7 @@ void Recibir_NEW_POKEMON(Cliente* cliente, Paquete* paqueteRecibido) {
 		pthread_create(&thread, NULL, (void*) Operacion_NEW_POKEMON,datos);
 		pthread_detach(thread);
 	}
+	free(stream);
 }
 
 void Operacion_NEW_POKEMON(DATOS_NEW_POKEMON_ID* datos) {
@@ -52,20 +53,20 @@ void Operacion_NEW_POKEMON(DATOS_NEW_POKEMON_ID* datos) {
 	if(nodoPokemon == NULL) {
 		nodoPokemon = crearPokemon(datos->datos.pokemon);
 		agregarNodo(directorioFiles(),nodoPokemon);
-//		nuevoSemaforo(nodoPokemon->nombre);
+		nuevoSemaforo(nodoPokemon->nombre);
 	}
 	pthread_mutex_unlock(&semArbol);
 
-//	pthread_mutex_t* semPokemon = obtenerSemaforo(nodoPokemon->nombre);
+	pthread_mutex_t* semPokemon = obtenerSemaforo(nodoPokemon->nombre);
 
 	char* path = pathPokemon(nodoPokemon->nombre);
 
-	while (estaAbiertoPath(path)) sleep(configFS.tiempoReintento);
+	while (estaAbiertoSem(path, semPokemon)) sleep(configFS.tiempoReintento);
 
-//	pthread_mutex_lock(semPokemon);
+	pthread_mutex_lock(semPokemon);
 	t_config* pConfig = CrearConfig(path);
 	abrir(pConfig);
-//	pthread_mutex_unlock(semPokemon);
+	pthread_mutex_unlock(semPokemon);
 
 	int cantBloques = 0;
 
@@ -85,11 +86,11 @@ void Operacion_NEW_POKEMON(DATOS_NEW_POKEMON_ID* datos) {
 
 	sleep(configFS.tiempoRetardo);
 
-//	pthread_mutex_lock(semPokemon);
+	pthread_mutex_lock(semPokemon);
 
 	cambiarMetadataPokemon(pConfig,numerosBloques,bytes);
 
-//	pthread_mutex_unlock(semPokemon);
+	pthread_mutex_unlock(semPokemon);
 
 	Enviar_APPEARED_POKEMON(datos);
 
@@ -119,6 +120,7 @@ void Recibir_CATCH_POKEMON(Cliente* cliente, Paquete* paqueteRecibido) {
 		pthread_create(&thread, NULL, (void*) Operacion_CATCH_POKEMON,datos);
 		pthread_detach(thread);
 	}
+	free(stream);
 }
 
 void Operacion_CATCH_POKEMON(DATOS_CATCH_POKEMON_ID* datos) {
@@ -129,21 +131,22 @@ void Operacion_CATCH_POKEMON(DATOS_CATCH_POKEMON_ID* datos) {
 
 	if(nodoPokemon == NULL) {
 		log_error(logger, "No existe el pokemon");
+		Enviar_CAUGHT_POKEMON(datos,false);
 	} else {
 
-//		pthread_mutex_t* semPokemon = obtenerSemaforo(nodoPokemon->nombre);
+		pthread_mutex_t* semPokemon = obtenerSemaforo(nodoPokemon->nombre);
 
 		char* path = pathPokemon(nodoPokemon->nombre);
 
-		while (estaAbiertoPath(path)) sleep(configFS.tiempoReintento);
+		while (estaAbiertoSem(path, semPokemon)) sleep(configFS.tiempoReintento);
 
-//		pthread_mutex_lock(semPokemon);
+		pthread_mutex_lock(semPokemon);
 
 		t_config* pConfig = CrearConfig(path);
 
 		abrir(pConfig);
 
-//		pthread_mutex_unlock(semPokemon);
+		pthread_mutex_unlock(semPokemon);
 
 		int cantBloques =  0;
 
@@ -164,9 +167,9 @@ void Operacion_CATCH_POKEMON(DATOS_CATCH_POKEMON_ID* datos) {
 
 		sleep(configFS.tiempoRetardo);
 
-//		pthread_mutex_lock(semPokemon);
+		pthread_mutex_lock(semPokemon);
 		cambiarMetadataPokemon(pConfig,numerosBloques,bytes);
-//		pthread_mutex_unlock(semPokemon);
+		pthread_mutex_unlock(semPokemon);
 
 		Enviar_CAUGHT_POKEMON(datos,caught);
 
@@ -198,6 +201,7 @@ void Recibir_GET_POKEMON(Cliente* cliente, Paquete* paqueteRecibido) {
 		pthread_create(&thread, NULL, (void*) Operacion_GET_POKEMON,datos);
 		pthread_detach(thread);
 	}
+	free(stream);
 }
 
 void Operacion_GET_POKEMON(DATOS_GET_POKEMON_ID* datos) {
@@ -210,18 +214,14 @@ void Operacion_GET_POKEMON(DATOS_GET_POKEMON_ID* datos) {
 	else {
 		char* path = pathPokemon(nodoPokemon->nombre);
 
-//		pthread_mutex_t* sem = obtenerSemaforo(nodoPokemon->nombre);
+		pthread_mutex_t* sem = obtenerSemaforo(nodoPokemon->nombre);
 
-//		pthread_mutex_lock(sem);
-		while (estaAbiertoPath(path)) {
-//			pthread_mutex_unlock(sem);
-			sleep(configFS.tiempoReintento);
-		}
+		while (estaAbiertoSem(path,sem)) sleep(configFS.tiempoReintento);
 
-//		pthread_mutex_lock(sem);
+		pthread_mutex_lock(sem);
 		t_config* pConfig = CrearConfig(path);
 		abrir(pConfig);
-//		pthread_mutex_unlock(sem);
+		pthread_mutex_unlock(sem);
 
 		int cantBloques =  0;
 
@@ -235,9 +235,9 @@ void Operacion_GET_POKEMON(DATOS_GET_POKEMON_ID* datos) {
 
 		Enviar_LOCALIZED_POKEMON(datos,datosBloques);
 
-//		pthread_mutex_lock(sem);
+		pthread_mutex_lock(sem);
 		cerrar(pConfig);
-//		pthread_mutex_unlock(sem);
+		pthread_mutex_unlock(sem);
 
 		config_destroy(pConfig);
 
@@ -245,7 +245,7 @@ void Operacion_GET_POKEMON(DATOS_GET_POKEMON_ID* datos) {
 
 		list_destroy_and_destroy_elements(numerosBloques,&free);
 
-		list_destroy(datosBloques); //TODO NO ELIMINAMOS ACA LAS COSAS
+		list_destroy(datosBloques);
 	}
 
 	pthread_exit(0);

@@ -2,8 +2,7 @@
 #include <dirent.h>
 
 bool sonIguales(char* a, char* b) {
-	if (a!=NULL && b!=NULL) return string_equals_ignore_case(a, b); //TODO SACAR ESTO
-	else return false;
+	return string_equals_ignore_case(a, b);
 }
 
 bool estaAbierto(t_config* pConfig) {
@@ -75,14 +74,13 @@ void crearDirectorioFiles() {
 			while((entry = readdir(dir))) {
 				if (!sonIguales(entry->d_name,"metadata.bin") && !sonIguales(entry->d_name,".") && !sonIguales(entry->d_name,"..")) {
 					log_info(logger,"Leyendo archivo %s",entry->d_name);
-//					char* nombre = string_new();
-//					strcpy(nombre,entry->d_name);
-					agregarNodo(directorioFiles(),crearNodo(entry->d_name));
-//					nuevoSemaforo(entry->d_name);
+					char* nombre = string_duplicate(entry->d_name);
+					agregarNodo(directorioFiles(),crearNodo(nombre));
+					nuevoSemaforo(entry->d_name);
 				}
 			}
 		}
-//	closedir(dir);
+	closedir(dir);
 	free(aux);
 }
 }
@@ -409,6 +407,8 @@ NodoArbol* crearPokemon(char* nombre) {
 
 	mkdir(pathNodo,0700);
 
+	free(pathNodo);
+
 	crearMetadataPokemon(nombre);
 
 	return nodo;
@@ -472,7 +472,7 @@ char* leerArchivos(t_list* bloques, int cantBloques, int tamanio) {
 
 			FILE* f = fopen(pathBlocks,"r");
 
-			if(f != NULL || ftell(f) != 0) {
+			if(f != NULL) {
 				char* leidos = calloc(1,configFS.tamanioBlocks);
 				fread(leidos,configFS.tamanioBlocks,1,f);
 				if(string_is_empty(leidos)) log_error(logger,"Bloque Mal: %d",*bloque);
@@ -545,7 +545,8 @@ t_list* interpretarCadena(char* cadenaDatos, int cantBloques) {
 
 int tamanioBloque(int* nroBloque) {
 	char* bl = string_new();
-	string_append(&bl,string_itoa(*nroBloque));
+	char* aux = string_itoa(*nroBloque);
+	string_append(&bl,aux);
 	char* path = pathBloque(bl);
 
 	FILE* bloque = fopen(path,"rb");
@@ -556,6 +557,7 @@ int tamanioBloque(int* nroBloque) {
 	fclose(bloque);
 
 	free(bl);
+	free(aux);
 	free(path);
 
 	return a;
