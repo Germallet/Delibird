@@ -88,9 +88,9 @@ void Operacion_NEW_POKEMON(DATOS_NEW_POKEMON_ID* datos) {
 
 	pthread_mutex_lock(semPokemon);
 
-	log_info(logger,"New size = %d", bytes);
-
 	cambiarMetadataPokemon(pConfig,numerosBloques,bytes);
+
+	log_info(logger,"Pokemon: %s, Size: %d, Bloques: %s", nodoPokemon->nombre, bytes, config_get_string_value(pConfig,"BLOCKS"));
 
 	pthread_mutex_unlock(semPokemon);
 
@@ -100,7 +100,6 @@ void Operacion_NEW_POKEMON(DATOS_NEW_POKEMON_ID* datos) {
 	free(path);
 
 	list_destroy_and_destroy_elements(numerosBloques,&free);
-
 	list_clean(datosBloques);
 	list_destroy(datosBloques);
 
@@ -168,12 +167,11 @@ void Operacion_CATCH_POKEMON(DATOS_CATCH_POKEMON_ID* datos) {
 
 		bool caught = atraparPokemon(datosBloques,posicion,numerosBloques,&bytes,nodoPokemon->nombre);
 
-		log_info(logger,"SIZE = %d", bytes);
-
 		sleep(configFS.tiempoRetardo);
 
 		pthread_mutex_lock(semPokemon);
 		cambiarMetadataPokemon(pConfig,numerosBloques,bytes);
+		log_info(logger,"Pokemon: %s, Size: %d, Bloques: %s", nodoPokemon->nombre, bytes, config_get_string_value(pConfig,"BLOCKS"));
 		pthread_mutex_unlock(semPokemon);
 
 		Enviar_CAUGHT_POKEMON(datos,caught);
@@ -183,7 +181,6 @@ void Operacion_CATCH_POKEMON(DATOS_CATCH_POKEMON_ID* datos) {
 		free(path);
 
 		list_destroy_and_destroy_elements(numerosBloques,&free);
-
 		list_clean(datosBloques);
 		list_destroy(datosBloques);
 	}
@@ -251,6 +248,11 @@ void Operacion_GET_POKEMON(DATOS_GET_POKEMON_ID* datos) {
 
 		list_destroy_and_destroy_elements(numerosBloques,&free);
 
+		for (int i = 0; i < list_size(datosBloques); i++) {
+			DatosBloques* pok = list_get(datosBloques,i);
+			free(pok);
+		}
+
 		list_clean(datosBloques);
 		list_destroy(datosBloques);
 	}
@@ -284,7 +286,7 @@ void Enviar_APPEARED_POKEMON(DATOS_NEW_POKEMON_ID* datos) {
 		list_add(mensajesNoEnviadosAPPEARED,datosEnviar);
 	}
 
-	free(datos->datos.pokemon);
+//	free(datos->datos.pokemon);
 	free(datos);
 }
 
@@ -303,7 +305,7 @@ void Enviar_CAUGHT_POKEMON(DATOS_CATCH_POKEMON_ID* datos, bool caught) {
 		list_add(mensajesNoEnviadosCAUGHT,datosEnviar);
 	}
 
-	free(datos->datos.pokemon);
+//	free(datos->datos.pokemon);
 	free(datos);
 }
 
@@ -336,7 +338,7 @@ void Enviar_LOCALIZED_POKEMON(DATOS_GET_POKEMON_ID* datos,t_list* datosArchivo) 
 		list_add(mensajesNoEnviadosLOCALIZED,datosAEnviar);
 	}
 
-	free(datos->datos.pokemon);
+//	free(datos->datos.pokemon);
 	free(datos);
 }
 

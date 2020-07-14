@@ -226,6 +226,7 @@ void TerminarPrograma()
 	free(bitmap->bitarray);
 	bitarray_destroy(bitmap);
 	DestruirServidor(servidor);
+	DestruirConexionBroker(clienteBroker);
 	list_destroy_and_destroy_elements(mensajesNoEnviadosAPPEARED,(void*) &BorrarMensajesAppeared);
 	list_destroy_and_destroy_elements(mensajesNoEnviadosCAUGHT,(void*) &free);
 	list_destroy_and_destroy_elements(mensajesNoEnviadosLOCALIZED,(void*) &BorrarMensajesLocalized);

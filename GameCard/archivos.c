@@ -215,10 +215,15 @@ bool atraparPokemon(t_list* datosBloques, Posicion pos, t_list* numerosBloques, 
 	if (posYCant == NULL) {
 		log_error(logger, "FAIL ATRAPAR POKEMON: No existe pokemon en esa posicion");
 		caught = false;
+
+		for (int i = 0; i < list_size(datosBloques); i++) {
+			DatosBloques* pok = list_get(datosBloques,i);
+			free(pok);
+		}
+
 	} else {
 		posYCant->cantidad-=1;
 		if (posYCant->cantidad == 0) list_remove_and_destroy_by_condition(datosBloques,(void*)&esPosicion,&free);
-//		log_info(logger,"Atrapando pokemon...");
 
 		escribirListaEnArchivo(datosBloques,numerosBloques);
 
@@ -287,8 +292,6 @@ int agregarCantidadEnPosicion(t_list* pokemon, DatosBloques posYCant, t_list* nu
 				fwrite(cadena,bytesDesocupados,1,bloque);
 				fclose(bloque);
 
-//				cadena = string_substring_from(cadena,bytesDesocupados);
-
 				char* aux = string_substring_from(cadena, bytesDesocupados);
 				free(cadena);
 				cadena = string_duplicate(aux);
@@ -315,10 +318,16 @@ int agregarCantidadEnPosicion(t_list* pokemon, DatosBloques posYCant, t_list* nu
 			}
 
 			free(cadena);
-		} else {
-			log_error(logger,"FAIL ABRIENDO ARCHIVO");
-		}
+
+		} else log_error(logger,"FAIL ABRIENDO ARCHIVO");
+
+//		for (int i = 0; i < list_size(pokemon); i++) {
+//			DatosBloques* pok = list_get(pokemon,i);
+//			free(pok);
+//		}
+
 		free(path);
+
 	} else {
 		posicion->cantidad += posYCant.cantidad;
 		escribirListaEnArchivo(pokemon,numerosBloques);
@@ -469,7 +478,7 @@ char* leerArchivos(t_list* bloques, int cantBloques, int tamanio) {
 	char* datos = string_new();
 
 	if (tamanio != 0) {
-		for(int i = 0; i < cantBloques; i++) {
+		for(int i = 0; i < list_size(bloques); i++) {
 
 			int* bloque = list_get(bloques,i);
 
