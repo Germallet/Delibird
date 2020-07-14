@@ -56,6 +56,11 @@ dkms.conf
 .cproject
 .project
 
+# Tests
+*.sh
+
 # Log
 *.log
-*.sh
+
+# Commons
+so-commons-library/
