@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include "archivos.h"
 #include <signal.h>
+#include <dirent.h>
 
 Eventos* eventos;
 
@@ -45,7 +46,7 @@ int main()
 
 	signal(SIGINT,EscuchaSignal);
 
-	EsperarHilos();
+//	EsperarHilos();
 
 	TerminarPrograma();
 
@@ -236,7 +237,6 @@ void TerminarPrograma()
 	config_destroy(config);
 	bitarray_destroy(bitmap);
 	DestruirServidor(servidor);
-	DestruirCliente(clienteBroker->clienteBroker);
 	list_destroy_and_destroy_elements(mensajesNoEnviadosAPPEARED,(void*) &BorrarMensajesAppeared);
 	list_destroy_and_destroy_elements(mensajesNoEnviadosCAUGHT,(void*) &free);
 	list_destroy_and_destroy_elements(mensajesNoEnviadosLOCALIZED,(void*) &BorrarMensajesLocalized);
@@ -267,7 +267,27 @@ void BorrarMensajesAppeared(DATOS_APPEARED_POKEMON_ID* dat) {
 }
 
 void eliminarPokemonsNoExistentes() {
+	char* pathFiles = string_new();
+	string_append(&pathFiles,pathPtoMnt());
+	string_append(&pathFiles,directorioFiles()->nombre);
+	DIR* dir = opendir(pathFiles);
+	struct dirent* entry;
 
+	while((entry = readdir(dir))) {
+		if (!sonIguales(entry->d_name,"metadata.bin") && !sonIguales(entry->d_name,".") && !sonIguales(entry->d_name,"..")) {
+			char* nombre = string_duplicate(entry->d_name);
+			char* path = pathPokemon(nombre);
+
+			t_config* c = CrearConfig(path);
+
+			if (config_get_int_value(c,"SIZE") == 0) eliminarArchivosPokemon(nombre);
+
+			config_destroy(c);
+			agregarNodo(directorioFiles(),crearNodo(nombre));
+			nuevoSemaforo(entry->d_name);
+		}
+	}
+	free(pathFiles);
 }
 
 void nuevoSemaforo(char* key) {

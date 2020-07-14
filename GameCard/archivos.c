@@ -234,14 +234,9 @@ bool atraparPokemon(t_list* datosBloques, Posicion pos, t_list* numerosBloques, 
 }
 
 void eliminarArchivosPokemon(char* pokemon) {
-	pthread_mutex_lock(&semArbol);
-	log_info(logger,"Eliminando pokemon del filesystem");
+	log_info(logger,"Eliminando pokemon %s del filesystem",pokemon);
 	NodoArbol* files = directorioFiles();
 	char* pathDir = string_new();
-
-	int exito = eliminarPokemon(pokemon);
-
-	if (exito == -1) log_error(logger, "Error eliminando pokemon" );
 
 	string_append(&pathDir,(raiz->nombre));
 	string_append(&pathDir,(files->nombre));
@@ -250,7 +245,6 @@ void eliminarArchivosPokemon(char* pokemon) {
 	remove(pathPokemon(pokemon));
 	rmdir(pathDir);
 	free(pathDir);
-	pthread_mutex_unlock(&semArbol);
 }
 
 int agregarCantidadEnPosicion(t_list* pokemon, DatosBloques posYCant, t_list* numerosBloques) {
@@ -319,7 +313,7 @@ int agregarCantidadEnPosicion(t_list* pokemon, DatosBloques posYCant, t_list* nu
 	}
 
 	return configFS.tamanioBlocks*(list_size(numerosBloques) - 1) + tamanioBloque(list_get(numerosBloques,list_size(numerosBloques) - 1));
-}//TODO SAQUEMOS ESTO
+}
 
 void escribirListaEnArchivo(t_list* datosBloques, t_list* numerosBloques) {
 
