@@ -80,14 +80,14 @@ static void esperar_fin_de_ciclo()
 	}
 }
 
-static void solicitar_pokemons_para_objetivo_global_test()
+/*static void solicitar_pokemons_para_objetivo_global_test()
 {
 	agregar_pokemon_a_mapa("Pikachu", crear_posicion("1|1"));
 	agregar_pokemon_a_mapa("Squirtle", crear_posicion("9|7"));
 	agregar_pokemon_a_mapa("Onix", crear_posicion("2|2"));
 	agregar_pokemon_a_mapa("Squirtle", crear_posicion("3|5"));
 	agregar_pokemon_a_mapa("Gengar", crear_posicion("7|5"));
-}
+}*/
 
 //-----------HILO PRINCIPAL-----------//
 int main()
@@ -96,7 +96,7 @@ int main()
 	obtener_entrenadores();
 	identificar_objetivo_global();
 	IniciarServidorTeam(config_get_string_value(config,"IP_TEAM"), config_get_int_value(config,"PUERTO_TEAM"));
-	solicitar_pokemons_para_objetivo_global_test();
+	//solicitar_pokemons_para_objetivo_global_test();
 	solicitar_pokemons_para_objetivo_global();
 	conectarse_y_suscribirse_a_colas();
 

@@ -16,7 +16,7 @@ void operacionTEAM_APPEARED_POKEMON(Cliente* cliente, Paquete* paquete)
 	*datos = Deserializar_APPEARED_POKEMON(stream_lectura);
 	agregar_interrupcion(I_APPEARED_POKEMON, datos);
 
-	Stream_Destruir(stream_lectura);
+	//Stream_Destruir(stream_lectura);
 }
 
 void IniciarServidorTeam(char* ip, int puerto)
