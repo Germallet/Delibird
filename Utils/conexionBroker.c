@@ -80,17 +80,15 @@ ConexionBroker* ConectarseABroker(char* ip, int puerto, Eventos* eventos, void (
 
 	Eventos_AgregarOperacion(nuevaConexion->eventos, BROKER_CONECTADO, (EventoOperacion)&ConexionColas);
 
-	CrearHiloTimer(-1, tiempoReintentoConexion, &reconexion, nuevaConexion);
+	nuevaConexion->hiloTimer = CrearHiloTimer(-1, tiempoReintentoConexion, &reconexion, nuevaConexion);
 
 	return nuevaConexion;
 }
 
-// TODO Destruir
-
-void DestruirConexionBroker(ConexionBroker* conexion) {
-
+void DestruirConexionBroker(ConexionBroker* conexion)
+{
+	DetenerHiloTimer(conexion->hiloTimer);
+	if (conexion->hiloTimer->info != NULL)
+		free(conexion->hiloTimer->info);
+	DestruirCliente(conexion->clienteBroker);
 }
-
-
-
-
