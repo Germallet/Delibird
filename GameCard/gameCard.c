@@ -6,6 +6,11 @@
 
 Eventos* eventos;
 
+//TODO ELIMINAR LOS POKEMONS CON SIZE = 0
+//TODO ELIMINAR EL ARBOL
+//TODO CERRAR AL DIRECTORIO CUANDO SE TERMINAN DE LEER
+
+
 int main()
 {
 	raiz = malloc(sizeof(NodoArbol));
@@ -29,7 +34,9 @@ int main()
 
 	pthread_mutex_init(&semBitmap,NULL);
 	pthread_mutex_init(&semArbol,NULL);
-	pthread_mutex_init(&semDeMierda,NULL);
+	pthread_mutex_init(&semDiccionario,NULL);
+
+	semaforos = dictionary_create();
 
 	SocketEscucha(miIp, miPuerto);
 
@@ -222,11 +229,11 @@ void TerminarProgramaConError(char* error)
 void TerminarPrograma()
 {
 	log_info(logger,"Terminando programa");
-	freeArbol(); //TODO ELIMINAR EL DIRECTORIO POKEMON Y TODO. EL RESTO
+	freeArbol();
+	eliminarPokemonsNoExistentes();
 	log_destroy(logger);
 	config_destroy(config);
 	bitarray_destroy(bitmap);
-//	if (clienteBroker != NULL) DestruirConexion(clienteBroker);
 	DestruirServidor(servidor);
 	list_clean(mensajesNoEnviadosAPPEARED);
 	list_destroy(mensajesNoEnviadosAPPEARED);
@@ -246,3 +253,26 @@ void TerminarPrograma()
 void freeArbol() {
 
 }
+
+void eliminarPokemonsNoExistentes() {
+
+}
+
+//void nuevoSemaforo(char* key) {
+//	pthread_mutex_t sem;
+//	pthread_mutex_init(&sem, NULL);
+//	pthread_mutex_lock(&semDiccionario);
+//	dictionary_put(semaforos, key, &sem);
+//	pthread_mutex_unlock(&semDiccionario);
+//}
+//
+//pthread_mutex_t* obtenerSemaforo(char* key) {
+//	pthread_mutex_lock(&semDiccionario);
+//	pthread_mutex_t* sem = dictionary_get(semaforos, key);
+//	pthread_mutex_unlock(&semDiccionario);
+//	return sem;
+//}
+//
+//void destruirDiccionario() {
+//	dictionary_destroy_and_destroy_elements(semaforos, (void*)&pthread_mutexattr_destroy);
+//}

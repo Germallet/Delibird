@@ -1,6 +1,7 @@
 #include <commons/log.h>
 #include <commons/config.h>
 #include <commons/bitarray.h>
+#include <commons/collections/dictionary.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -14,6 +15,8 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <errno.h>
+
+t_dictionary* semaforos;
 
 t_log* logger;
 
@@ -37,7 +40,7 @@ pthread_mutex_t semBitmap;
 
 pthread_mutex_t semArbol;
 
-pthread_mutex_t semDeMierda;
+pthread_mutex_t semDiccionario;
 
 pthread_mutex_t mx_main;
 
@@ -66,3 +69,8 @@ NodoArbol* directorio(char* str);
 void EnviarMensajesGuardados(Cliente* cliente);
 void freeArbol();
 void eliminarNodoPokemon(NodoArbol* nodo);
+void eliminarPokemonsNoExistentes();
+void nuevoSemaforo(char* key);
+void destruirDiccionario();
+pthread_mutex_t* obtenerSemaforo(char* key);
+

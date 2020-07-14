@@ -44,9 +44,11 @@ int tamanioArchivo(FILE* arch);
 bool sonIguales(char* a, char* b);
 bool estaAbierto(t_config* conf);
 bool estaAbiertoPath(char* path);
+bool estaAbiertoSem(char* path, pthread_mutex_t* sem);
 
 bool existeDirectorio(char* path);
 short existeArchivo(char *path);
+void eliminarArchivosPokemon(char* pokemon);
 
 void crearBitmap(char* path);
 void crearArchivo(char* path);
