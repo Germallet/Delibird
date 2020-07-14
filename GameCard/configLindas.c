@@ -1,8 +1,7 @@
 #include "configLindas.h"
 
 t_config *CrearConfig(char *path) {
-	FILE* file = fopen(path, "ab+");
-//	flockfile(file);
+	FILE* file = fopen(path, "r");
 
 	if (file == NULL)  return NULL;
 
@@ -40,8 +39,6 @@ t_config *CrearConfig(char *path) {
 	free(lines);
 	free(buffer);
 
-//	funlockfile(file);
-
 	fclose(file);
 
 	return config;
@@ -49,7 +46,6 @@ t_config *CrearConfig(char *path) {
 
 int GuardarConfig(t_config *self, char* path) {
 	FILE* file = fopen(path, "wb+");
-	flockfile(file);
 
 	if (file == NULL) {
 		return -1;
@@ -63,7 +59,6 @@ int GuardarConfig(t_config *self, char* path) {
 	dictionary_iterator(self->properties, add_line);
 	int result = fwrite(lines, strlen(lines), 1, file);
 
-	funlockfile(file);
 	fclose(file);
 	free(lines);
 	return result;
