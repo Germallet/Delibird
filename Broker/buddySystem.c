@@ -1,6 +1,7 @@
 #include "buddySystem.h"
 #include "memoria.h"
 #include "broker.h"
+#include "mensaje.h"
 #include "../Utils/dictionaryInt.h"
 #include <string.h>
 #include <math.h>
@@ -114,6 +115,7 @@ static void BS_Consolidar(Particion* particion)
 }
 static void BS_Eliminar(Particion* particion)
 {
+	Mensajes_EliminarParticion(particion);
 	log_info(logger, "Particion eliminada (%d)", ObtenerPosicion(particion));
 	particion->ocupado = false;
 	BS_Consolidar(particion);

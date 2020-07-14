@@ -105,6 +105,9 @@ bool CorresponderRecibirRespuesta(CodigoDeCola codigo, uint32_t idCorrelativo)
 
 static void BroadcastMensajeSinChequeo(Cola* cola, CodigoDeCola codigoDeCola, Mensaje* mensaje)
 {
+	if (mensaje->particion == NULL)
+		return;
+
 	void* contenido = ObtenerContenidoMensaje(mensaje);
 	void EnviarMensajeA(void* cliente) { Mensaje_EnviarA(mensaje, codigoDeCola, contenido, ((ClienteBroker*)cliente)->cliente); }
 
@@ -133,6 +136,8 @@ void Cola_EnviarMensajesRestantesSiCorrespondeA(Cola* cola, CodigoDeCola codigoD
 {
 	void EnviarMensajeSiCorresponde(void* mensaje)
 	{
+		if (((Mensaje*)mensaje)->particion == NULL)
+			return;
 		if (Mensaje_SeLeEnvioA(mensaje, cliente))
 			return;
 		void* contenido = ObtenerContenidoMensaje(mensaje);

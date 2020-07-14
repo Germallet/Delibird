@@ -144,3 +144,16 @@ void Mensaje_EnviarA(Mensaje* mensaje, CodigoDeCola tipoDeMensaje, void* conteni
 	else
 		log_error(logger, "Error al enviar mensaje (cola: %s, cliente: %d)", CodigoDeColaAString(tipoDeMensaje), ((ClienteBroker*)cliente->info)->id);
 }
+
+void Mensajes_EliminarParticion(Particion* particion)
+{
+	void EliminarParticionSiCorresponde(uint32_t pos, void* mensaje)
+	{
+		if (((Mensaje*)mensaje)->particion == particion)
+			((Mensaje*)mensaje)->particion = NULL;
+	}
+
+	pthread_mutex_lock(&mutexIDMensaje);
+	dictionaryInt_iterator(mensajes, &EliminarParticionSiCorresponde);
+	pthread_mutex_unlock(&mutexIDMensaje);
+}

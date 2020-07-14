@@ -1,6 +1,7 @@
 #include "dynamicPartitioning.h"
 #include "memoria.h"
 #include "broker.h"
+#include "mensaje.h"
 #include "../Utils/dictionaryInt.h"
 #include <string.h>
 
@@ -129,6 +130,7 @@ static void DP_Consolidar(Particion* particion)
 }
 static void DP_Eliminar(Particion* particion)
 {
+	Mensajes_EliminarParticion(particion);
 	log_info(logger, "Particion eliminada (%d)", ObtenerPosicion(particion));
 	particion->ocupado = false;
 	DP_Consolidar(particion);

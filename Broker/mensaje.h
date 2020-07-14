@@ -21,3 +21,4 @@ Mensaje* CrearMensaje(CodigoDeCola tipoDeMensaje, uint32_t idCorrelativo, uint32
 bool RegistrarACK(uint32_t idMensaje, void* clienteBroker);
 bool Mensaje_SeLeEnvioA(Mensaje* mensaje, void* clienteBroker);
 void Mensaje_EnviarA(Mensaje* mensaje, CodigoDeCola tipoDeMensaje, void* contenido, Cliente* cliente);
+void Mensajes_EliminarParticion(Particion* particion);
