@@ -70,6 +70,7 @@ NodoArbol* directorio(char* str);
 void EnviarMensajesGuardados(Cliente* cliente);
 void freeArbol();
 void DestruirNodo(NodoArbol* pok);
+void DestruirPokemon(NodoArbol* pok);
 void eliminarNodoPokemon(NodoArbol* nodo);
 void eliminarPokemonsNoExistentes();
 void BorrarMensajesAppeared(DATOS_APPEARED_POKEMON_ID* dat);

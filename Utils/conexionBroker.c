@@ -86,3 +86,11 @@ ConexionBroker* ConectarseABroker(char* ip, int puerto, Eventos* eventos, void (
 }
 
 // TODO Destruir
+
+void DestruirConexionBroker(ConexionBroker* conexion) {
+
+}
+
+
+
+

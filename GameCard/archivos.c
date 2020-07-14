@@ -58,11 +58,11 @@ void crearDirectorioFiles() {
 
 	if (!existeDirectorio(aux)) {
 		mkdir(aux, 0700);
-
 		string_append(&aux,"/metadata.bin");
 		FILE* metadata = fopen(aux,"wb+");
 		fputs("DIRECTORY=Y\n",metadata);
 		fclose(metadata);
+		free(aux);
 	} else {
 		log_info(logger,"Levantando directorio files");
 		DIR* dir = opendir(aux);
@@ -80,9 +80,9 @@ void crearDirectorioFiles() {
 				}
 			}
 		}
+		free(aux);
 	closedir(dir);
-	free(aux);
-}
+	}
 }
 
 void crearDirectorioBlocks() {
@@ -183,8 +183,6 @@ void crearBitmap(char* path) {
 
 t_list* leerBlocks(int* cantBloques, t_config* conf) {
 
-	log_info(logger,"Leyendo el metadata para ver que bloques usa el pokemon");
-
 	char** listaBloques = config_get_array_value(conf,"BLOCKS");
 
 	t_list* listaARetornar = list_create();
@@ -215,7 +213,7 @@ bool atraparPokemon(t_list* datosBloques, Posicion pos, t_list* numerosBloques, 
 	}
 
 	if (posYCant == NULL) {
-		log_error(logger, "No existe pokemon en esa posicion");
+		log_error(logger, "FAIL ATRAPAR POKEMON: No existe pokemon en esa posicion");
 		caught = false;
 	} else {
 		posYCant->cantidad-=1;
@@ -256,9 +254,13 @@ int agregarCantidadEnPosicion(t_list* pokemon, DatosBloques posYCant, t_list* nu
 		list_add(pokemon,&posYCant);
 
 		if (list_size(numerosBloques) == 0) {
+
 			pthread_mutex_lock(&semBitmap);
-			list_add(numerosBloques,pedirBloque());
+			int* bl = pedirBloque();
+			list_add(numerosBloques,bl);
 			pthread_mutex_unlock(&semBitmap);
+
+			log_info(logger,"Bloque ocupado: %d", *bl);
 		}
 
 		int* valorRetorno = list_get(numerosBloques,list_size(numerosBloques)-1);
@@ -276,6 +278,8 @@ int agregarCantidadEnPosicion(t_list* pokemon, DatosBloques posYCant, t_list* nu
 			int tam = ftell(bloque);
 			int bytesDesocupados = configFS.tamanioBlocks - tam;
 
+			log_info(logger,"Escribiendo bloque: %d", *valorRetorno);
+
 			if (strlen(cadena) <= bytesDesocupados) {
 				fwrite(cadena,strlen(cadena),1,bloque);
 				fclose(bloque);
@@ -283,11 +287,18 @@ int agregarCantidadEnPosicion(t_list* pokemon, DatosBloques posYCant, t_list* nu
 				fwrite(cadena,bytesDesocupados,1,bloque);
 				fclose(bloque);
 
-				cadena = string_substring_from(cadena,bytesDesocupados);
+//				cadena = string_substring_from(cadena,bytesDesocupados);
+
+				char* aux = string_substring_from(cadena, bytesDesocupados);
+				free(cadena);
+				cadena = string_duplicate(aux);
+				free(aux);
 
 				pthread_mutex_lock(&semBitmap);
 				int* nuevoBloque = pedirBloque();
 				pthread_mutex_unlock(&semBitmap);
+
+				log_info(logger,"Bloque ocupado: %d", *nuevoBloque);
 
 				list_add(numerosBloques,nuevoBloque);
 
@@ -296,6 +307,7 @@ int agregarCantidadEnPosicion(t_list* pokemon, DatosBloques posYCant, t_list* nu
 				free(nB);
 
 				FILE* f = fopen(pathB,"wb");
+				log_info(logger,"Escribiendo bloque: %d", *nuevoBloque);
 				fwrite(cadena,strlen(cadena),1,f);
 				fclose(f);
 
@@ -304,7 +316,7 @@ int agregarCantidadEnPosicion(t_list* pokemon, DatosBloques posYCant, t_list* nu
 
 			free(cadena);
 		} else {
-			log_error(logger,"No se pudo abrir el archivo del bloque");
+			log_error(logger,"FAIL ABRIENDO ARCHIVO");
 		}
 		free(path);
 	} else {
@@ -330,17 +342,18 @@ void escribirListaEnArchivo(t_list* datosBloques, t_list* numerosBloques) {
 	pthread_mutex_lock(&semBitmap);
 
 	if (strlen(cadenaGrande) > configFS.tamanioBlocks*list_size(numerosBloques)) {
-		log_info(logger, "Pidiendo bloque");
 		int* nuevoBloque = pedirBloque();
+		log_info(logger, "Bloque ocupado: %d", *nuevoBloque);
 		list_add(numerosBloques,nuevoBloque);
 	}
 
 	if (strlen(cadenaGrande) <= configFS.tamanioBlocks*(list_size(numerosBloques) - 1)) {
-		log_info(logger, "Borrando bloque");
 
 		int* index = list_get(numerosBloques,list_size(numerosBloques) - 1);
 
 		bitarray_clean_bit(bitmap,*index);
+
+		log_info(logger, "Bloque desocupado: %d", *index);
 
 		char* ix = string_itoa(*index);
 		char* p = pathBloque(ix);
@@ -359,7 +372,8 @@ void escribirListaEnArchivo(t_list* datosBloques, t_list* numerosBloques) {
 
 	for (int i = 0; i < list_size(numerosBloques); i++) {
 		int* a = list_get(numerosBloques,i);
-//		log_info(logger, "Escribiendo bloque n%d", *a);
+
+		log_info(logger,"Escribiendo bloque: %d", *a);
 
 		char* bl = string_itoa(*a);
 		char* p = pathBloque(bl);
@@ -371,7 +385,12 @@ void escribirListaEnArchivo(t_list* datosBloques, t_list* numerosBloques) {
 		fclose(f);
 
 		free(p);
-		if(strlen(cadenaGrande) > configFS.tamanioBlocks) cadenaGrande = string_substring_from(cadenaGrande, configFS.tamanioBlocks);
+		if(strlen(cadenaGrande) > configFS.tamanioBlocks) {
+			char* aux = string_substring_from(cadenaGrande, configFS.tamanioBlocks);
+			free(cadenaGrande);
+			cadenaGrande = string_duplicate(aux);
+			free(aux);
+		}
 	}
 
 	free(cadenaGrande);
@@ -390,7 +409,7 @@ DatosBloques* encontrarPosicion(t_list* pokemon, Posicion pos) {
 
 NodoArbol* crearPokemon(char* nombre) {
 
-	log_info(logger,"Creando pokemon");
+	log_info(logger,"Nuevo pokemon: %s", nombre);
 
 	NodoArbol* nodo = crearNodo(nombre);
 
@@ -441,15 +460,11 @@ t_list* convertirBloques(t_list* bloques, int cantBloques, int tamanio) {
 
 	t_list* datos = interpretarCadena(datosArchivo,cantBloques);
 
-	log_info(logger,"Bloques convertidos");
-
 	free(datosArchivo);
 	return datos;
 }
 
 char* leerArchivos(t_list* bloques, int cantBloques, int tamanio) {
-
-	log_info(logger,"Leyendo los bloques");
 
 	char* datos = string_new();
 
@@ -469,8 +484,7 @@ char* leerArchivos(t_list* bloques, int cantBloques, int tamanio) {
 			if(f != NULL) {
 				char* leidos = calloc(1,configFS.tamanioBlocks);
 				fread(leidos,configFS.tamanioBlocks,1,f);
-				if(string_is_empty(leidos)) log_error(logger,"Bloque Mal: %d",*bloque);
-				else string_append(&datos,leidos);
+				if(!string_is_empty(leidos)) string_append(&datos,leidos);
 				free(leidos);
 			} else log_error(logger,"No se pudo abrir el archivo");
 
@@ -478,12 +492,11 @@ char* leerArchivos(t_list* bloques, int cantBloques, int tamanio) {
 			free(pathBlocks);
 		}
 	}
+
 	return datos;
 }
 
 t_list* interpretarCadena(char* cadenaDatos, int cantBloques) {
-
-	log_info(logger,"Interpretando la cadena de datos");
 
 	t_list* datos = list_create();
 

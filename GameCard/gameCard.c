@@ -9,8 +9,6 @@ Eventos* eventos;
 
 int main()
 {
-	raiz = malloc(sizeof(NodoArbol));
-
 	logger = log_create("gameCard.log", "GameCard", true, LOG_LEVEL_INFO);
 	config = config_create("gameCard.config");
 
@@ -46,14 +44,13 @@ int main()
 
 	signal(SIGINT,EscuchaSignal);
 
-//	EsperarHilos();
+	EsperarHilos();
 
 	TerminarPrograma();
 
 	return 0;
 }
 
-//ESTO ES PARA ESCUCHAR HILOS
 void EscuchaSignal(int signo) {
     if (signo == SIGINT) pthread_mutex_unlock(&mx_main);
 }
@@ -72,8 +69,6 @@ void tallGrass_init(char* puntoMontaje) {
 }
 
 NodoArbol* encontrarPokemon(char* nombre) {
-
-	log_info(logger,"Buscando pokemon...");
 
 	NodoArbol* files = directorioFiles();
 
@@ -222,19 +217,13 @@ void EsperarHilos()
 	pthread_mutex_lock(&mx_main);
 }
 
-void TerminarProgramaConError(char* error)
-{
-	log_error(logger, error);
-	TerminarPrograma(logger, config);
-	exit(-1);
-}
-
 void TerminarPrograma()
 {
 	log_info(logger,"Terminando programa");
 	eliminarPokemonsNoExistentes();
 	log_destroy(logger);
 	config_destroy(config);
+	free(bitmap->bitarray);
 	bitarray_destroy(bitmap);
 	DestruirServidor(servidor);
 	list_destroy_and_destroy_elements(mensajesNoEnviadosAPPEARED,(void*) &BorrarMensajesAppeared);
@@ -249,8 +238,12 @@ void freeArbol() {
 	DestruirNodo(raiz);
 }
 
-void DestruirNodo(NodoArbol* pok) {
+void DestruirPokemon(NodoArbol* pok) {
 	free(pok->nombre);
+	DestruirNodo(pok);
+}
+
+void DestruirNodo(NodoArbol* pok) {
 	list_destroy(pok->hijos);
 	free(pok);
 }
@@ -288,6 +281,8 @@ void eliminarPokemonsNoExistentes() {
 		}
 	}
 	free(pathFiles);
+
+	closedir(dir);
 }
 
 void nuevoSemaforo(char* key) {
