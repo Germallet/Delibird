@@ -2,7 +2,8 @@
 #include <dirent.h>
 
 bool sonIguales(char* a, char* b) {
-	return string_equals_ignore_case(a, b);
+	if (a!=NULL && b!=NULL) return string_equals_ignore_case(a, b); //TODO SACAR ESTO
+	else return false;
 }
 
 bool estaAbierto(t_config* pConfig) {
@@ -188,9 +189,9 @@ t_list* leerBlocks(int* cantBloques, t_config* conf) {
 
 	char** listaBloques = config_get_array_value(conf,"BLOCKS");
 
-	while (listaBloques[*cantBloques] != NULL) (*cantBloques)++;
-
 	t_list* listaARetornar = list_create();
+
+	while (listaBloques[*cantBloques] != NULL) (*cantBloques)++;
 
 	for (int i = 0; i < *cantBloques; i++) {
 		int* elem = malloc(sizeof(int));
