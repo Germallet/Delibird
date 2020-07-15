@@ -44,6 +44,7 @@ static void EscucharMensajes(Cliente* cliente)
 
 		Paquete_Liberar(paqueteRecibido);
 	}
+	DestruirCliente(cliente);
 }
 
 // ===== Escuchar nuevas conexiones =====

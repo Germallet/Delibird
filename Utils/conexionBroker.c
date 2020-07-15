@@ -91,6 +91,7 @@ void DestruirConexionBroker(ConexionBroker* conexion)
 	if (conexion->hiloTimer->info != NULL)
 		free(conexion->hiloTimer->info);
 	if(conexion->clienteBroker != NULL)
-	DestruirCliente(conexion->clienteBroker);
+		DestruirCliente(conexion->clienteBroker);
+//	free(conexion->hiloTimer);
 	free(conexion);
 }
