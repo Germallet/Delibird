@@ -44,7 +44,7 @@ int main()
 
 	signal(SIGINT,EscuchaSignal);
 
-//	EsperarHilos();
+	EsperarHilos();
 
 	TerminarPrograma();
 
@@ -75,10 +75,10 @@ void conectarse() {
 	int tiempoReintentoConexion = config_get_int_value(config,"TIEMPO_DE_REINTENTO_CONEXION");
 
 	eventos = Eventos_Crear0();
-	Eventos_AgregarOperacion(eventos, NEW_POKEMON, (EventoOperacion)&Recibir_NEW_POKEMON);
-	Eventos_AgregarOperacion(eventos, CATCH_POKEMON, (EventoOperacion)&Recibir_CATCH_POKEMON);
-	Eventos_AgregarOperacion(eventos, GET_POKEMON, (EventoOperacion)&Recibir_GET_POKEMON);
-	Eventos_AgregarOperacion(eventos, BROKER_ID_MENSAJE, (EventoOperacion)&Recibir_ID);
+	Eventos_AgregarOperacion(eventos, NEW_POKEMON, (EventoOperacion )&Recibir_NEW_POKEMON_BROKER);
+	Eventos_AgregarOperacion(eventos, CATCH_POKEMON, (EventoOperacion) &Recibir_CATCH_POKEMON_BROKER);
+	Eventos_AgregarOperacion(eventos, GET_POKEMON, (EventoOperacion )&Recibir_GET_POKEMON_BROKER);
+	Eventos_AgregarOperacion(eventos, BROKER_ID_MENSAJE, (EventoOperacion) &Recibir_ID);
 
 	clienteBroker = ConectarseABroker(ipBroker,puertoBroker,eventos,&ConexionColas,&EnviarMensajesGuardados,tiempoReintentoConexion);
 
