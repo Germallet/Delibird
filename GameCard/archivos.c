@@ -127,7 +127,7 @@ void crearDirectorioMetadata() {
 void crearBitmap(char* path) {
 
 	log_info(logger,"Creando bitmap");
-	bitmap = bitarray_create_with_mode(string_repeat('0',configFS.cantidadBlocks), configFS.cantidadBlocks, LSB_FIRST);
+	bitmap = bitarray_create_with_mode(string_repeat('\0',configFS.cantidadBlocks), configFS.cantidadBlocks/8, LSB_FIRST);
 
 	FILE* fBitmap = fopen(path,"wb+");
 	fwrite(bitmap->bitarray,bitmap->size,1,fBitmap);
