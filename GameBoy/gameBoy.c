@@ -460,7 +460,6 @@ void EnviarID(Cliente* cliente, uint32_t identificador)
 	DATOS_ID_MENSAJE* id_mensaje = malloc(sizeof(DATOS_ID_MENSAJE));
 
 	id_mensaje->id = identificador;
-	log_error(logger, "Enviando ACK %d", id_mensaje->id);
 	EnviarMensaje(cliente, BROKER_ACK, id_mensaje, (void*) &SerializarM_ID_MENSAJE);
 
 	free(id_mensaje);

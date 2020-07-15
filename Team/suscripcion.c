@@ -11,11 +11,20 @@ ConexionBroker* conexionBroker;
 t_list* id_mensajes_esperados;
 
 bool espero_mensaje(uint32_t id_mensaje);
+
+void EnviarID(Cliente* cliente, uint32_t identificador)
+{
+	DATOS_ID_MENSAJE* id_mensaje = malloc(sizeof(DATOS_ID_MENSAJE));
+	id_mensaje->id = identificador;
+	EnviarMensaje(cliente, BROKER_ACK, id_mensaje, (void*) &SerializarM_ID_MENSAJE);
+	free(id_mensaje);
+}
+
 //-----------OPERACIONES-----------//
 void operacion_CAUGHT_POKEMON(Cliente* cliente, Paquete* paquete)
 {
 	Stream* stream_lectura = Stream_CrearLecturaPaquete(paquete);
-	Deserializar_uint32(stream_lectura);
+	uint32_t identificador = Deserializar_uint32(stream_lectura);
 	uint32_t id_catch = Deserializar_uint32(stream_lectura);
 	DATOS_CAUGHT_POKEMON* datos = malloc(sizeof(DATOS_CAUGHT_POKEMON));
 	*datos = Deserializar_CAUGHT_POKEMON(stream_lectura);
@@ -29,11 +38,12 @@ void operacion_CAUGHT_POKEMON(Cliente* cliente, Paquete* paquete)
 	}
 
 	Stream_Destruir(stream_lectura);
+	EnviarID(cliente, identificador);
 }
 void operacion_APPEARED_POKEMON(Cliente* cliente, Paquete* paquete)
 {
 	Stream* stream_lectura = Stream_CrearLecturaPaquete(paquete);
-	Deserializar_uint32(stream_lectura);
+	uint32_t identificador = Deserializar_uint32(stream_lectura);
 	Deserializar_uint32(stream_lectura);
 
 	DATOS_APPEARED_POKEMON* datos = malloc(sizeof(DATOS_APPEARED_POKEMON));
@@ -41,11 +51,12 @@ void operacion_APPEARED_POKEMON(Cliente* cliente, Paquete* paquete)
 	agregar_interrupcion(I_APPEARED_POKEMON, datos);
 
 	Stream_Destruir(stream_lectura);
+	EnviarID(cliente, identificador);
 }
 void operacion_LOCALIZED_POKEMON(Cliente* cliente, Paquete* paquete)
 {
 	Stream* stream_lectura = Stream_CrearLecturaPaquete(paquete);
-	Deserializar_uint32(stream_lectura);
+	uint32_t identificador = Deserializar_uint32(stream_lectura);
 	Deserializar_uint32(stream_lectura);
 	DATOS_LOCALIZED_POKEMON* datos = malloc(sizeof(DATOS_LOCALIZED_POKEMON));
 	*datos = Deserializar_LOCALIZED_POKEMON(stream_lectura);
@@ -56,6 +67,7 @@ void operacion_LOCALIZED_POKEMON(Cliente* cliente, Paquete* paquete)
 		agregar_interrupcion(I_LOCALIZED_POKEMON, datos);
 
 	Stream_Destruir(stream_lectura);
+	EnviarID(cliente, identificador);
 }
 
 
