@@ -42,6 +42,7 @@ void Recibir_NEW_POKEMON(Cliente* cliente, Paquete* paqueteRecibido) {
 		pthread_create(&thread, NULL, (void*) Operacion_NEW_POKEMON,datos);
 		pthread_detach(thread);
 	}
+	DestruirCliente(cliente);
 	free(stream);
 }
 
@@ -100,7 +101,7 @@ void Operacion_NEW_POKEMON(DATOS_NEW_POKEMON_ID* datos) {
 	free(path);
 
 	list_destroy_and_destroy_elements(numerosBloques,&free);
-//	list_destroy_and_destroy_elements(datosBloques,&free);
+
 	list_clean(datosBloques);
 	list_destroy(datosBloques);
 
@@ -118,6 +119,8 @@ void Enviar_APPEARED_POKEMON(DATOS_NEW_POKEMON_ID* datos) {
 	if(clienteBroker->clienteBroker != NULL) {
 		EnviarMensaje(clienteBroker->clienteBroker, APPEARED_POKEMON, datosEnviar, (void*) &SerializarM_APPEARED_POKEMON_ID);
 		log_info(logger,"APPEARED_POKEMON enviado.");
+		free(datosEnviar->datos.pokemon);
+		free(datosEnviar);
 	} else {
 		log_info(logger, "Sin conexion con el Broker. APPEARED_POKEMON Guardado.");
 		list_add(mensajesNoEnviadosAPPEARED,datosEnviar);
@@ -143,26 +146,8 @@ void Recibir_CATCH_POKEMON(Cliente* cliente, Paquete* paqueteRecibido) {
 		pthread_create(&thread, NULL, (void*) Operacion_CATCH_POKEMON,datos);
 		pthread_detach(thread);
 	}
+	DestruirCliente(cliente);
 	free(stream);
-}
-
-void Enviar_CAUGHT_POKEMON(DATOS_CATCH_POKEMON_ID* datos, bool caught) {
-
-	DATOS_CAUGHT_POKEMON_ID* datosEnviar = malloc(sizeof(DATOS_CAUGHT_POKEMON_ID));
-
-	datosEnviar->idCorrelativa = datos->id;
-	datosEnviar->datos.capturado = caught;
-
-	if(clienteBroker->clienteBroker != NULL) {
-		EnviarMensaje(clienteBroker->clienteBroker, CAUGHT_POKEMON, datosEnviar, (void*) &SerializarM_CAUGHT_POKEMON_ID);
-		log_info(logger,"CAUGHT_POKEMON enviado.");
-	} else {
-		log_info(logger, "Sin conexion con el Broker. CAUGHT_POKEMON Guardado.");
-		list_add(mensajesNoEnviadosCAUGHT,datosEnviar);
-	}
-
-	free(datos->datos.pokemon);
-	free(datos);
 }
 
 void Operacion_CATCH_POKEMON(DATOS_CATCH_POKEMON_ID* datos) {
@@ -221,13 +206,36 @@ void Operacion_CATCH_POKEMON(DATOS_CATCH_POKEMON_ID* datos) {
 		free(path);
 
 		list_destroy_and_destroy_elements(numerosBloques,&free);
-//		list_destroy_and_destroy_elements(datosBloques,&free);
+
+		for (int i = 0; i < list_size(datosBloques); i++) {
+			DatosBloques* pok = list_get(datosBloques,i);
+			free(pok);
+		}
 
 		list_clean(datosBloques);
 		list_destroy(datosBloques);
 	}
 
 	pthread_exit(0);
+}
+
+void Enviar_CAUGHT_POKEMON(DATOS_CATCH_POKEMON_ID* datos, bool caught) {
+
+	DATOS_CAUGHT_POKEMON_ID* datosEnviar = malloc(sizeof(DATOS_CAUGHT_POKEMON_ID));
+
+	datosEnviar->idCorrelativa = datos->id;
+	datosEnviar->datos.capturado = caught;
+
+	if(clienteBroker->clienteBroker != NULL) {
+		EnviarMensaje(clienteBroker->clienteBroker, CAUGHT_POKEMON, datosEnviar, (void*) &SerializarM_CAUGHT_POKEMON_ID);
+		log_info(logger,"CAUGHT_POKEMON enviado.");
+		free(datosEnviar);
+	} else {
+		log_info(logger, "Sin conexion con el Broker. CAUGHT_POKEMON Guardado.");
+		list_add(mensajesNoEnviadosCAUGHT,datosEnviar);
+	}
+	free(datos->datos.pokemon);
+	free(datos);
 }
 
 void Recibir_GET_POKEMON(Cliente* cliente, Paquete* paqueteRecibido) {
@@ -246,6 +254,7 @@ void Recibir_GET_POKEMON(Cliente* cliente, Paquete* paqueteRecibido) {
 		pthread_create(&thread, NULL, (void*) Operacion_GET_POKEMON,datos);
 		pthread_detach(thread);
 	}
+	DestruirCliente(cliente);
 	free(stream);
 }
 
@@ -289,7 +298,6 @@ void Operacion_GET_POKEMON(DATOS_GET_POKEMON_ID* datos) {
 		free(path);
 
 		list_destroy_and_destroy_elements(numerosBloques,&free);
-//		list_destroy_and_destroy_elements(datosBloques,&free);
 
 		for (int i = 0; i < list_size(datosBloques); i++) {
 			DatosBloques* pok = list_get(datosBloques,i);
@@ -331,6 +339,9 @@ void Enviar_LOCALIZED_POKEMON(DATOS_GET_POKEMON_ID* datos,t_list* datosArchivo) 
 	if(clienteBroker->clienteBroker != NULL) {
 		EnviarMensaje(clienteBroker->clienteBroker, LOCALIZED_POKEMON, datosAEnviar, (void*) &SerializarM_LOCALIZED_POKEMON_ID);
 		log_info(logger,"LOCALIZED_POKEMON enviado.");
+		free(datosAEnviar->datos.pokemon);
+		free(datosAEnviar->datos.posiciones);
+		free(datosAEnviar);
 	} else {
 		log_info(logger, "Sin conexion con el Broker. LOCALIZED_POKEMON guardado.");
 		list_add(mensajesNoEnviadosLOCALIZED,datosAEnviar);

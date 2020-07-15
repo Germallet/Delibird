@@ -246,8 +246,8 @@ void eliminarPokemonsNoExistentes() {
 			if (config_get_int_value(c,"SIZE") == 0) eliminarArchivosPokemon(nombre);
 
 			config_destroy(c);
-			agregarNodo(directorioFiles(),crearNodo(nombre));
-			nuevoSemaforo(entry->d_name);
+			free(nombre);
+			free(path);
 		}
 	}
 	free(pathFiles);
@@ -315,5 +315,8 @@ pthread_mutex_t* obtenerSemaforo(char* key) {
 }
 
 void destruirDiccionario() {
-	dictionary_destroy_and_destroy_elements(semaforos, (void*)&pthread_mutexattr_destroy);
+	dictionary_destroy_and_destroy_elements(semaforos, (void*)&pthread_mutex_destroy);
 }
+
+
+
