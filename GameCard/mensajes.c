@@ -249,10 +249,10 @@ void Operacion_CATCH_POKEMON(DATOS_CATCH_POKEMON_ID* datos) {
 
 		list_destroy_and_destroy_elements(numerosBloques,&free);
 
-		for (int i = 0; i < list_size(datosBloques); i++) {
-			DatosBloques* pok = list_get(datosBloques,i);
-			free(pok);
-		}
+//		for (int i = 0; i < list_size(datosBloques); i++) {
+//			DatosBloques* pok = list_get(datosBloques,i);
+//			free(pok);
+//		}
 
 		list_clean(datosBloques);
 		list_destroy(datosBloques);

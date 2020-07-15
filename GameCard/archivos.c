@@ -169,10 +169,10 @@ bool atraparPokemon(t_list* datosBloques, Posicion pos, t_list* numerosBloques, 
 		log_error(logger, "FAIL ATRAPAR POKEMON: No existe pokemon en esa posicion");
 		caught = false;
 
-//		for (int i = 0; i < list_size(datosBloques); i++) {
-//			DatosBloques* pok = list_get(datosBloques,i);
-//			free(pok);
-//		}
+		for (int i = 0; i < list_size(datosBloques); i++) {
+			DatosBloques* pok = list_get(datosBloques,i);
+			free(pok);
+		}
 
 	} else {
 		posYCant->cantidad-=1;
@@ -434,7 +434,14 @@ char* leerArchivos(t_list* bloques, int cantBloques, int tamanio) {
 
 			if(f != NULL) {
 				char* leidos = calloc(1,configFS.tamanioBlocks);
-				fscanf(f,"%s",leidos);
+				char* posicion = string_new();
+				while (posicion != '\0') {
+					fscanf(f,"%s",posicion);
+					string_append(&posicion,leidos);
+				}
+
+//				fread(leidos,configFS.tamanioBlocks,1,f);
+				free(posicion);
 				string_append(&datos,leidos);
 				free(leidos);
 			} else log_error(logger,"No se pudo abrir el archivo");
