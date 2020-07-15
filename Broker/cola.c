@@ -121,15 +121,11 @@ void Cola_ProcesarNuevoMensaje(CodigoDeCola codigoDeCola, Mensaje* mensaje)
 {
 	Cola* cola = ObtenerCola(codigoDeCola);
 
-	void* contenido = ObtenerContenidoMensaje(mensaje);
-	void EnviarMensajeA(void* cliente) { Mensaje_EnviarA(mensaje, codigoDeCola, contenido, ((ClienteBroker*)cliente)->cliente); }
-
 	pthread_mutex_lock(&(cola->mutexMensajes));
 	list_add(cola->mensajes, mensaje);
 	pthread_mutex_unlock(&(cola->mutexMensajes));
 
 	BroadcastMensajeSinChequeo(cola, codigoDeCola, mensaje);
-	free(contenido);
 }
 
 void Cola_EnviarMensajesRestantesSiCorrespondeA(Cola* cola, CodigoDeCola codigoDeCola, ClienteBroker* cliente)

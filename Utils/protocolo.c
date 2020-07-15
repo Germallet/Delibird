@@ -81,13 +81,13 @@ Stream* SerializarM_GET_POKEMON_ID(DATOS_GET_POKEMON_ID* datos)
 // LOCALIZED_POKEMON
 Stream* SerializarM_LOCALIZED_POKEMON(DATOS_LOCALIZED_POKEMON* datos)
 {
-	Stream* stream = Stream_CrearEscrituraNueva(strlen(datos->pokemon) + sizeof(uint32_t)*2 + (datos->cantidad)*(sizeof(uint32_t)*2));
+	Stream* stream = Stream_CrearEscrituraNueva(strlen(datos->pokemon) + sizeof(uint32_t)*2 + datos->cantidad*sizeof(Posicion));
 	Serializar_LOCALIZED_POKEMON(stream, datos);
 	return stream;
 }
 Stream* SerializarM_LOCALIZED_POKEMON_ID(DATOS_LOCALIZED_POKEMON_ID* datos)
 {
-	Stream* stream = Stream_CrearEscrituraNueva(strlen(datos->datos.pokemon) + sizeof(uint32_t)*3 + (datos->datos.cantidad)*(sizeof(uint32_t)*2));
+	Stream* stream = Stream_CrearEscrituraNueva(strlen(datos->datos.pokemon) + sizeof(uint32_t)*3 + datos->datos.cantidad*sizeof(Posicion));
 	Serializar_uint32(stream, datos->id);
 	Serializar_LOCALIZED_POKEMON(stream, &(datos->datos));
 	return stream;

@@ -88,11 +88,13 @@ void Mensaje_EnviarA(Mensaje* mensaje, CodigoDeCola tipoDeMensaje, void* conteni
 	int resultado = -1;
 	Stream* streamLectura = Stream_CrearLectura(contenido, mensaje->tamanio);
 
-	Stream* streamEscritura = Stream_CrearEscrituraNueva(sizeof(uint32_t) + mensaje->tamanio);
-	Serializar_uint32(streamEscritura, mensaje->id);
+	Stream* streamEscritura;
 
 	if(tipoDeMensaje == COLA_NEW_POKEMON)
 	{
+		streamEscritura = Stream_CrearEscrituraNueva(sizeof(uint32_t) + mensaje->tamanio);
+		Serializar_uint32(streamEscritura, mensaje->id);
+
 		DATOS_NEW_POKEMON datosDeserializados = Deserializar_NEW_POKEMON(streamLectura);
 		Serializar_NEW_POKEMON(streamEscritura, &datosDeserializados);
 		resultado = Socket_Enviar(NEW_POKEMON, streamEscritura->base, streamEscritura->tamanio, cliente->socket);
@@ -100,6 +102,9 @@ void Mensaje_EnviarA(Mensaje* mensaje, CodigoDeCola tipoDeMensaje, void* conteni
 	}
 	else if(tipoDeMensaje == COLA_APPEARED_POKEMON)
 	{
+		streamEscritura = Stream_CrearEscrituraNueva(sizeof(uint32_t)*2 + mensaje->tamanio);
+		Serializar_uint32(streamEscritura, mensaje->id);
+
 		DATOS_APPEARED_POKEMON datosDeserializados = Deserializar_APPEARED_POKEMON(streamLectura);
 		Serializar_uint32(streamEscritura, mensaje->idCorrelativo);
 		Serializar_APPEARED_POKEMON(streamEscritura, &datosDeserializados);
@@ -108,6 +113,9 @@ void Mensaje_EnviarA(Mensaje* mensaje, CodigoDeCola tipoDeMensaje, void* conteni
 	}
 	else if(tipoDeMensaje == COLA_CATCH_POKEMON)
 	{
+		streamEscritura = Stream_CrearEscrituraNueva(sizeof(uint32_t) + mensaje->tamanio);
+		Serializar_uint32(streamEscritura, mensaje->id);
+
 		DATOS_CATCH_POKEMON datosDeserializados = Deserializar_CATCH_POKEMON(streamLectura);
 		Serializar_CATCH_POKEMON(streamEscritura, &datosDeserializados);
 		resultado = Socket_Enviar(CATCH_POKEMON, streamEscritura->base, streamEscritura->tamanio, cliente->socket);
@@ -115,6 +123,9 @@ void Mensaje_EnviarA(Mensaje* mensaje, CodigoDeCola tipoDeMensaje, void* conteni
 	}
 	else if(tipoDeMensaje == COLA_CAUGHT_POKEMON)
 	{
+		streamEscritura = Stream_CrearEscrituraNueva(sizeof(uint32_t)*2 + mensaje->tamanio);
+		Serializar_uint32(streamEscritura, mensaje->id);
+
 		DATOS_CAUGHT_POKEMON datosDeserializados = Deserializar_CAUGHT_POKEMON(streamLectura);
 		Serializar_uint32(streamEscritura, mensaje->idCorrelativo);
 		Serializar_CAUGHT_POKEMON(streamEscritura, &datosDeserializados);
@@ -122,6 +133,9 @@ void Mensaje_EnviarA(Mensaje* mensaje, CodigoDeCola tipoDeMensaje, void* conteni
 	}
 	else if(tipoDeMensaje == COLA_GET_POKEMON)
 	{
+		streamEscritura = Stream_CrearEscrituraNueva(sizeof(uint32_t) + mensaje->tamanio);
+		Serializar_uint32(streamEscritura, mensaje->id);
+
 		DATOS_GET_POKEMON datosDeserializados = Deserializar_GET_POKEMON(streamLectura);
 		Serializar_GET_POKEMON(streamEscritura, &datosDeserializados);
 		resultado = Socket_Enviar(GET_POKEMON, streamEscritura->base, streamEscritura->tamanio, cliente->socket);
@@ -129,11 +143,16 @@ void Mensaje_EnviarA(Mensaje* mensaje, CodigoDeCola tipoDeMensaje, void* conteni
 	}
 	else if(tipoDeMensaje == COLA_LOCALIZED_POKEMON)
 	{
+		streamEscritura = Stream_CrearEscrituraNueva(sizeof(uint32_t)*2 + mensaje->tamanio);
+		Serializar_uint32(streamEscritura, mensaje->id);
+
 		DATOS_LOCALIZED_POKEMON datosDeserializados = Deserializar_LOCALIZED_POKEMON(streamLectura);
 		Serializar_uint32(streamEscritura, mensaje->idCorrelativo);
 		Serializar_LOCALIZED_POKEMON(streamEscritura, &datosDeserializados);
 		resultado = Socket_Enviar(LOCALIZED_POKEMON, streamEscritura->base, streamEscritura->tamanio, cliente->socket);
 		free(datosDeserializados.pokemon);
+		if (datosDeserializados.cantidad > 0)
+			free(datosDeserializados.posiciones);
 	}
 	Stream_Destruir(streamLectura);
 	Stream_DestruirConBuffer(streamEscritura);
