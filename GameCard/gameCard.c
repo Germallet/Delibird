@@ -68,6 +68,22 @@ void tallGrass_init(char* puntoMontaje) {
 	crearDirectorioBlocks();
 }
 
+void conectarse() {
+
+	char* ipBroker = config_get_string_value(config,"IP_BROKER");
+	int puertoBroker = config_get_int_value(config,"PUERTO_BROKER");
+	int tiempoReintentoConexion = config_get_int_value(config,"TIEMPO_DE_REINTENTO_CONEXION");
+
+	eventos = Eventos_Crear0();
+	Eventos_AgregarOperacion(eventos, NEW_POKEMON, (EventoOperacion)&Recibir_NEW_POKEMON);
+	Eventos_AgregarOperacion(eventos, CATCH_POKEMON, (EventoOperacion)&Recibir_CATCH_POKEMON);
+	Eventos_AgregarOperacion(eventos, GET_POKEMON, (EventoOperacion)&Recibir_GET_POKEMON);
+	Eventos_AgregarOperacion(eventos, BROKER_ID_MENSAJE, (EventoOperacion)&Recibir_ID);
+
+	clienteBroker = ConectarseABroker(ipBroker,puertoBroker,eventos,&ConexionColas,&EnviarMensajesGuardados,tiempoReintentoConexion);
+
+}
+
 NodoArbol* encontrarPokemon(char* nombre) {
 
 	NodoArbol* files = directorioFiles();
@@ -135,51 +151,27 @@ NodoArbol* directorioMetadata() {
 }
 
 
-int* pedirBloque() {
-
-	int* block = malloc(sizeof(int));
-	*block = buscarPosicionLibre();
-
-	return block;
+void EsperarHilos()
+{
+	pthread_mutex_init(&mx_main, NULL);
+	pthread_mutex_lock(&mx_main);
+	pthread_mutex_lock(&mx_main);
 }
 
-int buscarPosicionLibre() {
-
-	int i;
-
-	for (i = 0;bitarray_test_bit(bitmap,i) && i < bitmap->size;i++) {}
-
-	if (i >= bitmap->size)
-		return -1;
-
-	bitarray_set_bit(bitmap,i);
-
-	char* pathMetadata = string_new();
-	string_append(&pathMetadata,pathPtoMnt());
-	string_append(&pathMetadata,"/Metadata/bitmap.bin");
-
-	FILE* file = fopen(pathMetadata,"wb+");
-	fwrite(bitmap->bitarray,bitmap->size,1,file);
-	fclose(file);
-	free(pathMetadata);
-
-	return i;
-}
-
-void conectarse() {
-
-	char* ipBroker = config_get_string_value(config,"IP_BROKER");
-	int puertoBroker = config_get_int_value(config,"PUERTO_BROKER");
-	int tiempoReintentoConexion = config_get_int_value(config,"TIEMPO_DE_REINTENTO_CONEXION");
-
-	eventos = Eventos_Crear0();
-	Eventos_AgregarOperacion(eventos, NEW_POKEMON, (EventoOperacion)&Recibir_NEW_POKEMON);
-	Eventos_AgregarOperacion(eventos, CATCH_POKEMON, (EventoOperacion)&Recibir_CATCH_POKEMON);
-	Eventos_AgregarOperacion(eventos, GET_POKEMON, (EventoOperacion)&Recibir_GET_POKEMON);
-	Eventos_AgregarOperacion(eventos, BROKER_ID_MENSAJE, (EventoOperacion)&Recibir_ID);
-
-	clienteBroker = ConectarseABroker(ipBroker,puertoBroker,eventos,&ConexionColas,&EnviarMensajesGuardados,tiempoReintentoConexion);
-
+void TerminarPrograma()
+{
+	log_info(logger,"Terminando programa");
+	eliminarPokemonsNoExistentes();
+	log_destroy(logger);
+	config_destroy(config);
+	free(bitmap->bitarray);
+	bitarray_destroy(bitmap);
+	DestruirServidor(servidor);
+//	if (clienteBroker != NULL) DestruirConexionBroker(clienteBroker);
+	list_destroy_and_destroy_elements(mensajesNoEnviadosAPPEARED,(void*) &BorrarMensajesAppeared);
+	list_destroy_and_destroy_elements(mensajesNoEnviadosCAUGHT,(void*) &free);
+	list_destroy_and_destroy_elements(mensajesNoEnviadosLOCALIZED,(void*) &BorrarMensajesLocalized);
+	freeArbol();
 }
 
 void EnviarMensajesGuardados(Cliente* cliente) {
@@ -210,28 +202,6 @@ void EnviarMensajesGuardados(Cliente* cliente) {
 	list_clean(mensajesNoEnviadosLOCALIZED);
 }
 
-void EsperarHilos()
-{
-	pthread_mutex_init(&mx_main, NULL);
-	pthread_mutex_lock(&mx_main);
-	pthread_mutex_lock(&mx_main);
-}
-
-void TerminarPrograma()
-{
-	log_info(logger,"Terminando programa");
-	eliminarPokemonsNoExistentes();
-	log_destroy(logger);
-	config_destroy(config);
-	free(bitmap->bitarray);
-	bitarray_destroy(bitmap);
-	DestruirServidor(servidor);
-	DestruirConexionBroker(clienteBroker);
-	list_destroy_and_destroy_elements(mensajesNoEnviadosAPPEARED,(void*) &BorrarMensajesAppeared);
-	list_destroy_and_destroy_elements(mensajesNoEnviadosCAUGHT,(void*) &free);
-	list_destroy_and_destroy_elements(mensajesNoEnviadosLOCALIZED,(void*) &BorrarMensajesLocalized);
-	freeArbol();
-}
 
 void freeArbol() {
 	list_clean_and_destroy_elements(directorioPokemon(),(void*) &DestruirNodo);
@@ -239,12 +209,8 @@ void freeArbol() {
 	DestruirNodo(raiz);
 }
 
-void DestruirPokemon(NodoArbol* pok) {
-	free(pok->nombre);
-	DestruirNodo(pok);
-}
-
 void DestruirNodo(NodoArbol* pok) {
+	free(pok->nombre);
 	list_destroy(pok->hijos);
 	free(pok);
 }
@@ -284,6 +250,50 @@ void eliminarPokemonsNoExistentes() {
 	free(pathFiles);
 
 	closedir(dir);
+}
+
+int* pedirBloque() {
+
+	int* block = malloc(sizeof(int));
+	*block = buscarPosicionLibre();
+
+	return block;
+}
+
+void liberarBloque(int bloque) {
+	bitarray_clean_bit(bitmap,bloque);
+
+	char* pathMetadata = string_new();
+	string_append(&pathMetadata,pathPtoMnt());
+	string_append(&pathMetadata,"/Metadata/bitmap.bin");
+
+	FILE* file = fopen(pathMetadata,"wb+");
+	fwrite(bitmap->bitarray,bitmap->size,1,file);
+	fclose(file);
+	free(pathMetadata);
+}
+
+int buscarPosicionLibre() {
+
+	int i;
+
+	for (i = 0;bitarray_test_bit(bitmap,i) && i < bitmap->size;i++) {}
+
+	if (i >= bitmap->size)
+		return -1;
+
+	bitarray_set_bit(bitmap,i);
+
+	char* pathMetadata = string_new();
+	string_append(&pathMetadata,pathPtoMnt());
+	string_append(&pathMetadata,"/Metadata/bitmap.bin");
+
+	FILE* file = fopen(pathMetadata,"wb+");
+	fwrite(bitmap->bitarray,bitmap->size,1,file);
+	fclose(file);
+	free(pathMetadata);
+
+	return i;
 }
 
 void nuevoSemaforo(char* key) {

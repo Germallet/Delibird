@@ -78,4 +78,5 @@ void BorrarMensajesLocalized(DATOS_LOCALIZED_POKEMON_ID* dat);
 void nuevoSemaforo(char* key);
 void destruirDiccionario();
 pthread_mutex_t* obtenerSemaforo(char* key);
+void liberarBloque(int bloque);
 

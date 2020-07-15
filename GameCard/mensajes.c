@@ -100,10 +100,31 @@ void Operacion_NEW_POKEMON(DATOS_NEW_POKEMON_ID* datos) {
 	free(path);
 
 	list_destroy_and_destroy_elements(numerosBloques,&free);
+	list_destroy_and_destroy_elements(datosBloques,&free);
 	list_clean(datosBloques);
 	list_destroy(datosBloques);
 
 	pthread_exit(0);
+}
+
+void Enviar_APPEARED_POKEMON(DATOS_NEW_POKEMON_ID* datos) {
+
+	DATOS_APPEARED_POKEMON_ID* datosEnviar = malloc(sizeof(DATOS_APPEARED_POKEMON_ID));
+
+	datosEnviar->id = datos->id;
+	datosEnviar->datos.pokemon = string_duplicate(datos->datos.pokemon);
+	datosEnviar->datos.posicion = datos->datos.posicion;
+
+	if(clienteBroker->clienteBroker != NULL) {
+		EnviarMensaje(clienteBroker->clienteBroker, APPEARED_POKEMON, datosEnviar, (void*) &SerializarM_APPEARED_POKEMON_ID);
+		log_info(logger,"APPEARED_POKEMON enviado.");
+	} else {
+		log_info(logger, "Sin conexion con el Broker. APPEARED_POKEMON Guardado.");
+		list_add(mensajesNoEnviadosAPPEARED,datosEnviar);
+	}
+
+	free(datos->datos.pokemon);
+	free(datos);
 }
 
 void Recibir_CATCH_POKEMON(Cliente* cliente, Paquete* paqueteRecibido) {
@@ -123,6 +144,25 @@ void Recibir_CATCH_POKEMON(Cliente* cliente, Paquete* paqueteRecibido) {
 		pthread_detach(thread);
 	}
 	free(stream);
+}
+
+void Enviar_CAUGHT_POKEMON(DATOS_CATCH_POKEMON_ID* datos, bool caught) {
+
+	DATOS_CAUGHT_POKEMON_ID* datosEnviar = malloc(sizeof(DATOS_CAUGHT_POKEMON_ID));
+
+	datosEnviar->idCorrelativa = datos->id;
+	datosEnviar->datos.capturado = caught;
+
+	if(clienteBroker->clienteBroker != NULL) {
+		EnviarMensaje(clienteBroker->clienteBroker, CAUGHT_POKEMON, datosEnviar, (void*) &SerializarM_CAUGHT_POKEMON_ID);
+		log_info(logger,"CAUGHT_POKEMON enviado.");
+	} else {
+		log_info(logger, "Sin conexion con el Broker. CAUGHT_POKEMON Guardado.");
+		list_add(mensajesNoEnviadosCAUGHT,datosEnviar);
+	}
+
+	free(datos->datos.pokemon);
+	free(datos);
 }
 
 void Operacion_CATCH_POKEMON(DATOS_CATCH_POKEMON_ID* datos) {
@@ -181,6 +221,8 @@ void Operacion_CATCH_POKEMON(DATOS_CATCH_POKEMON_ID* datos) {
 		free(path);
 
 		list_destroy_and_destroy_elements(numerosBloques,&free);
+//		list_destroy_and_destroy_elements(datosBloques,&free);
+
 		list_clean(datosBloques);
 		list_destroy(datosBloques);
 	}
@@ -247,6 +289,7 @@ void Operacion_GET_POKEMON(DATOS_GET_POKEMON_ID* datos) {
 		free(path);
 
 		list_destroy_and_destroy_elements(numerosBloques,&free);
+//		list_destroy_and_destroy_elements(datosBloques,&free);
 
 		for (int i = 0; i < list_size(datosBloques); i++) {
 			DatosBloques* pok = list_get(datosBloques,i);
@@ -260,6 +303,43 @@ void Operacion_GET_POKEMON(DATOS_GET_POKEMON_ID* datos) {
 	pthread_exit(0);
 }
 
+void Enviar_LOCALIZED_POKEMON(DATOS_GET_POKEMON_ID* datos,t_list* datosArchivo) {
+	DATOS_LOCALIZED_POKEMON_ID* datosAEnviar = malloc(sizeof(DATOS_LOCALIZED_POKEMON_ID));
+
+	if (datosArchivo == NULL) {
+
+		datosAEnviar->datos.cantidad = 0;
+		datosAEnviar->datos.posiciones = NULL;
+
+	} else {
+
+		Posicion* posiciones = malloc(sizeof(Posicion)*list_size(datosArchivo));
+		for (int i = 0; i < list_size(datosArchivo); i++) {
+			DatosBloques* a = list_get(datosArchivo,i);
+
+			posiciones[i].posX = a->pos.posX;
+			posiciones[i].posY = a->pos.posY;
+		}
+
+		datosAEnviar->datos.cantidad = list_size(datosArchivo);
+		datosAEnviar->datos.posiciones = posiciones;
+	}
+
+	datosAEnviar->id = datos->id;
+	datosAEnviar->datos.pokemon = string_duplicate(datos->datos.pokemon);
+
+	if(clienteBroker->clienteBroker != NULL) {
+		EnviarMensaje(clienteBroker->clienteBroker, LOCALIZED_POKEMON, datosAEnviar, (void*) &SerializarM_LOCALIZED_POKEMON_ID);
+		log_info(logger,"LOCALIZED_POKEMON enviado.");
+	} else {
+		log_info(logger, "Sin conexion con el Broker. LOCALIZED_POKEMON guardado.");
+		list_add(mensajesNoEnviadosLOCALIZED,datosAEnviar);
+	}
+
+	free(datos->datos.pokemon);
+	free(datos);
+}
+
 void EnviarID(Cliente* cliente, uint32_t identificador)
 {
 	DATOS_ID_MENSAJE* id_mensaje = malloc(sizeof(DATOS_ID_MENSAJE));
@@ -270,79 +350,8 @@ void EnviarID(Cliente* cliente, uint32_t identificador)
 	free(id_mensaje);
 }
 
-void Enviar_APPEARED_POKEMON(DATOS_NEW_POKEMON_ID* datos) {
-
-	DATOS_APPEARED_POKEMON_ID* datosEnviar = malloc(sizeof(DATOS_APPEARED_POKEMON_ID));
-
-	datosEnviar->id = datos->id;
-	datosEnviar->datos.pokemon = datos->datos.pokemon;
-	datosEnviar->datos.posicion = datos->datos.posicion;
-
-	if(clienteBroker->clienteBroker != NULL) {
-		EnviarMensaje(clienteBroker->clienteBroker, APPEARED_POKEMON, datosEnviar, (void*) &SerializarM_APPEARED_POKEMON_ID);
-		log_info(logger,"APPEARED_POKEMON enviado.");
-	} else {
-		log_info(logger, "Sin conexion con el Broker. APPEARED_POKEMON Guardado.");
-		list_add(mensajesNoEnviadosAPPEARED,datosEnviar);
-	}
-
-//	free(datos->datos.pokemon);
-	free(datos);
-}
-
-void Enviar_CAUGHT_POKEMON(DATOS_CATCH_POKEMON_ID* datos, bool caught) {
-
-	DATOS_CAUGHT_POKEMON_ID* datosEnviar = malloc(sizeof(DATOS_CAUGHT_POKEMON_ID));
-
-	datosEnviar->idCorrelativa = datos->id;
-	datosEnviar->datos.capturado = caught;
-
-	if(clienteBroker->clienteBroker != NULL) {
-		EnviarMensaje(clienteBroker->clienteBroker, CAUGHT_POKEMON, datosEnviar, (void*) &SerializarM_CAUGHT_POKEMON_ID);
-		log_info(logger,"CAUGHT_POKEMON enviado.");
-	} else {
-		log_info(logger, "Sin conexion con el Broker. CAUGHT_POKEMON Guardado.");
-		list_add(mensajesNoEnviadosCAUGHT,datosEnviar);
-	}
-
-//	free(datos->datos.pokemon);
-	free(datos);
-}
-
-void Enviar_LOCALIZED_POKEMON(DATOS_GET_POKEMON_ID* datos,t_list* datosArchivo) {
-	DATOS_LOCALIZED_POKEMON_ID* datosAEnviar = malloc(sizeof(DATOS_LOCALIZED_POKEMON_ID));
-
-	if (datosArchivo == NULL) {
-		datosAEnviar->datos.cantidad = 0;
-		datosAEnviar->datos.posiciones = NULL;
-	} else {
-		Posicion* posiciones = malloc(sizeof(Posicion)*list_size(datosArchivo));
-		for (int i = 0; i < list_size(datosArchivo); i++) {
-			DatosBloques* a = list_get(datosArchivo,i);
-
-			posiciones[i].posX = a->pos.posX;
-			posiciones[i].posY = a->pos.posY;
-		}
-		datosAEnviar->datos.cantidad = list_size(datosArchivo);
-		datosAEnviar->datos.posiciones = posiciones;
-	}
-
-	datosAEnviar->id = datos->id;
-	datosAEnviar->datos.pokemon = datos->datos.pokemon;
-
-	if(clienteBroker->clienteBroker != NULL) {
-		EnviarMensaje(clienteBroker->clienteBroker, LOCALIZED_POKEMON, datosAEnviar, (void*) &SerializarM_LOCALIZED_POKEMON_ID);
-		log_info(logger,"LOCALIZED_POKEMON enviado.");
-	} else {
-		log_info(logger, "Sin conexion con el Broker. LOCALIZED_POKEMON guardado.");
-		list_add(mensajesNoEnviadosLOCALIZED,datosAEnviar);
-	}
-
-//	free(datos->datos.pokemon);
-	free(datos);
-}
-
 void Recibir_ID(Cliente* cliente, Paquete* paqueteRecibido) {
 	Stream* stream = Stream_CrearLecturaPaquete(paqueteRecibido);
 	Deserializar_uint32(stream);
+	free(stream);
 }

@@ -1,52 +1,6 @@
 #include "archivos.h"
 #include <dirent.h>
 
-bool sonIguales(char* a, char* b) {
-	return string_equals_ignore_case(a, b);
-}
-
-bool estaAbierto(t_config* pConfig) {
-	return sonIguales(config_get_string_value(pConfig,"OPEN"),"Y");
-}
-
-bool estaAbiertoPath(char* path) {
-	t_config* c = CrearConfig(path);
-	bool open = sonIguales(config_get_string_value(c,"OPEN"),"Y");
-	config_destroy(c);
-	return open;
-}
-
-bool estaAbiertoSem(char* path, pthread_mutex_t* sem) {
-	pthread_mutex_lock(sem);
-	t_config* c = CrearConfig(path);
-	bool open = sonIguales(config_get_string_value(c,"OPEN"),"Y");
-	pthread_mutex_unlock(sem);
-	config_destroy(c);
-	return open;
-}
-
-void abrir(t_config* conf) {
-	config_set_value(conf,"OPEN","Y");
-	ActualizarConfig(conf);
-}
-
-void cerrar(t_config* conf) {
-	config_set_value(conf,"OPEN","N");
-	ActualizarConfig(conf);
-}
-
-bool existeDirectorio(char* path) {
-	struct stat buf;
-	return stat(path, &buf) != -1;
-}
-
-short existeArchivo(char *path) {
-  int fd = open(path, O_RDONLY);
-  if (fd < 0) return 0;
-  close(fd);
-  return 1;
-}
-
 void crearDirectorioFiles() {
 
 	log_info(logger,"Creando directorio Files");
@@ -74,8 +28,7 @@ void crearDirectorioFiles() {
 			while((entry = readdir(dir))) {
 				if (!sonIguales(entry->d_name,"metadata.bin") && !sonIguales(entry->d_name,".") && !sonIguales(entry->d_name,"..")) {
 					log_info(logger,"Leyendo archivo %s",entry->d_name);
-					char* nombre = string_duplicate(entry->d_name);
-					agregarNodo(directorioFiles(),crearNodo(nombre));
+					agregarNodo(directorioFiles(),crearNodo(entry->d_name));
 					nuevoSemaforo(entry->d_name);
 				}
 			}
@@ -174,7 +127,7 @@ void crearDirectorioMetadata() {
 void crearBitmap(char* path) {
 
 	log_info(logger,"Creando bitmap");
-	bitmap = bitarray_create_with_mode(string_repeat('\0',configFS.cantidadBlocks), configFS.cantidadBlocks, LSB_FIRST);
+	bitmap = bitarray_create_with_mode(string_repeat('0',configFS.cantidadBlocks), configFS.cantidadBlocks, LSB_FIRST);
 
 	FILE* fBitmap = fopen(path,"wb+");
 	fwrite(bitmap->bitarray,bitmap->size,1,fBitmap);
@@ -321,10 +274,10 @@ int agregarCantidadEnPosicion(t_list* pokemon, DatosBloques posYCant, t_list* nu
 
 		} else log_error(logger,"FAIL ABRIENDO ARCHIVO");
 
-//		for (int i = 0; i < list_size(pokemon); i++) {
-//			DatosBloques* pok = list_get(pokemon,i);
-//			free(pok);
-//		}
+		for (int i = 0; i < list_size(pokemon); i++) {
+			DatosBloques* pok = list_get(pokemon,i);
+			free(pok);
+		}
 
 		free(path);
 
@@ -360,7 +313,7 @@ void escribirListaEnArchivo(t_list* datosBloques, t_list* numerosBloques) {
 
 		int* index = list_get(numerosBloques,list_size(numerosBloques) - 1);
 
-		bitarray_clean_bit(bitmap,*index);
+		liberarBloque(*index);
 
 		log_info(logger, "Bloque desocupado: %d", *index);
 
@@ -443,22 +396,9 @@ void crearMetadataPokemon(char* path) {
 
 	fprintf(metadata,"DIRECTORY=N\n");
 	fprintf(metadata,"SIZE=0\n");
+	fprintf(metadata,"BLOCKS=[]\n");
+	fprintf(metadata,"OPEN=N\n");
 
-	pthread_mutex_lock(&semBitmap);
-	int* nuevoBloque = pedirBloque();
-	pthread_mutex_unlock(&semBitmap);
-
-	char* bloques = string_new();
-	string_append(&bloques,"BLOCKS=[");
-	char* nuevoB = string_itoa(*nuevoBloque);
-	string_append(&bloques,nuevoB);
-	string_append(&bloques,"]\n");
-	fputs(bloques,metadata);
-	fputs("OPEN=N\n",metadata);
-
-	free(nuevoB);
-	free(bloques);
-	free(nuevoBloque);
 	fclose(metadata);
 	free(pk);
 }
@@ -493,7 +433,7 @@ char* leerArchivos(t_list* bloques, int cantBloques, int tamanio) {
 			if(f != NULL) {
 				char* leidos = calloc(1,configFS.tamanioBlocks);
 				fread(leidos,configFS.tamanioBlocks,1,f);
-				if(!string_is_empty(leidos)) string_append(&datos,leidos);
+				string_append(&datos,leidos);
 				free(leidos);
 			} else log_error(logger,"No se pudo abrir el archivo");
 
@@ -579,11 +519,6 @@ int tamanioBloque(int* nroBloque) {
 	return a;
 }
 
-int tamanioArchivo(FILE* arch) {
-	fseek(arch,0,SEEK_END);
-	return ftell(arch);
-}
-
 char* posicionAString(DatosBloques* d) {
 	char* cadena = string_new();
 
@@ -633,4 +568,50 @@ void cambiarMetadataPokemon(t_config* c, t_list* numerosBloques, int bytes) {
 	config_set_value(c,"OPEN","N");
 
 	ActualizarConfig(c);
+}
+
+bool sonIguales(char* a, char* b) {
+	return string_equals_ignore_case(a, b);
+}
+
+bool estaAbierto(t_config* pConfig) {
+	return sonIguales(config_get_string_value(pConfig,"OPEN"),"Y");
+}
+
+bool estaAbiertoPath(char* path) {
+	t_config* c = CrearConfig(path);
+	bool open = sonIguales(config_get_string_value(c,"OPEN"),"Y");
+	config_destroy(c);
+	return open;
+}
+
+bool estaAbiertoSem(char* path, pthread_mutex_t* sem) {
+	pthread_mutex_lock(sem);
+	t_config* c = CrearConfig(path);
+	bool open = sonIguales(config_get_string_value(c,"OPEN"),"Y");
+	pthread_mutex_unlock(sem);
+	config_destroy(c);
+	return open;
+}
+
+void abrir(t_config* conf) {
+	config_set_value(conf,"OPEN","Y");
+	ActualizarConfig(conf);
+}
+
+void cerrar(t_config* conf) {
+	config_set_value(conf,"OPEN","N");
+	ActualizarConfig(conf);
+}
+
+bool existeDirectorio(char* path) {
+	struct stat buf;
+	return stat(path, &buf) != -1;
+}
+
+short existeArchivo(char *path) {
+  int fd = open(path, O_RDONLY);
+  if (fd < 0) return 0;
+  close(fd);
+  return 1;
 }
