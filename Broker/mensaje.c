@@ -37,6 +37,7 @@ Mensaje* CrearMensaje(CodigoDeCola tipoDeMensaje, uint32_t id, uint32_t idCorrel
 	mensaje->tamanio = tamanio;
 	mensaje->clientesEnviados = list_create();
 	mensaje->clientesACK = list_create();
+	mensaje->particion = NULL;
 	pthread_mutex_init(&(mensaje->mutexMensaje), NULL);
 
 	pthread_mutex_lock(&mutexMensajes);
