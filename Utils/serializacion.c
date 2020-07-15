@@ -92,11 +92,13 @@ DATOS_LOCALIZED_POKEMON Deserializar_LOCALIZED_POKEMON(Stream* stream)
 	if (!Stream_DeserializarString(stream, &(datos.pokemon))) return datos;
 	datos.cantidad = Deserializar_uint32(stream);
 
-	datos.posiciones = malloc(datos.cantidad*sizeof(Posicion));
-
-	for (int i = 0; i < datos.cantidad; i++) {
-		datos.posiciones[i].posX = Deserializar_uint32(stream);
-		datos.posiciones[i].posY = Deserializar_uint32(stream);
+	if (datos.cantidad != 0)
+	{
+		datos.posiciones = malloc(datos.cantidad*sizeof(Posicion));
+		for (int i = 0; i < datos.cantidad; i++) {
+			datos.posiciones[i].posX = Deserializar_uint32(stream);
+			datos.posiciones[i].posY = Deserializar_uint32(stream);
+		}
 	}
 
 	return datos;
