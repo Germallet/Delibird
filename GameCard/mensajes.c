@@ -124,7 +124,7 @@ void Operacion_NEW_POKEMON(DATOS_NEW_POKEMON_ID* datos) {
 	list_clean(datosBloques);
 	list_destroy(datosBloques);
 
-	pthread_exit(0);
+//	pthread_exit(0);
 }
 
 void Enviar_APPEARED_POKEMON(DATOS_NEW_POKEMON_ID* datos) {
@@ -249,7 +249,7 @@ void Operacion_CATCH_POKEMON(DATOS_CATCH_POKEMON_ID* datos) {
 		list_destroy(datosBloques);
 	}
 
-	pthread_exit(0);
+//	pthread_exit(0);
 }
 
 void Enviar_CAUGHT_POKEMON(DATOS_CATCH_POKEMON_ID* datos, bool caught) {
@@ -360,7 +360,7 @@ void Operacion_GET_POKEMON(DATOS_GET_POKEMON_ID* datos) {
 		list_destroy(datosBloques);
 	}
 
-	pthread_exit(0);
+//	pthread_exit(0);
 }
 
 void Enviar_LOCALIZED_POKEMON(DATOS_GET_POKEMON_ID* datos,t_list* datosArchivo) {

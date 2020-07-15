@@ -79,4 +79,5 @@ void nuevoSemaforo(char* key);
 void destruirDiccionario();
 pthread_mutex_t* obtenerSemaforo(char* key);
 void liberarBloque(int bloque);
+void eliminarSemaforo(pthread_mutex_t* sem);
 

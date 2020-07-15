@@ -28,8 +28,9 @@ void crearDirectorioFiles() {
 			while((entry = readdir(dir))) {
 				if (!sonIguales(entry->d_name,"metadata.bin") && !sonIguales(entry->d_name,".") && !sonIguales(entry->d_name,"..")) {
 					log_info(logger,"Leyendo archivo %s",entry->d_name);
-					agregarNodo(directorioFiles(),crearNodo(entry->d_name));
-					nuevoSemaforo(entry->d_name);
+					NodoArbol* nodo = crearNodo(entry->d_name);
+					agregarNodo(directorioFiles(),nodo);
+					nuevoSemaforo(nodo->nombre);
 				}
 			}
 		}

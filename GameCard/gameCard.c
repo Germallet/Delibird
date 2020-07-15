@@ -167,6 +167,8 @@ void TerminarPrograma()
 	free(bitmap->bitarray);
 	bitarray_destroy(bitmap);
 	DestruirServidor(servidor);
+	DestruirConexionBroker(clienteBroker);
+	destruirDiccionario();
 	list_destroy_and_destroy_elements(mensajesNoEnviadosAPPEARED,(void*) &BorrarMensajesAppeared);
 	list_destroy_and_destroy_elements(mensajesNoEnviadosCAUGHT,(void*) &free);
 	list_destroy_and_destroy_elements(mensajesNoEnviadosLOCALIZED,(void*) &BorrarMensajesLocalized);
@@ -314,7 +316,12 @@ pthread_mutex_t* obtenerSemaforo(char* key) {
 }
 
 void destruirDiccionario() {
-	dictionary_destroy_and_destroy_elements(semaforos, (void*)&pthread_mutex_destroy);
+	dictionary_destroy_and_destroy_elements(semaforos, (void*)&eliminarSemaforo);
+}
+
+void eliminarSemaforo(pthread_mutex_t* sem) {
+	pthread_mutex_destroy(sem);
+	free(sem);
 }
 
 
