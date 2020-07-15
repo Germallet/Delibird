@@ -4,10 +4,10 @@
 #include "suscripcion.h"
 #include "interrupciones.h"
 #include <stdlib.h>
-#include "../Utils/conexionBroker.h"
 #include "../Utils/serializacion.h"
 #include "../Utils/socket.h"
 
+ConexionBroker* conexionBroker;
 t_list* id_mensajes_esperados;
 
 bool espero_mensaje(uint32_t id_mensaje);
@@ -25,25 +25,27 @@ void operacion_CAUGHT_POKEMON(Cliente* cliente, Paquete* paquete)
 		datos_interrupcion_CAUGHT_POKEMON* datos_interrupcion = malloc(sizeof(datos_interrupcion_CAUGHT_POKEMON));
 		datos_interrupcion->entrenador = cliente->info;
 		datos_interrupcion->recibidos = datos;
-		agregar_interrupcion(CAUGHT_POKEMON, datos_interrupcion);
+		agregar_interrupcion(I_CAUGHT_POKEMON, datos_interrupcion);
 	}
 
-	Stream_DestruirConBuffer(stream_lectura);
+	Stream_Destruir(stream_lectura);
 }
 void operacion_APPEARED_POKEMON(Cliente* cliente, Paquete* paquete)
 {
 	Stream* stream_lectura = Stream_CrearLecturaPaquete(paquete);
 	Deserializar_uint32(stream_lectura);
+	Deserializar_uint32(stream_lectura);
 
 	DATOS_APPEARED_POKEMON* datos = malloc(sizeof(DATOS_APPEARED_POKEMON));
 	*datos = Deserializar_APPEARED_POKEMON(stream_lectura);
-	agregar_interrupcion(APPEARED_POKEMON, datos);
+	agregar_interrupcion(I_APPEARED_POKEMON, datos);
 
-	Stream_DestruirConBuffer(stream_lectura);
+	Stream_Destruir(stream_lectura);
 }
 void operacion_LOCALIZED_POKEMON(Cliente* cliente, Paquete* paquete)
 {
 	Stream* stream_lectura = Stream_CrearLecturaPaquete(paquete);
+	Deserializar_uint32(stream_lectura);
 	Deserializar_uint32(stream_lectura);
 	DATOS_LOCALIZED_POKEMON* datos = malloc(sizeof(DATOS_LOCALIZED_POKEMON));
 	*datos = Deserializar_LOCALIZED_POKEMON(stream_lectura);
@@ -51,9 +53,9 @@ void operacion_LOCALIZED_POKEMON(Cliente* cliente, Paquete* paquete)
 	char* pokemon = datos->pokemon;
 
 	if(necesito_especie_pokemon(pokemon) && !esta_localizada(pokemon))
-		agregar_interrupcion(LOCALIZED_POKEMON, datos);
+		agregar_interrupcion(I_LOCALIZED_POKEMON, datos);
 
-	Stream_DestruirConBuffer(stream_lectura);
+	Stream_Destruir(stream_lectura);
 }
 
 
@@ -70,7 +72,7 @@ static void operacion_CONECTADO(Cliente* cliente, CodigoDeCola cola)
 	Stream_DestruirConBuffer(stream);
 }
 
-static void operacion_CONECTADO_CAUGHT_POKEMON(Cliente* cliente) { operacion_CONECTADO(cliente, COLA_CAUGHT_POKEMON); }
+/*static void operacion_CONECTADO_CAUGHT_POKEMON(Cliente* cliente) { operacion_CONECTADO(cliente, COLA_CAUGHT_POKEMON); }
 static void operacion_CONECTADO_APPEARED_POKEMON(Cliente* cliente) { operacion_CONECTADO(cliente, COLA_APPEARED_POKEMON); }
 static void operacion_CONECTADO_LOCALIZED_POKEMON(Cliente* cliente) { operacion_CONECTADO(cliente, COLA_LOCALIZED_POKEMON); }
 
@@ -86,6 +88,29 @@ void conectarse_y_suscribirse_a_colas()
 	conectarse_y_suscribirse_a_cola(CAUGHT_POKEMON, (EventoOperacion) &operacion_CAUGHT_POKEMON, &operacion_CONECTADO_CAUGHT_POKEMON);
 	conectarse_y_suscribirse_a_cola(APPEARED_POKEMON, (EventoOperacion) &operacion_APPEARED_POKEMON, &operacion_CONECTADO_APPEARED_POKEMON);
 	conectarse_y_suscribirse_a_cola(LOCALIZED_POKEMON, (EventoOperacion) &operacion_LOCALIZED_POKEMON, &operacion_CONECTADO_LOCALIZED_POKEMON);
+}*/
+
+
+static void Reconectado(Cliente* cliente)
+{
+	log_info(logger, "Conectado con el Broker!");
+}
+static void Suscribirse(Cliente* cliente)
+{
+	log_info(logger, "Conectado con el Broker!");
+	operacion_CONECTADO(cliente, COLA_CAUGHT_POKEMON);
+	operacion_CONECTADO(cliente, COLA_APPEARED_POKEMON);
+	operacion_CONECTADO(cliente, COLA_LOCALIZED_POKEMON);
+}
+
+void conectarse()
+{
+	Eventos* eventos = Eventos_Crear0();
+	Eventos_AgregarOperacion(eventos, CAUGHT_POKEMON, (EventoOperacion) &operacion_CAUGHT_POKEMON);
+	Eventos_AgregarOperacion(eventos, APPEARED_POKEMON, (EventoOperacion) &operacion_APPEARED_POKEMON);
+	Eventos_AgregarOperacion(eventos, LOCALIZED_POKEMON, (EventoOperacion) &operacion_LOCALIZED_POKEMON);
+
+	conexionBroker = ConectarseABroker(config_get_string_value(config, "IP_BROKER"), config_get_int_value(config, "PUERTO_BROKER"), eventos, &Suscribirse, &Reconectado, config_get_int_value(config, "TIEMPO_RECONEXION"));
 }
 
 //-----------GET POKEMON-----------//

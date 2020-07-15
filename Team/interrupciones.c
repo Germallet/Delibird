@@ -2,6 +2,7 @@
 #include "entrenador.h"
 #include "planificacion.h"
 #include "interrupciones.h"
+#include "team.h"
 #include <stdlib.h>
 #include <pthread.h>
 
@@ -35,19 +36,24 @@ void inicializar_interrupciones()
 }
 
 //-----------OTRAS FUNCIONES-----------//
-void ejecutar_interrupcion()
+/*void ejecutar_interrupcion()
 {
 	Datos_Interrupcion* interrupcion_actual = ((Datos_Interrupcion*) cola_INTERRUPCIONES->head->data);
 	((Interrupcion) dictionaryInt_get(diccionario_interrupciones, interrupcion_actual->tipo)) (interrupcion_actual->info);
 	list_remove_and_destroy_element(cola_INTERRUPCIONES, 0, &destruir_interrupcion);
 }
 
-bool hay_interrupciones_para_ejecutar() { return !list_is_empty(cola_INTERRUPCIONES); }
+bool hay_interrupciones_para_ejecutar() { return !list_is_empty(cola_INTERRUPCIONES); }*/
 
 void ejecutar_interrupciones_existentes()
 {
 	pthread_mutex_lock(&mutex_interrupciones);
-	while(hay_interrupciones_para_ejecutar()) ejecutar_interrupcion();
+	while(!list_is_empty(cola_INTERRUPCIONES))
+	{
+		Datos_Interrupcion* interrupcion_actual = (Datos_Interrupcion*)list_get(cola_INTERRUPCIONES, 0);
+		((Interrupcion) dictionaryInt_get(diccionario_interrupciones, interrupcion_actual->tipo)) (interrupcion_actual->info);
+		list_remove_and_destroy_element(cola_INTERRUPCIONES, 0, &destruir_interrupcion);
+	}
 	pthread_mutex_unlock(&mutex_interrupciones);
 }
 
@@ -55,6 +61,11 @@ void ejecutar_interrupciones_existentes()
 void interrupcion_CAUGHT_POKEMON(void* dato)
 {
 	datos_interrupcion_CAUGHT_POKEMON* datos = dato;
+
+	char* textoDatos = DatosAString_CAUGHT_POKEMON(datos->recibidos);
+	log_info(logger, "Ejecuntando interrupcion CAUGHT_POKEMON: %s", textoDatos);
+	free(textoDatos);
+
 	Entrenador* entrenador = datos->entrenador;
 
 	if(datos->recibidos->capturado)
@@ -62,11 +73,15 @@ void interrupcion_CAUGHT_POKEMON(void* dato)
 	else
 		fallo_captura_pokemon(entrenador);
 	free(datos->recibidos);
-	free(datos);
 }
 void interrupcion_APPEARED_POKEMON(void* dato)
 {
 	DATOS_APPEARED_POKEMON* datos = dato;
+
+	char* textoDatos = DatosAString_APPEARED_POKEMON(datos);
+	log_info(logger, "Ejecuntando interrupcion APPEARED_POKEMON: %s", textoDatos);
+	free(textoDatos);
+
 	if(necesito_especie_pokemon(datos->pokemon))
 		agregar_pokemon_a_mapa(datos->pokemon, datos->posicion);
 	free(datos->pokemon);
@@ -74,10 +89,14 @@ void interrupcion_APPEARED_POKEMON(void* dato)
 void interrupcion_LOCALIZED_POKEMON(void* dato)
 {
 	DATOS_LOCALIZED_POKEMON* datos = dato;
-	for(int i=0;i<datos->cantidad;i++)
+
+	char* textoDatos = DatosAString_LOCALIZED_POKEMON(datos);
+	log_info(logger, "Ejecuntando interrupcion LOCALIZED_POKEMON: %s", textoDatos);
+	free(textoDatos);
+
+	for(int i=0;i < datos->cantidad;i++)
 		agregar_pokemon_a_mapa(datos->pokemon, datos->posiciones[i]);
 	se_localizo(datos->pokemon);
-	free(datos);
 }
 
 //-----------DICCIONARIO DE INTERRUPCIONES-----------//

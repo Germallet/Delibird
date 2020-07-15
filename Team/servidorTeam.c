@@ -10,7 +10,8 @@ Servidor* servidor;
 void operacionTEAM_APPEARED_POKEMON(Cliente* cliente, Paquete* paquete)
 {
 	Stream* stream_lectura = Stream_CrearLecturaPaquete(paquete);
-	//Deserializar_uint32(stream_lectura);
+	Deserializar_uint32(stream_lectura);
+	Deserializar_uint32(stream_lectura);
 
 	DATOS_APPEARED_POKEMON* datos = malloc(sizeof(DATOS_APPEARED_POKEMON));
 	*datos = Deserializar_APPEARED_POKEMON(stream_lectura);

@@ -344,16 +344,28 @@ void obtener_entrenadores()
 
 	char** pokemons_atrapados = string_get_string_as_array(rep_pokemons_atrapados);
 
+	int cantidadPokemonsAtrapados;
+	for(cantidadPokemonsAtrapados = 0; pokemons_atrapados[cantidadPokemonsAtrapados] != NULL; cantidadPokemonsAtrapados++);
+
 	int cantidad_entrenadores = 1;
 	for(int i=0;entrenadores[i]!='\0';i++)
 		cantidad_entrenadores += entrenadores[i] == ',';
 
 	for(int i = 0; i<cantidad_entrenadores; i++)
 	{
-		list_add(cola_NEW, crear_entrenador(posiciones[i], pokemons_atrapados[i], pokemons_objetivo[i], i+1));
-		free(posiciones[i]);
-		free(pokemons_atrapados[i]);
-		free(pokemons_objetivo[i]);
+		if (i < cantidadPokemonsAtrapados)
+		{
+			list_add(cola_NEW, crear_entrenador(posiciones[i], pokemons_atrapados[i], pokemons_objetivo[i], i+1));
+			free(posiciones[i]);
+			free(pokemons_atrapados[i]);
+			free(pokemons_objetivo[i]);
+		}
+		else
+		{
+			list_add(cola_NEW, crear_entrenador(posiciones[i], NULL, pokemons_objetivo[i], i+1));
+			free(posiciones[i]);
+			free(pokemons_objetivo[i]);
+		}
 	}
 
 	free(posiciones);
@@ -397,7 +409,7 @@ void ejecutar_entrenador_actual()
 		pthread_mutex_unlock(&(entrenador_EXEC->mutex));
 	else
 	{
-		log_info(logger, "IDLE");
+		//log_info(logger, "IDLE");
 		sleep((unsigned) config_get_int_value(config,"RETARDO_CICLO_CPU"));
 		pthread_mutex_unlock(&(mutex_team));
 	}
@@ -559,7 +571,8 @@ static void capturar_pokemon(void* entrenador_void)
 	Entrenador* entrenador = entrenador_void;
 	log_info(logger, "El entrenador %d intenta atrapar un %s en la posicion (%d,%d)", entrenador->ID, datos_accion_actual(entrenador)->info, entrenador->posicion.posX, entrenador->posicion.posY);
 
-	Cliente* cliente = crear_cliente_de_broker();
+	//Cliente* cliente = crear_cliente_de_broker();
+	Cliente* cliente = conexionBroker->clienteBroker;
 	if(cliente != NULL)
 	{
 		Eventos_AgregarOperacion(cliente->eventos, BROKER_ID_MENSAJE, (EventoOperacion) &operacion_ASIGNACION_ID);
