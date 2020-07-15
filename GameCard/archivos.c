@@ -433,15 +433,8 @@ char* leerArchivos(t_list* bloques, int cantBloques, int tamanio) {
 			FILE* f = fopen(pathBlocks,"r");
 
 			if(f != NULL) {
-				char* leidos = calloc(1,configFS.tamanioBlocks);
-				char* posicion = string_new();
-				while (posicion != '\0') {
-					fscanf(f,"%s",posicion);
-					string_append(&posicion,leidos);
-				}
-
-//				fread(leidos,configFS.tamanioBlocks,1,f);
-				free(posicion);
+				char* leidos = calloc(1,configFS.tamanioBlocks + 1);
+				fread(leidos,configFS.tamanioBlocks + 1,1,f);
 				string_append(&datos,leidos);
 				free(leidos);
 			} else log_error(logger,"No se pudo abrir el archivo");
@@ -450,7 +443,6 @@ char* leerArchivos(t_list* bloques, int cantBloques, int tamanio) {
 			free(pathBlocks);
 		}
 	}
-
 	return datos;
 }
 
