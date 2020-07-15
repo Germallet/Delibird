@@ -274,10 +274,10 @@ int agregarCantidadEnPosicion(t_list* pokemon, DatosBloques posYCant, t_list* nu
 
 		} else log_error(logger,"FAIL ABRIENDO ARCHIVO");
 
-		for (int i = 0; i < list_size(pokemon); i++) {
-			DatosBloques* pok = list_get(pokemon,i);
-			free(pok);
-		}
+//		for (int i = 0; i < list_size(pokemon); i++) { //TODO VER ESTO
+//			DatosBloques* pok = list_get(pokemon,i);
+//			free(pok);
+//		}
 
 		free(path);
 
