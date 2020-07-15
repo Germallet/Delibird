@@ -161,8 +161,8 @@ void Mensaje_EnviarA(Mensaje* mensaje, CodigoDeCola tipoDeMensaje, void* conteni
 
 	if (resultado > 0)
 		list_add(mensaje->clientesEnviados, cliente);
-	else
-		log_error(logger, "Error al enviar mensaje (cola: %s, cliente: %d)", CodigoDeColaAString(tipoDeMensaje), ((ClienteBroker*)cliente->info)->id);
+	//else
+	//	log_error(logger, "Error al enviar mensaje (cola: %s, cliente: %d)", CodigoDeColaAString(tipoDeMensaje), ((ClienteBroker*)cliente->info)->id);
 }
 
 void Mensajes_EliminarParticion(Particion* particion)

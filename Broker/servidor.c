@@ -283,7 +283,6 @@ static void Operacion_LOCALIZED_POKEMON(Cliente* cliente, Paquete* paqueteRecibi
 	free(textoDatos);
 
 	Stream* stream = SerializarM_LOCALIZED_POKEMON(&datos);
-	log_info(logger, "COLA_LOCALIZED_POKEMON (%s, %d): %d", datos.pokemon, datos.cantidad, stream->tamanio);
 	RecibirMensaje(cliente, COLA_LOCALIZED_POKEMON, id, idCorrelativa, stream);
 	Stream_Destruir(streamLectura);
 	Stream_DestruirConBuffer(stream);
