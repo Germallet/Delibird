@@ -102,11 +102,6 @@ void Operacion_NEW_POKEMON(DATOS_NEW_POKEMON_ID* datos) {
 
 	list_destroy_and_destroy_elements(numerosBloques,&free);
 
-//	for (int i = 0; i < list_size(datosBloques); i++) {
-//		DatosBloques* pok = list_get(datosBloques,i);
-//		free(pok);
-//	} //TODO REPLICAR EN EL RESTO DE OPERACIONES
-
 	list_clean(datosBloques);
 	list_destroy(datosBloques);
 
@@ -215,7 +210,7 @@ void Operacion_CATCH_POKEMON(DATOS_CATCH_POKEMON_ID* datos) {
 		for (int i = 0; i < list_size(datosBloques); i++) {
 			DatosBloques* pok = list_get(datosBloques,i);
 			free(pok);
-		} //TODO REPLICAR EN EL RESTO DE OPERACIONES
+		}
 
 		list_clean(datosBloques);
 		list_destroy(datosBloques);
@@ -307,7 +302,7 @@ void Operacion_GET_POKEMON(DATOS_GET_POKEMON_ID* datos) {
 		for (int i = 0; i < list_size(datosBloques); i++) {
 			DatosBloques* pok = list_get(datosBloques,i);
 			free(pok);
-		} //TODO REPLICAR EN EL RESTO DE OPERACIONES
+		}
 
 		list_clean(datosBloques);
 		list_destroy(datosBloques);
