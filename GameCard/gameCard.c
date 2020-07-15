@@ -180,6 +180,7 @@ void EnviarMensajesGuardados(Cliente* cliente) {
 	for (int i = 0; i < list_size(mensajesNoEnviadosAPPEARED); i++) {
 		DATOS_APPEARED_POKEMON_ID* dat = list_get(mensajesNoEnviadosAPPEARED,i);
 		EnviarMensaje(cliente, APPEARED_POKEMON, dat, (void*) &SerializarM_APPEARED_POKEMON_ID);
+		log_info(logger,"APPEARED_POKEMON enviado");
 		free(dat);
 	}
 
@@ -188,6 +189,7 @@ void EnviarMensajesGuardados(Cliente* cliente) {
 	for (int i = 0; i < list_size(mensajesNoEnviadosCAUGHT); i++)  {
 		DATOS_CAUGHT_POKEMON_ID* dat = list_get(mensajesNoEnviadosCAUGHT,i);
 		EnviarMensaje(cliente, CAUGHT_POKEMON, dat, (void*) &SerializarM_CAUGHT_POKEMON_ID);
+		log_info(logger,"CAUGHT_POKEMON enviado");
 		free(dat);
 	}
 
@@ -196,6 +198,7 @@ void EnviarMensajesGuardados(Cliente* cliente) {
 	for (int i = 0; i < list_size(mensajesNoEnviadosLOCALIZED); i++) {
 		DATOS_LOCALIZED_POKEMON_ID* dat = list_get(mensajesNoEnviadosLOCALIZED,i);
 		EnviarMensaje(cliente, LOCALIZED_POKEMON, list_get(mensajesNoEnviadosLOCALIZED,i), (void*) &SerializarM_LOCALIZED_POKEMON_ID);
+		log_info(logger,"LOCALIZED_POKEMON enviado");
 		free(dat);
 	}
 
