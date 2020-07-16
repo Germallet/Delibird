@@ -42,7 +42,6 @@ void Recibir_NEW_POKEMON_BROKER(Cliente* cliente, Paquete* paqueteRecibido) {
 		pthread_create(&thread, NULL, (void*) Operacion_NEW_POKEMON,datos);
 		pthread_detach(thread);
 	}
-	DestruirCliente(cliente);
 	free(stream);
 }
 
@@ -165,7 +164,6 @@ void Recibir_CATCH_POKEMON_BROKER(Cliente* cliente, Paquete* paqueteRecibido) {
 		pthread_create(&thread, NULL, (void*) Operacion_CATCH_POKEMON,datos);
 		pthread_detach(thread);
 	}
-	DestruirCliente(cliente);
 	free(stream);
 }
 
@@ -287,7 +285,6 @@ void Recibir_GET_POKEMON_BROKER(Cliente* cliente, Paquete* paqueteRecibido) {
 		pthread_create(&thread, NULL, (void*) Operacion_GET_POKEMON,datos);
 		pthread_detach(thread);
 	}
-	DestruirCliente(cliente);
 	free(stream);
 }
 
@@ -392,7 +389,8 @@ void Enviar_LOCALIZED_POKEMON(DATOS_GET_POKEMON_ID* datos,t_list* datosArchivo) 
 		EnviarMensaje(clienteBroker->clienteBroker, LOCALIZED_POKEMON, datosAEnviar, (void*) &SerializarM_LOCALIZED_POKEMON_ID);
 		log_info(logger,"LOCALIZED_POKEMON enviado.");
 		free(datosAEnviar->datos.pokemon);
-		free(datosAEnviar->datos.posiciones);
+		if (datosAEnviar->datos.posiciones != NULL)
+			free(datosAEnviar->datos.posiciones);
 		free(datosAEnviar);
 	} else {
 		log_info(logger, "Sin conexion con el Broker. LOCALIZED_POKEMON guardado.");

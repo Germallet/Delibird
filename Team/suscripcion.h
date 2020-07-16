@@ -5,6 +5,7 @@
 
 extern t_list* id_mensajes_esperados;
 extern ConexionBroker* conexionBroker;
+extern pthread_mutex_t entrenadoresEsperandoCaught;
 
 typedef struct
 {

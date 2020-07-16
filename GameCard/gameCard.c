@@ -9,6 +9,8 @@ Eventos* eventos;
 
 int main()
 {
+	//sigaction(SIGPIPE, &(struct sigaction){SIG_IGN}, NULL);
+
 	logger = log_create("gameCard.log", "GameCard", true, LOG_LEVEL_INFO);
 	config = config_create("gameCard.config");
 
@@ -80,7 +82,7 @@ void conectarse() {
 	Eventos_AgregarOperacion(eventos, GET_POKEMON, (EventoOperacion )&Recibir_GET_POKEMON_BROKER);
 	Eventos_AgregarOperacion(eventos, BROKER_ID_MENSAJE, (EventoOperacion) &Recibir_ID);
 
-	clienteBroker = ConectarseABroker(ipBroker,puertoBroker,eventos,&ConexionColas,&EnviarMensajesGuardados,tiempoReintentoConexion);
+	clienteBroker = ConectarseABroker(ipBroker,puertoBroker,eventos,&ConexionColas,&EnviarMensajesGuardados,NULL,tiempoReintentoConexion);
 
 }
 

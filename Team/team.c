@@ -16,6 +16,7 @@ int cantidad_ciclos;
 t_log* logger;
 t_config* config;
 pthread_mutex_t mutex_team;
+pthread_mutex_t mutex_conectado;
 
 static void inicializar_datos()
 {
@@ -57,6 +58,7 @@ static void inicializar_datos()
 
 	//MENSAJES ESPERADOS
 	id_mensajes_esperados = list_create();
+	pthread_mutex_init(&entrenadoresEsperandoCaught, NULL);
 
 	//CONTADOR DE CICLOS
 	cantidad_ciclos = 0;
@@ -97,9 +99,13 @@ int main()
 	identificar_objetivo_global();
 	IniciarServidorTeam(config_get_string_value(config,"IP_TEAM"), config_get_int_value(config,"PUERTO_TEAM"));
 	//solicitar_pokemons_para_objetivo_global_test();
+
+	pthread_mutex_init(&mutex_conectado, 0);
+	pthread_mutex_lock(&mutex_conectado);
+	conectarse();
+	pthread_mutex_lock(&mutex_conectado);
 	solicitar_pokemons_para_objetivo_global();
 	//conectarse_y_suscribirse_a_colas();
-	conectarse();
 
 	while(true)
 	{

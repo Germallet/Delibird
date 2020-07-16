@@ -15,7 +15,8 @@ static void reconexion(void* info)
 	conexion->clienteBroker = CrearCliente(conexion->ip, conexion->puerto, NULL);
 	if(conexion->clienteBroker == NULL)
 	{
-		//if(conexion->intentoFallido != NULL) conexion->intentoFallido();
+		if(conexion->intentoFallido != NULL)
+			conexion->intentoFallido();
 	}
 	else
 	{
@@ -30,6 +31,7 @@ static void reconexion(void* info)
 		{
 			Stream* stream = SerializarM_BROKER_CONECTADO(conexion->datosConectado);
 			Socket_Enviar(BROKER_RECONECTAR, stream->base, stream->tamanio, conexion->clienteBroker->socket);
+			Stream_DestruirConBuffer(stream);
 		}
 	}
 }
@@ -38,6 +40,8 @@ static void ConexionColas(Cliente* cliente, Paquete* paquete) {
 	ConexionBroker* nuevaConexion = (ConexionBroker*) cliente->info;
 	bool primeraVez = (nuevaConexion->datosConectado == NULL);
 
+	if(nuevaConexion->datosConectado != NULL)
+		free(nuevaConexion->datosConectado);
 	BROKER_DATOS_CONECTADO* datos = malloc(sizeof(BROKER_DATOS_CONECTADO));
 	DeserializarM_BROKER_CONECTADO(paquete, datos);
 
@@ -66,7 +70,7 @@ static void ConexionColas(Cliente* cliente, Paquete* paquete) {
 	cliente->info = NULL;
 }
 
-ConexionBroker* ConectarseABroker(char* ip, int puerto, Eventos* eventos, void (*alConectarse)(Cliente*), void (*alReconectarse)(Cliente*), /*void (*intentoFallido)(),*/ int tiempoReintentoConexion)
+ConexionBroker* ConectarseABroker(char* ip, int puerto, Eventos* eventos, void (*alConectarse)(Cliente*), void (*alReconectarse)(Cliente*), void (*intentoFallido)(), int tiempoReintentoConexion)
 {
 	ConexionBroker* nuevaConexion = malloc(sizeof(ConexionBroker));
 	nuevaConexion->clienteBroker = NULL;
@@ -76,7 +80,7 @@ ConexionBroker* ConectarseABroker(char* ip, int puerto, Eventos* eventos, void (
 	nuevaConexion->eventos = eventos;
 	nuevaConexion->alConectarse = alConectarse;
 	nuevaConexion->alReconectarse = alReconectarse;
-	//nuevaConexion->intentoFallido = intentoFallido;
+	nuevaConexion->intentoFallido = intentoFallido;
 
 	Eventos_AgregarOperacion(nuevaConexion->eventos, BROKER_CONECTADO, (EventoOperacion)&ConexionColas);
 
@@ -94,6 +98,6 @@ void DestruirConexionBroker(ConexionBroker* conexion)
 		DestruirCliente(conexion->clienteBroker);
 //	free(conexion->hiloTimer);
 	if (conexion->datosConectado != NULL) free(conexion->datosConectado);
-	if (conexion->hiloTimer != NULL) free(conexion->datosConectado);
+	if (conexion->hiloTimer != NULL) free(conexion->hiloTimer);
 	free(conexion);
 }

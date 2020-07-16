@@ -138,7 +138,7 @@ static void Operacion_SUSCRIBIRSE(Cliente* cliente, Paquete* paqueteRecibido)
 {
 	if (cliente->info == NULL)
 	{
-		log_error(logger, "El cliente no está conectado!");
+		log_error(logger, "El cliente no está conectado! (SUSCRIPCION)");
 		return;
 	}
 
@@ -156,7 +156,7 @@ static void Operacion_ACK(Cliente* cliente, Paquete* paqueteRecibido)
 {
 	if (cliente->info == NULL)
 	{
-		log_error(logger, "El cliente no está conectado!");
+		log_error(logger, "El cliente no está conectado! (ACK)");
 		return;
 	}
 

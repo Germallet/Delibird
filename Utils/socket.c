@@ -146,7 +146,7 @@ Cliente* Socket_AceptarConexion(Servidor* servidor)
 	cliente->eventos = servidor->eventos;
 	cliente->thread = NULL;
 	cliente->info = NULL;
-	pthread_mutex_init(&cliente->mx_destruir, NULL);
+	pthread_mutex_init(&(cliente->mx_destruir), NULL);
 
 	return cliente;
 }

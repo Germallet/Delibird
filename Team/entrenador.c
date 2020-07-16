@@ -529,9 +529,13 @@ static void operacion_ASIGNACION_ID(Cliente* cliente, Paquete* paquete)
 	uint32_t* id_mensaje = malloc(sizeof(uint32_t));
 	*id_mensaje = datos.id;
 
-	list_add(id_mensajes_esperados, &(datos.id));
+	pthread_mutex_lock(&entrenadoresEsperandoCaught);
+	list_add(id_mensajes_esperados, cliente->info);
+	pthread_mutex_unlock(&entrenadoresEsperandoCaught);
+
 	Entrenador* entrenador = cliente->info;
 	asignar_id_mensaje_espera(entrenador, id_mensaje);
+	log_info(logger, "Enviado CATCH_POKEMON, esperando CAUGHT id: %d", *id_mensaje);
 }
 
 //-----------ACCIONES-----------//
@@ -572,22 +576,26 @@ static void capturar_pokemon(void* entrenador_void)
 	log_info(logger, "El entrenador %d intenta atrapar un %s en la posicion (%d,%d)", entrenador->ID, datos_accion_actual(entrenador)->info, entrenador->posicion.posX, entrenador->posicion.posY);
 
 	//Cliente* cliente = crear_cliente_de_broker();
-	Cliente* cliente = conexionBroker->clienteBroker;
+	Eventos* eventos = Eventos_Crear0();
+	Eventos_AgregarOperacion(eventos, BROKER_ID_MENSAJE, (EventoOperacion) &operacion_ASIGNACION_ID);
+	Cliente* cliente = CrearCliente(config_get_string_value(config, "IP_BROKER"), config_get_int_value(config, "PUERTO_BROKER"), eventos);
 	if(cliente != NULL)
 	{
-		Eventos_AgregarOperacion(cliente->eventos, BROKER_ID_MENSAJE, (EventoOperacion) &operacion_ASIGNACION_ID);
 		DATOS_CATCH_POKEMON* datos = malloc(sizeof(DATOS_CATCH_POKEMON));
 		datos->pokemon = datos_accion_actual(entrenador)->info;
 		datos->posicion = entrenador->posicion;
 		cliente->info = entrenador;
 		EnviarMensaje(cliente, CATCH_POKEMON, datos, (Serializador) &SerializarM_CATCH_POKEMON);
 		free(datos);
+
 		deshabilitar_entrenador(entrenador);
 		cambiar_estado_a(entrenador, BLOCKED, ESPERA_POKEMON);
-		capturo_pokemon(entrenador);
 	}
 	else
+	{
+		log_info(logger, "[Capturando sin Broker]");
 		capturo_pokemon(entrenador);
+	}
 }
 static void intercambiar_pokemon_en_progreso(Entrenador* entrenador)
 {

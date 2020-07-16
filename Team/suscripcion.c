@@ -9,8 +9,8 @@
 
 ConexionBroker* conexionBroker;
 t_list* id_mensajes_esperados;
-
-bool espero_mensaje(uint32_t id_mensaje);
+pthread_mutex_t entrenadoresEsperandoCaught;
+Entrenador* espero_mensaje(uint32_t id_mensaje);
 
 void EnviarID(Cliente* cliente, uint32_t identificador)
 {
@@ -29,11 +29,13 @@ void operacion_CAUGHT_POKEMON(Cliente* cliente, Paquete* paquete)
 	DATOS_CAUGHT_POKEMON* datos = malloc(sizeof(DATOS_CAUGHT_POKEMON));
 	*datos = Deserializar_CAUGHT_POKEMON(stream_lectura);
 
-	if(espero_mensaje(id_catch))
+	Entrenador* e = espero_mensaje(id_catch);
+	if (e != NULL)
 	{
 		datos_interrupcion_CAUGHT_POKEMON* datos_interrupcion = malloc(sizeof(datos_interrupcion_CAUGHT_POKEMON));
-		datos_interrupcion->entrenador = cliente->info;
+		datos_interrupcion->entrenador = e;
 		datos_interrupcion->recibidos = datos;
+		free(e->id_mensaje_espera);
 		agregar_interrupcion(I_CAUGHT_POKEMON, datos_interrupcion);
 	}
 
@@ -110,9 +112,14 @@ static void Reconectado(Cliente* cliente)
 static void Suscribirse(Cliente* cliente)
 {
 	log_info(logger, "Conectado con el Broker!");
-	operacion_CONECTADO(cliente, COLA_CAUGHT_POKEMON);
 	operacion_CONECTADO(cliente, COLA_APPEARED_POKEMON);
+	operacion_CONECTADO(cliente, COLA_CAUGHT_POKEMON);
 	operacion_CONECTADO(cliente, COLA_LOCALIZED_POKEMON);
+	pthread_mutex_unlock(&mutex_conectado);
+}
+static void ConexFallida()
+{
+	pthread_mutex_unlock(&mutex_conectado);
 }
 
 void conectarse()
@@ -122,7 +129,7 @@ void conectarse()
 	Eventos_AgregarOperacion(eventos, APPEARED_POKEMON, (EventoOperacion) &operacion_APPEARED_POKEMON);
 	Eventos_AgregarOperacion(eventos, LOCALIZED_POKEMON, (EventoOperacion) &operacion_LOCALIZED_POKEMON);
 
-	conexionBroker = ConectarseABroker(config_get_string_value(config, "IP_BROKER"), config_get_int_value(config, "PUERTO_BROKER"), eventos, &Suscribirse, &Reconectado, config_get_int_value(config, "TIEMPO_RECONEXION"));
+	conexionBroker = ConectarseABroker(config_get_string_value(config, "IP_BROKER"), config_get_int_value(config, "PUERTO_BROKER"), eventos, &Suscribirse, &Reconectado, &ConexFallida, config_get_int_value(config, "TIEMPO_RECONEXION"));
 }
 
 //-----------GET POKEMON-----------//
@@ -145,8 +152,20 @@ void solicitar_pokemons_para_objetivo_global()
 }
 
 //-----------OTRAS FUNCIONES-----------//
-bool espero_mensaje(uint32_t id_mensaje)
+Entrenador* espero_mensaje(uint32_t id_mensaje)
 {
-	bool es_mismo_id(void* id) { return (uint32_t) id==id_mensaje; }
-	return list_any_satisfy(id_mensajes_esperados, &es_mismo_id);
+	pthread_mutex_lock(&entrenadoresEsperandoCaught);
+	for(int i = 0; i < id_mensajes_esperados->elements_count; i++)
+	{
+		Entrenador* e = list_get(id_mensajes_esperados, i);
+		if (*(e->id_mensaje_espera) == id_mensaje)
+		{
+			list_remove(id_mensajes_esperados, i);
+			pthread_mutex_unlock(&entrenadoresEsperandoCaught);
+			return e;
+		}
+	}
+
+	pthread_mutex_unlock(&entrenadoresEsperandoCaught);
+	return NULL;
 }
