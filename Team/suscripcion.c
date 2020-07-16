@@ -35,9 +35,10 @@ void operacion_CAUGHT_POKEMON(Cliente* cliente, Paquete* paquete)
 		datos_interrupcion_CAUGHT_POKEMON* datos_interrupcion = malloc(sizeof(datos_interrupcion_CAUGHT_POKEMON));
 		datos_interrupcion->entrenador = e;
 		datos_interrupcion->recibidos = datos;
-		free(e->id_mensaje_espera);
 		agregar_interrupcion(I_CAUGHT_POKEMON, datos_interrupcion);
 	}
+	else
+		free(datos);
 
 	Stream_Destruir(stream_lectura);
 	EnviarID(cliente, identificador);
@@ -67,11 +68,20 @@ void operacion_LOCALIZED_POKEMON(Cliente* cliente, Paquete* paquete)
 
 	if(necesito_especie_pokemon(pokemon) && !esta_localizada(pokemon))
 		agregar_interrupcion(I_LOCALIZED_POKEMON, datos);
+	else
+	{
+		free(datos->pokemon);
+		if (datos->cantidad != 0)
+			free(datos->posiciones);
+		free(datos);
+	}
 
 	Stream_Destruir(stream_lectura);
 	EnviarID(cliente, identificador);
 }
-
+void operacion_ID(Cliente* cliente, Paquete* paquete)
+{
+}
 
 //-----------SUSCRIPCION-----------//
 Cliente* crear_cliente_de_broker() { return CrearCliente(config_get_string_value(config, "IP_BROKER"), config_get_int_value(config, "PUERTO_BROKER"), Eventos_Crear0()); }
@@ -138,7 +148,9 @@ void solicitar_pokemons_para_objetivo_global()
 	for(int i=0;i<pokemons_necesarios->elements_count;i++)
 	{
 		char* especie_pokemon = ((Pokemon*) list_get(pokemons_necesarios, i))->especie;
-		Cliente* cliente = crear_cliente_de_broker();
+		Eventos* eventos = Eventos_Crear0();
+		Eventos_AgregarOperacion(eventos, BROKER_ID_MENSAJE, (EventoOperacion) &operacion_ID);
+		Cliente* cliente = CrearCliente(config_get_string_value(config, "IP_BROKER"), config_get_int_value(config, "PUERTO_BROKER"), eventos);
 
 		if(cliente != NULL)
 		{
@@ -158,9 +170,10 @@ Entrenador* espero_mensaje(uint32_t id_mensaje)
 	for(int i = 0; i < id_mensajes_esperados->elements_count; i++)
 	{
 		Entrenador* e = list_get(id_mensajes_esperados, i);
-		if (*(e->id_mensaje_espera) == id_mensaje)
+		if (e->id_mensaje_espera == id_mensaje)
 		{
 			list_remove(id_mensajes_esperados, i);
+			e->id_mensaje_espera = -1;
 			pthread_mutex_unlock(&entrenadoresEsperandoCaught);
 			return e;
 		}

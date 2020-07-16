@@ -9,7 +9,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <commons/string.h>
-#define MULTIPLICADOR_TIEMPO 0.3
+#define MULTIPLICADOR_TIEMPO 0.3 //TODO
 
 Entrenador* entrenador_EXEC;
 t_list* cola_NEW;
@@ -37,7 +37,7 @@ Entrenador* crear_entrenador(char* posicion, char* pokemons_atrapados, char* pok
 	entrenador->pokemons_objetivo = crear_lista_pokemon(pokemons_objetivo);
 	entrenador->datos_acciones = list_create();
 	entrenador->esta_disponible = true;
-	entrenador->id_mensaje_espera = NULL;
+	entrenador->id_mensaje_espera = -1;
 	entrenador->ID=ID;
 	entrenador->estado=NEW;
 	entrenador->indice_accion_actual = 0;
@@ -81,7 +81,6 @@ void terminar_hilo(Entrenador* entrenador)
 void destruir_entrenador(void* entrenador_void)
 {
 	Entrenador* entrenador = entrenador_void;
-	free(entrenador->id_mensaje_espera);
 	list_destroy_and_destroy_elements(entrenador->pokemons_atrapados, &destruir_pokemon);
 	list_destroy_and_destroy_elements(entrenador->pokemons_objetivo, &destruir_pokemon);
 	resetear_acciones(entrenador);
@@ -90,12 +89,6 @@ void destruir_entrenador(void* entrenador_void)
 }
 
 Posicion* obtener_posicion_entrenador(void* entrenador) { return &(((Entrenador*) entrenador)->posicion); }
-
-void asignar_id_mensaje_espera(Entrenador* entrenador, uint* nuevo_id)
-{
-	free(entrenador->id_mensaje_espera);
-	entrenador->id_mensaje_espera = nuevo_id;
-}
 
 int ciclos_restantes(Entrenador* entrenador)
 {
@@ -526,16 +519,14 @@ static void operacion_ASIGNACION_ID(Cliente* cliente, Paquete* paquete)
 	DATOS_ID_MENSAJE datos;
 	if(!DeserializarM_ID_MENSAJE(paquete, &datos)) log_error(logger, "Error al intentar deserializar el mensaje.");
 
-	uint32_t* id_mensaje = malloc(sizeof(uint32_t));
-	*id_mensaje = datos.id;
+	Entrenador* entrenador = cliente->info;
 
 	pthread_mutex_lock(&entrenadoresEsperandoCaught);
 	list_add(id_mensajes_esperados, cliente->info);
+	entrenador->id_mensaje_espera = datos.id;
 	pthread_mutex_unlock(&entrenadoresEsperandoCaught);
 
-	Entrenador* entrenador = cliente->info;
-	asignar_id_mensaje_espera(entrenador, id_mensaje);
-	log_info(logger, "Enviado CATCH_POKEMON, esperando CAUGHT id: %d", *id_mensaje);
+	log_info(logger, "Enviado CATCH_POKEMON, esperando CAUGHT id: %d", datos.id);
 }
 
 //-----------ACCIONES-----------//

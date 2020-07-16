@@ -54,7 +54,7 @@ typedef struct
 
 	pthread_t hilo;
 	pthread_mutex_t mutex;
-	uint32_t* id_mensaje_espera;
+	uint32_t id_mensaje_espera;
 
 	void* info;
 	int indice_accion_actual;

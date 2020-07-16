@@ -168,8 +168,8 @@ void TerminarPrograma()
 	config_destroy(config);
 	free(bitmap->bitarray);
 	bitarray_destroy(bitmap);
-	DestruirServidor(servidor);
-	DestruirConexionBroker(clienteBroker);
+	//DestruirServidor(servidor);
+	//DestruirConexionBroker(clienteBroker);
 	destruirDiccionario();
 	list_destroy_and_destroy_elements(mensajesNoEnviadosAPPEARED,(void*) &BorrarMensajesAppeared);
 	list_destroy_and_destroy_elements(mensajesNoEnviadosCAUGHT,(void*) &free);

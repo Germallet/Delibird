@@ -19,8 +19,10 @@ void (*dump)();
 void (*destuir)();
 int frecuenciaCompactacion;
 
+int _tamanioMemoria;
 void IniciarMemoria(int tamanioMemoria, int _tamanioMinimo, char* algoritmoMemoria, char* algoritmoReemplazo, char* algoritmoSeleccion, int _frecuenciaCompactacion)
 {
+	_tamanioMemoria = tamanioMemoria;
 	tamanioMinimo = _tamanioMinimo;
 
 	// algoritmoMemoria
@@ -85,6 +87,12 @@ void IniciarMemoria(int tamanioMemoria, int _tamanioMinimo, char* algoritmoMemor
 
 static Particion* SeleccionDeParticion(int tamanio)
 {
+	if (tamanio > _tamanioMemoria)
+	{
+		log_error(logger, "Se intento crear una particion de tamanio mayor que la cache");
+		return NULL;
+	}
+
 	Particion* particion = NULL;
 	int intentos = 0;
 
