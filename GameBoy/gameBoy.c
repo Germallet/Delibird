@@ -35,6 +35,7 @@ int main(int argc, char* argv[])
 		if (sonIguales(argv[2],"APPEARED_POKEMON")) {
 			EnviarMensaje(clienteTeam, APPEARED_POKEMON, convertir_APPEARED_POKEMON(argc, argv), (void*) &SerializarM_APPEARED_POKEMON);
 			pthread_mutex_lock(&esperarACK);
+			pthread_mutex_lock(&esperarACK);
 		}
 			else TerminarProgramaConError("TEAM NO ENTIENDE TU OPERACION");
 
@@ -79,11 +80,14 @@ int main(int argc, char* argv[])
 		if (sonIguales(argv[2], "NEW_POKEMON")) {
 			EnviarMensaje(clienteGameCard, NEW_POKEMON, convertir_NEW_POKEMON_ID(argc, argv), (void*) &SerializarM_NEW_POKEMON_ID);
 			pthread_mutex_lock(&esperarACK);
+			pthread_mutex_lock(&esperarACK);
 		} else if (sonIguales(argv[2], "CATCH_POKEMON")) {
 			EnviarMensaje(clienteGameCard, CATCH_POKEMON, convertir_CATCH_POKEMON_ID(argc, argv), (void*) &SerializarM_CATCH_POKEMON_ID);
 			pthread_mutex_lock(&esperarACK);
+			pthread_mutex_lock(&esperarACK);
 		} else if (sonIguales(argv[2], "GET_POKEMON")) {
 			EnviarMensaje(clienteGameCard, GET_POKEMON, convertir_GET_POKEMON_ID(argc, argv), (void*) &SerializarM_GET_POKEMON_ID);
+			pthread_mutex_lock(&esperarACK);
 			pthread_mutex_lock(&esperarACK);
 		} else TerminarProgramaConError("GAMECARD NO ENTIENDE TU OPERACION");
 
