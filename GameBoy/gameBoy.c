@@ -5,6 +5,8 @@
 t_log* logger;
 t_config* config;
 
+pthread_mutex_t esperarACK;
+
 int main(int argc, char* argv[])
 {
 	logger = log_create("gameBoy.log", "GameBoy", true, LOG_LEVEL_INFO);
@@ -14,6 +16,7 @@ int main(int argc, char* argv[])
 
 	// CREACION EVENTOS
 	Eventos* eventos = Eventos_Crear0();
+	Eventos_AgregarOperacion(eventos, BROKER_ACK, (void*)&RecibirACK);
 
 	// GESTION DE MENSAJES
 	if (argc <= 3) TerminarProgramaConError("QUE QUERES QUE HAGA SI NO ME PONES LOS PARAMETROS?");
@@ -29,9 +32,11 @@ int main(int argc, char* argv[])
 
 		ConectadoConProceso("TEAM");
 
-		if (sonIguales(argv[2],"APPEARED_POKEMON"))
+		if (sonIguales(argv[2],"APPEARED_POKEMON")) {
 			EnviarMensaje(clienteTeam, APPEARED_POKEMON, convertir_APPEARED_POKEMON(argc, argv), (void*) &SerializarM_APPEARED_POKEMON);
-		else TerminarProgramaConError("TEAM NO ENTIENDE TU OPERACION");
+			pthread_mutex_lock(&esperarACK);
+		}
+			else TerminarProgramaConError("TEAM NO ENTIENDE TU OPERACION");
 
 		DestruirCliente(clienteTeam);
 
@@ -71,13 +76,16 @@ int main(int argc, char* argv[])
 
 		ConectadoConProceso("GAMECARD");
 
-		if (sonIguales(argv[2], "NEW_POKEMON"))
+		if (sonIguales(argv[2], "NEW_POKEMON")) {
 			EnviarMensaje(clienteGameCard, NEW_POKEMON, convertir_NEW_POKEMON_ID(argc, argv), (void*) &SerializarM_NEW_POKEMON_ID);
-		  else if (sonIguales(argv[2], "CATCH_POKEMON"))
-			  EnviarMensaje(clienteGameCard, CATCH_POKEMON, convertir_CATCH_POKEMON_ID(argc, argv), (void*) &SerializarM_CATCH_POKEMON_ID);
-		  else if (sonIguales(argv[2], "GET_POKEMON"))
-			  EnviarMensaje(clienteGameCard, GET_POKEMON, convertir_GET_POKEMON_ID(argc, argv), (void*) &SerializarM_GET_POKEMON_ID);
-		  else TerminarProgramaConError("GAMECARD NO ENTIENDE TU OPERACION");
+			pthread_mutex_lock(&esperarACK);
+		} else if (sonIguales(argv[2], "CATCH_POKEMON")) {
+			EnviarMensaje(clienteGameCard, CATCH_POKEMON, convertir_CATCH_POKEMON_ID(argc, argv), (void*) &SerializarM_CATCH_POKEMON_ID);
+			pthread_mutex_lock(&esperarACK);
+		} else if (sonIguales(argv[2], "GET_POKEMON")) {
+			EnviarMensaje(clienteGameCard, GET_POKEMON, convertir_GET_POKEMON_ID(argc, argv), (void*) &SerializarM_GET_POKEMON_ID);
+			pthread_mutex_lock(&esperarACK);
+		} else TerminarProgramaConError("GAMECARD NO ENTIENDE TU OPERACION");
 
 		DestruirCliente(clienteGameCard);
 
@@ -114,7 +122,6 @@ int main(int argc, char* argv[])
 
 	} else TerminarProgramaConError("TENGO LA SOSPECHA QUE ESCRIBISTE MAL EL PROCESO");
 
-	// TERMINAR PROGRAMA
 	TerminarPrograma(logger, config);
 
 	return 0;
@@ -463,5 +470,11 @@ void EnviarID(Cliente* cliente, uint32_t identificador)
 	EnviarMensaje(cliente, BROKER_ACK, id_mensaje, (void*) &SerializarM_ID_MENSAJE);
 
 	free(id_mensaje);
+}
 
+void RecibirACK(Cliente* cliente, Paquete* paqueteRecibido) {
+	DATOS_ID_MENSAJE datosACK;
+	DeserializarM_ID_MENSAJE(paqueteRecibido, &datosACK);
+	log_info(logger, "ACK: ID_MENSAJE %d", datosACK.id);
+	pthread_mutex_unlock(&esperarACK);
 }

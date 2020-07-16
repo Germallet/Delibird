@@ -46,22 +46,8 @@ void Recibir_NEW_POKEMON_BROKER(Cliente* cliente, Paquete* paqueteRecibido) {
 }
 
 void Recibir_NEW_POKEMON(Cliente* cliente, Paquete* paqueteRecibido) {
-	Stream* stream = Stream_CrearLecturaPaquete(paqueteRecibido);
-	uint32_t id = Deserializar_uint32(stream);
-	DATOS_NEW_POKEMON_ID* datos = malloc(sizeof(DATOS_NEW_POKEMON_ID));
-	datos->datos = Deserializar_NEW_POKEMON(stream);
-	datos->id = id;
-
-	if (stream->error)
-		log_error(logger,"Error al deserializar NEW_POKEMON");
-	else {
-		log_info(logger,"NEW_POKEMON recibido");
-		pthread_t thread;
-		pthread_create(&thread, NULL, (void*) Operacion_NEW_POKEMON,datos);
-		pthread_detach(thread);
-	}
+	Recibir_NEW_POKEMON_BROKER(cliente, paqueteRecibido);
 	DestruirCliente(cliente);
-	free(stream);
 }
 
 void Operacion_NEW_POKEMON(DATOS_NEW_POKEMON_ID* datos) {
@@ -168,22 +154,8 @@ void Recibir_CATCH_POKEMON_BROKER(Cliente* cliente, Paquete* paqueteRecibido) {
 }
 
 void Recibir_CATCH_POKEMON(Cliente* cliente, Paquete* paqueteRecibido) {
-	Stream* stream = Stream_CrearLecturaPaquete(paqueteRecibido);
-	uint32_t id = Deserializar_uint32(stream);
-	DATOS_CATCH_POKEMON_ID* datos = malloc(sizeof(DATOS_CATCH_POKEMON_ID));
-	datos->datos = Deserializar_CATCH_POKEMON(stream);
-	datos->id = id;
-
-	if (stream->error)
-		log_error(logger,"Error al deserializar CATCH_POKEMON");
-	else {
-		log_info(logger,"CATCH_POKEMON recibido");
-		pthread_t thread;
-		pthread_create(&thread, NULL, (void*) Operacion_CATCH_POKEMON,datos);
-		pthread_detach(thread);
-	}
+	Recibir_CATCH_POKEMON_BROKER(cliente, paqueteRecibido);
 	DestruirCliente(cliente);
-	free(stream);
 }
 
 void Operacion_CATCH_POKEMON(DATOS_CATCH_POKEMON_ID* datos) {
@@ -289,22 +261,8 @@ void Recibir_GET_POKEMON_BROKER(Cliente* cliente, Paquete* paqueteRecibido) {
 }
 
 void Recibir_GET_POKEMON(Cliente* cliente, Paquete* paqueteRecibido) {
-	Stream* stream = Stream_CrearLecturaPaquete(paqueteRecibido);
-	uint32_t id = Deserializar_uint32(stream);
-	DATOS_GET_POKEMON_ID* datos = malloc(sizeof(DATOS_GET_POKEMON_ID));
-	datos->datos = Deserializar_GET_POKEMON(stream);
-	datos->id = id;
-
-	if (stream->error)
-		log_error(logger,"Error al deserializar GET_POKEMON");
-	else {
-		log_info(logger,"GET_POKEMON recibido");
-		pthread_t thread;
-		pthread_create(&thread, NULL, (void*) Operacion_GET_POKEMON,datos);
-		pthread_detach(thread);
-	}
+	Recibir_GET_POKEMON_BROKER(cliente, paqueteRecibido);
 	DestruirCliente(cliente);
-	free(stream);
 }
 
 void Operacion_GET_POKEMON(DATOS_GET_POKEMON_ID* datos) {
