@@ -33,7 +33,9 @@ int main(int argc, char* argv[])
 		ConectadoConProceso("TEAM");
 
 		if (sonIguales(argv[2],"APPEARED_POKEMON")) {
-			EnviarMensaje(clienteTeam, APPEARED_POKEMON, convertir_APPEARED_POKEMON(argc, argv), (void*) &SerializarM_APPEARED_POKEMON);
+			DATOS_APPEARED_POKEMON* dat = convertir_APPEARED_POKEMON(argc, argv);
+			EnviarMensaje(clienteTeam, APPEARED_POKEMON, dat, (void*) &SerializarM_APPEARED_POKEMON);
+			free(dat);
 			pthread_mutex_lock(&esperarACK);
 			pthread_mutex_lock(&esperarACK);
 		}
@@ -52,17 +54,27 @@ int main(int argc, char* argv[])
 
 		ConectadoConProceso("BROKER");
 
-		if (sonIguales(argv[2], "NEW_POKEMON"))
-			EnviarMensaje(clienteBroker, NEW_POKEMON, convertir_NEW_POKEMON(argc, argv), (void*) &SerializarM_NEW_POKEMON);
-		  else if (sonIguales(argv[2], "APPEARED_POKEMON"))
-			  EnviarMensaje(clienteBroker, APPEARED_POKEMON, convertir_APPEARED_POKEMON_ID(argc, argv), (void*) &SerializarM_APPEARED_POKEMON_ID);
-		  else if (sonIguales(argv[2], "CATCH_POKEMON"))
-			  EnviarMensaje(clienteBroker, CATCH_POKEMON, convertir_CATCH_POKEMON(argc, argv), (void*) &SerializarM_CATCH_POKEMON);
-		  else if (sonIguales(argv[2], "CAUGHT_POKEMON"))
-			  EnviarMensaje(clienteBroker, CAUGHT_POKEMON, convertir_CAUGHT_POKEMON_ID(argc, argv), (void*) &SerializarM_CAUGHT_POKEMON_ID);
-		  else if (sonIguales(argv[2], "GET_POKEMON"))
-			  EnviarMensaje(clienteBroker, GET_POKEMON, convertir_GET_POKEMON(argc, argv), (void*) &SerializarM_GET_POKEMON);
-		  else TerminarProgramaConError("BROKER NO ENTIENDE TU OPERACION");
+		if (sonIguales(argv[2], "NEW_POKEMON")) {
+			DATOS_NEW_POKEMON* dat = convertir_NEW_POKEMON(argc, argv);
+			EnviarMensaje(clienteBroker, NEW_POKEMON, dat, (void*) &SerializarM_NEW_POKEMON);
+			free(dat);
+		} else if (sonIguales(argv[2], "APPEARED_POKEMON")) {
+			DATOS_APPEARED_POKEMON_ID* dat = convertir_APPEARED_POKEMON_ID(argc, argv);
+			EnviarMensaje(clienteBroker, APPEARED_POKEMON, convertir_APPEARED_POKEMON_ID(argc, argv), (void*) &SerializarM_APPEARED_POKEMON_ID);
+			free(dat);
+		} else if (sonIguales(argv[2], "CATCH_POKEMON")) {
+			DATOS_CATCH_POKEMON* dat = convertir_CATCH_POKEMON(argc, argv);
+			EnviarMensaje(clienteBroker, CATCH_POKEMON, convertir_CATCH_POKEMON(argc, argv), (void*) &SerializarM_CATCH_POKEMON);
+			free(dat);
+		} else if (sonIguales(argv[2], "CAUGHT_POKEMON")) {
+			DATOS_CAUGHT_POKEMON_ID* dat = convertir_CAUGHT_POKEMON_ID(argc, argv);
+			EnviarMensaje(clienteBroker, CAUGHT_POKEMON, convertir_CAUGHT_POKEMON_ID(argc, argv), (void*) &SerializarM_CAUGHT_POKEMON_ID);
+			free(dat);
+		} else if (sonIguales(argv[2], "GET_POKEMON")) {
+			DATOS_GET_POKEMON* dat = convertir_GET_POKEMON(argc, argv);
+			EnviarMensaje(clienteBroker, GET_POKEMON, convertir_GET_POKEMON(argc, argv), (void*) &SerializarM_GET_POKEMON);
+			free(dat);
+		} else TerminarProgramaConError("BROKER NO ENTIENDE TU OPERACION");
 
 		DestruirCliente(clienteBroker);
 
@@ -78,15 +90,21 @@ int main(int argc, char* argv[])
 		ConectadoConProceso("GAMECARD");
 
 		if (sonIguales(argv[2], "NEW_POKEMON")) {
-			EnviarMensaje(clienteGameCard, NEW_POKEMON, convertir_NEW_POKEMON_ID(argc, argv), (void*) &SerializarM_NEW_POKEMON_ID);
+			DATOS_NEW_POKEMON_ID* dat = convertir_NEW_POKEMON_ID(argc, argv);
+			EnviarMensaje(clienteGameCard, NEW_POKEMON, dat, (void*) &SerializarM_NEW_POKEMON_ID);
+			free(dat);
 			pthread_mutex_lock(&esperarACK);
 			pthread_mutex_lock(&esperarACK);
 		} else if (sonIguales(argv[2], "CATCH_POKEMON")) {
-			EnviarMensaje(clienteGameCard, CATCH_POKEMON, convertir_CATCH_POKEMON_ID(argc, argv), (void*) &SerializarM_CATCH_POKEMON_ID);
+			DATOS_CATCH_POKEMON_ID* dat = convertir_CATCH_POKEMON_ID(argc, argv);
+			EnviarMensaje(clienteGameCard, CATCH_POKEMON, dat, (void*) &SerializarM_CATCH_POKEMON_ID);
+			free(dat);
 			pthread_mutex_lock(&esperarACK);
 			pthread_mutex_lock(&esperarACK);
 		} else if (sonIguales(argv[2], "GET_POKEMON")) {
-			EnviarMensaje(clienteGameCard, GET_POKEMON, convertir_GET_POKEMON_ID(argc, argv), (void*) &SerializarM_GET_POKEMON_ID);
+			DATOS_GET_POKEMON_ID* dat = convertir_GET_POKEMON_ID(argc, argv);
+			EnviarMensaje(clienteGameCard, GET_POKEMON, dat, (void*) &SerializarM_GET_POKEMON_ID);
+			free(dat);
 			pthread_mutex_lock(&esperarACK);
 			pthread_mutex_lock(&esperarACK);
 		} else TerminarProgramaConError("GAMECARD NO ENTIENDE TU OPERACION");
@@ -176,8 +194,10 @@ DATOS_NEW_POKEMON_ID* convertir_NEW_POKEMON_ID(int cantParametros, char* paramet
 
 	DATOS_NEW_POKEMON_ID* datos = malloc(sizeof(DATOS_NEW_POKEMON_ID));
 
-	datos->datos = *convertir_NEW_POKEMON(cantParametros - 1, parametros);
+	DATOS_NEW_POKEMON* dat = convertir_NEW_POKEMON(cantParametros - 1, parametros);
+	datos->datos = *dat;
 	datos->id = strtol(parametros[7], NULL, 10);
+	free(dat);
 
 	return datos;
 }
@@ -208,8 +228,10 @@ DATOS_APPEARED_POKEMON_ID* convertir_APPEARED_POKEMON_ID(int cantParametros, cha
 
 	DATOS_APPEARED_POKEMON_ID* datos = malloc(sizeof(DATOS_APPEARED_POKEMON_ID));
 
-	datos->datos = *convertir_APPEARED_POKEMON(cantParametros - 1, parametros);
+	DATOS_APPEARED_POKEMON* dat = convertir_APPEARED_POKEMON(cantParametros - 1, parametros);
+	datos->datos = *dat;
 	datos->id = strtol(parametros[6], NULL, 10); //datos->idCorrelativo_NEW = strtol(parametros[6], NULL, 10);
+	free(dat);
 
 	return datos;
 }
@@ -240,8 +262,10 @@ DATOS_CATCH_POKEMON_ID* convertir_CATCH_POKEMON_ID(int cantParametros, char* par
 
 	DATOS_CATCH_POKEMON_ID* datos = malloc(sizeof(DATOS_CATCH_POKEMON_ID));
 
-	datos->datos = *convertir_CATCH_POKEMON(cantParametros - 1, parametros);
+	DATOS_CATCH_POKEMON* dat = convertir_CATCH_POKEMON(cantParametros - 1, parametros);
+	datos->datos = *dat;
 	datos->id = strtol(parametros[6], NULL, 10);
+	free(dat);
 
 	return datos;
 }
@@ -285,8 +309,10 @@ DATOS_GET_POKEMON_ID* convertir_GET_POKEMON_ID(int cantParametros, char* paramet
 
 	DATOS_GET_POKEMON_ID* datos = malloc(sizeof(DATOS_GET_POKEMON_ID));
 
-	datos->datos = *convertir_GET_POKEMON(cantParametros - 1, parametros);
+	DATOS_GET_POKEMON* dat = convertir_GET_POKEMON(cantParametros - 1, parametros);
+	datos->datos = *dat;
 	datos->id = strtol(parametros[4], NULL, 10);
+	free(dat);
 
 	return datos;
 }
