@@ -179,14 +179,14 @@ void terminar_team()
 {
 	DestruirConexionBroker(conexionBroker);
 	DestruirServidorTeam();
-	dictionaryInt_destroy_and_destroy_elements(diccionario_interrupciones, &free);
+//	dictionaryInt_destroy_and_destroy_elements(diccionario_interrupciones, &free);
 
 	list_destroy(deadlocks);
 
 	list_destroy(cola_NEW);
 	list_destroy(cola_READY);
 	list_destroy(cola_BLOCKED);
-	list_destroy_and_destroy_elements(cola_EXIT, &destruir_entrenador);
+	list_destroy_and_destroy_elements(cola_EXIT, (void*) &destruir_entrenador);
 
 	list_destroy_and_destroy_elements(cola_INTERRUPCIONES, &destruir_interrupcion);
 	list_destroy_and_destroy_elements(pokemons_necesarios, &destruir_pokemon);
@@ -218,6 +218,13 @@ void planificar_entrenador_si_es_necesario()
 			poner_entrenador_en_EXEC();
 		}
 	}
-	if(!hay_entrenador_en_ejecucion() && !necesitamos_pokemons())
+	if(!hay_entrenador_en_ejecucion() && !necesitamos_pokemons()) {
+
+		while(!list_is_empty(cola_BLOCKED)) {
+			Entrenador* entrenador = list_remove(cola_BLOCKED,0);
+			cambiar_estado_a(entrenador, EXIT, A_EXIT);
+		}
+
 		terminar_team();
+	}
 }

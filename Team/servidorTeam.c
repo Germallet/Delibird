@@ -30,7 +30,7 @@ void operacionTEAM_APPEARED_POKEMON(Cliente* cliente, Paquete* paquete)
 	EnviarACK(cliente,id);
 
 	DestruirCliente2(cliente);
-	//Stream_Destruir(stream_lectura);
+	Stream_Destruir(stream_lectura);
 }
 
 void DestruirServidorTeam()

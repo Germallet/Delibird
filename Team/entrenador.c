@@ -41,6 +41,7 @@ Entrenador* crear_entrenador(char* posicion, char* pokemons_atrapados, char* pok
 	entrenador->ID=ID;
 	entrenador->estado=NEW;
 	entrenador->indice_accion_actual = 0;
+	entrenador->ciclosTotales = 0;
 
 	pthread_mutex_init(&(entrenador->mutex), NULL);
 	pthread_mutex_lock(&(entrenador->mutex));
@@ -78,9 +79,9 @@ void terminar_hilo(Entrenador* entrenador)
 	pthread_join(entrenador->hilo, NULL);
 }
 
-void destruir_entrenador(void* entrenador_void)
+void destruir_entrenador(Entrenador* entrenador)
 {
-	Entrenador* entrenador = entrenador_void;
+//	Entrenador* entrenador = entrenador_void;
 
 	log_info(logger,"El entrenador %d termino en %d ciclos.",entrenador->ID,entrenador->ciclosTotales);
 
@@ -471,6 +472,9 @@ bool tienen_pokemons_para_intercambiar(Entrenador* entrenador_1, Entrenador* ent
 }
 
 bool hay_entrenador_en_ejecucion() { return entrenador_EXEC!=NULL; }
+bool listas_vacias() {
+	return list_is_empty(cola_BLOCKED) && list_is_empty(cola_READY);
+}
 bool estamos_en_deadlock() { return !necesitamos_pokemons() && !hay_entrenador_en_ejecucion() && cola_BLOCKED->elements_count > 1;}
 
 t_list* obtener_entrenadores_que_podrian_intercambiar()

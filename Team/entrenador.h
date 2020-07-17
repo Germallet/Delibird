@@ -77,7 +77,7 @@ t_list* obtener_entrenadores_disponibles_para_atrapar();
 t_list* obtener_entrenadores_que_podrian_intercambiar();
 void cargar_accion(Entrenador* entrenador, Tipo_Accion tipo ,void* info);
 void asignar_id_mensaje_espera(Entrenador* entrenador, uint* nuevo_id);
-void destruir_entrenador(void* entrenador_void);
+void destruir_entrenador(Entrenador* entrenador);
 void obtener_entrenadores();
 void poner_entrenador_en_EXEC();
 void ejecutar_entrenador_actual();
@@ -90,5 +90,6 @@ void pokemons_que_van_a_intercambiar(Entrenador* entrenador_1, Entrenador* entre
 bool puede_seguir_atrapando_pokemons(Entrenador* entrenador);
 bool puede_planificarse_para_atrapar(void* entrenador);
 bool esta_en_EXIT(Entrenador* entrenador);
+bool listas_vacias();
 bool hay_entrenador_en_ejecucion();
 bool estamos_en_deadlock();
