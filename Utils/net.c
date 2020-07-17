@@ -8,10 +8,11 @@
 
 static void EscucharMensajes(Cliente* cliente)
 {
+	int socket = cliente->socket;
 	while(true)
 	{
 		Paquete* paqueteRecibido = NULL;
-		if (Socket_RecibirPaquete(cliente->socket, &paqueteRecibido) <= 0)
+		if (Socket_RecibirPaquete(socket, &paqueteRecibido) <= 0)
 		{
 			/*if (paqueteRecibido == NULL)
 			{
@@ -30,6 +31,7 @@ static void EscucharMensajes(Cliente* cliente)
 		{
 			if(cliente->eventos->error != NULL)
 				(cliente->eventos->error)(ERROR_OPERACION_INVALIDA, paqueteRecibido);
+			Paquete_Liberar(paqueteRecibido);
 			break;
 		}
 		if (Paquete_Procesar(cliente->socket, paqueteRecibido) == -1)
@@ -38,6 +40,7 @@ static void EscucharMensajes(Cliente* cliente)
 				(cliente->eventos->error)(ERROR_PROCESAR_PAQUETE, paqueteRecibido);
 			if(cliente->eventos->desconectado != NULL) (cliente->eventos->desconectado)(cliente);
 			//DestruirCliente(cliente);
+			Paquete_Liberar(paqueteRecibido);
 			break;
 		}
 		Eventos_ObtenerOperacion(cliente->eventos, paqueteRecibido->codigoOperacion)(cliente, paqueteRecibido);
@@ -102,10 +105,10 @@ static void EscucharConexiones(Servidor* servidor)
 
 		nuevoCliente->thread = malloc(sizeof(pthread_t));
 		pthread_create(nuevoCliente->thread, NULL, (void*)EscucharMensajesSV, nuevoCliente);
-		pthread_detach(*(nuevoCliente->thread));
+		//pthread_detach(*(nuevoCliente->thread));
 	}
 
-	DestruirServidor(servidor);
+	//DestruirServidor(servidor);
 }
 
 // ===== Creación de sockets =====
@@ -219,7 +222,7 @@ void DestruirCliente2(Cliente* cliente)
 
 void DestruirServidor(Servidor* servidor)
 {
-	pthread_mutex_lock(&servidor->mx_destruir);
+	/*pthread_mutex_lock(&servidor->mx_destruir);
 	pthread_mutex_t copiaMutex = servidor->mx_destruir;
 	if (servidor->thread != NULL)
 	{
@@ -233,7 +236,15 @@ void DestruirServidor(Servidor* servidor)
 		Eventos_Destruir(servidor->eventos);
 		free(servidor);
 	}
-	pthread_mutex_unlock(&copiaMutex);
+	pthread_mutex_unlock(&copiaMutex);*/
+
+	Socket_Cerrar(servidor->socket);
+	Socket_Destruir(servidor->socket);
+	pthread_join(*servidor->thread, NULL);
+	Eventos_Destruir(servidor->eventos);
+	pthread_mutex_destroy(&servidor->mx_destruir);
+	free(servidor->thread);
+	free(servidor);
 }
 
 int EnviarMensaje(Cliente* cliente, CodigoDeOperacion codigoDeOperacion, void* datos, Serializador serializador)
