@@ -41,8 +41,12 @@ int main(int argc, char* argv[])
 
 		if (sonIguales(argv[2],"APPEARED_POKEMON")) {
 			DATOS_APPEARED_POKEMON* dat = convertir_APPEARED_POKEMON(argc, argv);
-			EnviarMensaje(clienteTeam, APPEARED_POKEMON, dat, (void*) &SerializarM_APPEARED_POKEMON);
+			DATOS_APPEARED_POKEMON_ID* dat2 = malloc(sizeof(DATOS_APPEARED_POKEMON_ID));
+			dat2->datos = *dat;
+			dat2->id = 30;
+			EnviarMensaje(clienteTeam, APPEARED_POKEMON, dat, (void*) &SerializarM_APPEARED_POKEMON_ID);
 			free(dat);
+			free(dat2);
 			pthread_mutex_lock(&esperarACK);
 			pthread_mutex_lock(&esperarACK);
 		}

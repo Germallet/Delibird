@@ -29,6 +29,7 @@ void operacionTEAM_APPEARED_POKEMON(Cliente* cliente, Paquete* paquete)
 	agregar_interrupcion(I_APPEARED_POKEMON, datos);
 	EnviarACK(cliente,id);
 
+	DestruirCliente2(cliente);
 	//Stream_Destruir(stream_lectura);
 }
 
