@@ -76,7 +76,7 @@ int main(int argc, char* argv[])
 			free(dat);
 		} else TerminarProgramaConError("BROKER NO ENTIENDE TU OPERACION");
 
-		DestruirCliente(clienteBroker);
+//		DestruirCliente(clienteBroker);
 
 	} else if (sonIguales(argv[1], "GAMECARD")) {
 
