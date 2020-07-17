@@ -4,8 +4,12 @@
 
 void EjecucionTimer(HiloTimer* hiloTimer)
 {
-	while (hiloTimer->evento != NULL && hiloTimer->repeticiones != 0) {
+	while (hiloTimer->repeticiones != 0) {
 		pthread_mutex_lock(&(hiloTimer->mxHiloTimer));
+		if (hiloTimer->evento != NULL) {
+			pthread_mutex_unlock(&(hiloTimer->mxHiloTimer));
+			break;
+		}
 		(hiloTimer->evento)(hiloTimer->info);
 
 		if (hiloTimer->repeticiones != -1) hiloTimer->repeticiones--;
@@ -13,9 +17,6 @@ void EjecucionTimer(HiloTimer* hiloTimer)
 		pthread_mutex_unlock(&(hiloTimer->mxHiloTimer));
 		sleep(hiloTimer->tiempo);
 	}
-	if (hiloTimer->info != NULL) free(hiloTimer->info);
-
-	free(hiloTimer);
 	pthread_exit(0);
 }
 
@@ -28,7 +29,6 @@ HiloTimer* CrearHiloTimer(int repeticiones, unsigned int tiempo, void (*evento)(
 	nuevoHilo->evento = evento;
 	pthread_mutex_init(&(nuevoHilo->mxHiloTimer), NULL);
 	pthread_create(&(nuevoHilo->thread), NULL, (void*)&EjecucionTimer, nuevoHilo);
-	pthread_detach(nuevoHilo->thread);
 	return nuevoHilo;
 }
 
@@ -37,4 +37,6 @@ void DetenerHiloTimer(HiloTimer* hiloTimer)
 	pthread_mutex_lock(&(hiloTimer->mxHiloTimer));
 	hiloTimer->evento = NULL;
 	pthread_mutex_unlock(&(hiloTimer->mxHiloTimer));
+	pthread_join(hiloTimer->thread,NULL);
+	free(hiloTimer);
 }

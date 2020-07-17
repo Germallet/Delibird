@@ -92,12 +92,8 @@ ConexionBroker* ConectarseABroker(char* ip, int puerto, Eventos* eventos, void (
 void DestruirConexionBroker(ConexionBroker* conexion)
 {
 	DetenerHiloTimer(conexion->hiloTimer);
-//	if (conexion->hiloTimer->info != NULL)
-//		free(conexion->hiloTimer->info);
 	if(conexion->clienteBroker != NULL)
 		DestruirCliente(conexion->clienteBroker);
-//	free(conexion->hiloTimer);
 	if (conexion->datosConectado != NULL) free(conexion->datosConectado);
-	if (conexion->hiloTimer != NULL) free(conexion->hiloTimer);
 	free(conexion);
 }
