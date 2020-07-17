@@ -48,7 +48,7 @@ int main(int argc, char* argv[])
 		}
 			else TerminarProgramaConError("TEAM NO ENTIENDE TU OPERACION");
 
-		DestruirCliente(clienteTeam);
+		DestruirCliente2(clienteTeam);
 
 	} else if (sonIguales(argv[1],"BROKER")) {
 
@@ -126,7 +126,7 @@ int main(int argc, char* argv[])
 			pthread_mutex_lock(&esperarACK);
 		} else TerminarProgramaConError("GAMECARD NO ENTIENDE TU OPERACION");
 
-		DestruirCliente(clienteGameCard);
+		DestruirCliente2(clienteGameCard);
 
 	} else if (sonIguales(argv[1], "SUSCRIPTOR")) {
 
@@ -157,7 +157,7 @@ int main(int argc, char* argv[])
 
 		sleep(tiempo);
 
-		DestruirCliente(clienteBroker);
+		DestruirCliente2(clienteBroker);
 
 	} else TerminarProgramaConError("TENGO LA SOSPECHA QUE ESCRIBISTE MAL EL PROCESO");
 
