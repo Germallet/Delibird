@@ -6,7 +6,7 @@ void EjecucionTimer(HiloTimer* hiloTimer)
 {
 	while (hiloTimer->repeticiones != 0) {
 		pthread_mutex_lock(&(hiloTimer->mxHiloTimer));
-		if (hiloTimer->evento != NULL) {
+		if (hiloTimer->evento == NULL) {
 			pthread_mutex_unlock(&(hiloTimer->mxHiloTimer));
 			break;
 		}
