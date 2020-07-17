@@ -175,12 +175,6 @@ void planificar_intercambiar_pokemon()
 
 void terminar_team()
 {
-	log_info(logger, "El Team atrapo todos los pokemons que necesitaban sus entrenadores en %d ciclos.", cantidad_ciclos);
-	log_info(logger, "Se realizaron %s cambios de contexto.", cantidad_ciclos);
-	log_info(logger, "Se produjeron %s deadlocks y se resolvieron %s de ellos.", informeDLs.producidos, informeDLs.resueltos);
-
-	if(logger != NULL) log_destroy(logger);
-	if(config != NULL) config_destroy(config);
 	list_destroy(deadlocks);
 
 	list_destroy(cola_NEW);
@@ -191,6 +185,13 @@ void terminar_team()
 	list_destroy_and_destroy_elements(cola_INTERRUPCIONES, &destruir_interrupcion);
 	list_destroy_and_destroy_elements(pokemons_necesarios, &destruir_pokemon);
 	list_destroy_and_destroy_elements(pokemons_mapa, &destruir_pokemon_mapa);
+
+	log_info(logger, "El Team atrapo todos los pokemons que necesitaban sus entrenadores en %d ciclos.", cantidad_ciclos);
+	log_info(logger, "Se realizaron %d cambios de contexto.", cantidad_cambios_de_contexto);
+	log_info(logger, "Se produjeron %d deadlocks y se resolvieron %d de ellos.", informeDLs.producidos, informeDLs.resueltos);
+
+	if(logger != NULL) log_destroy(logger);
+	if(config != NULL) config_destroy(config);
 
 	exit(0);
 }

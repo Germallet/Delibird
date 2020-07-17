@@ -13,16 +13,16 @@ static void EscucharMensajes(Cliente* cliente)
 		Paquete* paqueteRecibido = NULL;
 		if (Socket_RecibirPaquete(cliente->socket, &paqueteRecibido) <= 0)
 		{
-			if (paqueteRecibido == NULL)
+			/*if (paqueteRecibido == NULL)
 			{
-				if(cliente->eventos->desconectado != NULL) (cliente->eventos->desconectado)(cliente);
+				//if(cliente->eventos->desconectado != NULL) (cliente->eventos->desconectado)(cliente);
 				//DestruirCliente(cliente);
-			}
+			}*/
 			//else
 			//if(cliente->eventos->error != NULL)
 			//	(cliente->eventos->error)(ERROR_RECIBIR, paqueteRecibido);
 			Paquete_Liberar(paqueteRecibido);
-			DestruirCliente(cliente);
+			//DestruirCliente(cliente);
 			//cliente->socket = -1;
 			break;
 		}
@@ -37,14 +37,54 @@ static void EscucharMensajes(Cliente* cliente)
 			if(cliente->eventos->error != NULL)
 				(cliente->eventos->error)(ERROR_PROCESAR_PAQUETE, paqueteRecibido);
 			if(cliente->eventos->desconectado != NULL) (cliente->eventos->desconectado)(cliente);
-			DestruirCliente(cliente);
+			//DestruirCliente(cliente);
 			break;
 		}
 		Eventos_ObtenerOperacion(cliente->eventos, paqueteRecibido->codigoOperacion)(cliente, paqueteRecibido);
 
 		Paquete_Liberar(paqueteRecibido);
 	}
-	DestruirCliente(cliente);
+	//DestruirCliente(cliente);
+}
+static void EscucharMensajesSV(Cliente* cliente)
+{
+	while(true)
+	{
+		Paquete* paqueteRecibido = NULL;
+		if (Socket_RecibirPaquete(cliente->socket, &paqueteRecibido) <= 0)
+		{
+			if (paqueteRecibido == NULL)
+			{
+				if(cliente->eventos->desconectado != NULL) (cliente->eventos->desconectado)(cliente);
+				//DestruirCliente(cliente);
+			}
+			//else
+			//if(cliente->eventos->error != NULL)
+			//	(cliente->eventos->error)(ERROR_RECIBIR, paqueteRecibido);
+			Paquete_Liberar(paqueteRecibido);
+			DestruirCliente2(cliente);
+			//cliente->socket = -1;
+			break;
+		}
+		if (!Eventos_TieneOperacion(cliente->eventos, paqueteRecibido->codigoOperacion))
+		{
+			if(cliente->eventos->error != NULL)
+				(cliente->eventos->error)(ERROR_OPERACION_INVALIDA, paqueteRecibido);
+			break;
+		}
+		if (Paquete_Procesar(cliente->socket, paqueteRecibido) == -1)
+		{
+			if(cliente->eventos->error != NULL)
+				(cliente->eventos->error)(ERROR_PROCESAR_PAQUETE, paqueteRecibido);
+			if(cliente->eventos->desconectado != NULL) (cliente->eventos->desconectado)(cliente);
+			DestruirCliente2(cliente);
+			break;
+		}
+		Eventos_ObtenerOperacion(cliente->eventos, paqueteRecibido->codigoOperacion)(cliente, paqueteRecibido);
+
+		Paquete_Liberar(paqueteRecibido);
+	}
+	DestruirCliente2(cliente);
 }
 
 // ===== Escuchar nuevas conexiones =====
@@ -61,7 +101,7 @@ static void EscucharConexiones(Servidor* servidor)
 			servidor->eventos->conectado(nuevoCliente);
 
 		nuevoCliente->thread = malloc(sizeof(pthread_t));
-		pthread_create(nuevoCliente->thread, NULL, (void*)EscucharMensajes, nuevoCliente);
+		pthread_create(nuevoCliente->thread, NULL, (void*)EscucharMensajesSV, nuevoCliente);
 		pthread_detach(*(nuevoCliente->thread));
 	}
 
@@ -126,6 +166,36 @@ Servidor* CrearServidor(char* ip, uint16_t puerto, Eventos* eventos)
 }
 
 void DestruirCliente(Cliente* cliente)
+{
+	Socket_Cerrar(cliente->socket);
+	Socket_Destruir(cliente->socket);
+	pthread_join(*cliente->thread, NULL);
+	Eventos_Destruir(cliente->eventos);
+	freeaddrinfo((struct addrinfo*)cliente->direccion);
+	pthread_mutex_destroy(&cliente->mx_destruir);
+	free(cliente->thread);
+	free(cliente);
+
+	/*pthread_mutex_lock(&cliente->mx_destruir);
+	pthread_mutex_t copiaMutex = cliente->mx_destruir;
+	if (cliente->thread != NULL)
+	{
+		free(cliente->thread);
+		Socket_Cerrar(cliente->socket);
+		cliente->thread = NULL;
+		cliente->socket = -1;
+	}
+	else
+	{
+		Socket_Destruir(cliente->socket);
+		freeaddrinfo((struct addrinfo*)cliente->direccion);
+		Eventos_Destruir(cliente->eventos);
+		free(cliente);
+		cliente = NULL;
+	}
+	pthread_mutex_unlock(&copiaMutex);*/
+}
+void DestruirCliente2(Cliente* cliente)
 {
 	pthread_mutex_lock(&cliente->mx_destruir);
 	pthread_mutex_t copiaMutex = cliente->mx_destruir;

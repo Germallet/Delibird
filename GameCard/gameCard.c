@@ -46,7 +46,7 @@ int main()
 
 	signal(SIGINT,EscuchaSignal);
 
-//	EsperarHilos();
+	EsperarHilos();
 
 	TerminarPrograma();
 

@@ -28,6 +28,7 @@ typedef Stream* (*Serializador)(void*);
 extern Cliente* CrearCliente(char *ip, uint16_t puerto, Eventos* eventos);
 extern Servidor* CrearServidor(char* ip, uint16_t puerto, Eventos* eventos);
 extern void DestruirCliente(Cliente* cliente);
+extern void DestruirCliente2(Cliente* cliente);
 extern void DestruirServidor(Servidor* servidor);
 extern int EnviarMensaje(Cliente* cliente, CodigoDeOperacion codigoDeOperacion, void* datos, Serializador serializador);
 extern int EnviarMensajeSinFree(Cliente* cliente, CodigoDeOperacion codigoDeOperacion, void* datos, Serializador serializador);
