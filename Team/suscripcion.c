@@ -56,17 +56,46 @@ void operacion_APPEARED_POKEMON(Cliente* cliente, Paquete* paquete)
 	Stream_Destruir(stream_lectura);
 	EnviarID(cliente, identificador);
 }
+
+pthread_mutex_t mutexGet;
+t_list* esperaGet;
+void EsperaGet_Agregar(uint32_t id)
+{
+	uint32_t* id2 = malloc(sizeof(uint32_t));
+	*id2 = id;
+	pthread_mutex_lock(&mutexGet);
+	list_add(esperaGet, id2);
+	pthread_mutex_unlock(&mutexGet);
+}
+bool EsperaGet_Esperando(uint32_t id)
+{
+	pthread_mutex_lock(&mutexGet);
+	for(int i = 0; i < esperaGet->elements_count; i++)
+	{
+		uint32_t* id2 = (uint32_t*)(list_get(esperaGet, i));
+		if (*id2 == id)
+		{
+			free(id2);
+			list_remove(esperaGet, i);
+			pthread_mutex_unlock(&mutexGet);
+			return true;
+		}
+	}
+	pthread_mutex_unlock(&mutexGet);
+	return false;
+}
+
 void operacion_LOCALIZED_POKEMON(Cliente* cliente, Paquete* paquete)
 {
 	Stream* stream_lectura = Stream_CrearLecturaPaquete(paquete);
 	uint32_t identificador = Deserializar_uint32(stream_lectura);
-	Deserializar_uint32(stream_lectura);
+	uint32_t idGet = Deserializar_uint32(stream_lectura);
 	DATOS_LOCALIZED_POKEMON* datos = malloc(sizeof(DATOS_LOCALIZED_POKEMON));
 	*datos = Deserializar_LOCALIZED_POKEMON(stream_lectura);
 
 	char* pokemon = datos->pokemon;
 
-	if(necesito_especie_pokemon(pokemon) && !esta_localizada(pokemon))
+	if(EsperaGet_Esperando(idGet) && necesito_especie_pokemon(pokemon) && !esta_localizada(pokemon))
 		agregar_interrupcion(I_LOCALIZED_POKEMON, datos);
 	else
 	{
@@ -79,8 +108,12 @@ void operacion_LOCALIZED_POKEMON(Cliente* cliente, Paquete* paquete)
 	Stream_Destruir(stream_lectura);
 	EnviarID(cliente, identificador);
 }
-void operacion_ID(Cliente* cliente, Paquete* paquete)
+void operacion_ID(Cliente* cliente, Paquete* paqueteRecibido)
 {
+	Stream* stream = Stream_CrearLecturaPaquete(paqueteRecibido);
+	EsperaGet_Agregar(Deserializar_uint32(stream));
+	free(stream);
+	DestruirCliente(cliente);
 }
 
 //-----------SUSCRIPCION-----------//
@@ -145,6 +178,9 @@ void conectarse()
 //-----------GET POKEMON-----------//
 void solicitar_pokemons_para_objetivo_global()
 {
+	pthread_mutex_init(&mutexGet, NULL);
+	esperaGet = list_create();
+
 	for(int i=0;i<pokemons_necesarios->elements_count;i++)
 	{
 		char* especie_pokemon = ((Pokemon*) list_get(pokemons_necesarios, i))->especie;
@@ -158,7 +194,6 @@ void solicitar_pokemons_para_objetivo_global()
 			datos->pokemon = especie_pokemon;
 			EnviarMensaje(cliente, GET_POKEMON, datos, (Serializador) &SerializarM_GET_POKEMON);
 			free(datos);
-			DestruirCliente(cliente);
 		}
 	}
 }
