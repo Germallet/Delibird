@@ -13,6 +13,13 @@ typedef struct
 	char* pokemon2;
 }Deadlock;
 
+typedef struct{
+	uint32_t producidos;
+	uint32_t resueltos;
+}InformeDeadlocks;
+
+InformeDeadlocks informeDLs;
+
 void planificar_entrenador_si_es_necesario();
 void destruir_interrupcion(void* interrupcion);
 void identificar_deadlocks();

@@ -59,9 +59,13 @@ typedef struct
 	void* info;
 	int indice_accion_actual;
 	t_list* datos_acciones;
+
+	uint32_t ciclosTotales;
 }Entrenador;
 
 extern Entrenador* entrenador_EXEC;
+
+int cantidad_cambios_de_contexto;
 
 typedef void (*Accion)(Entrenador*);
 

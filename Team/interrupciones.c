@@ -63,7 +63,7 @@ void interrupcion_CAUGHT_POKEMON(void* dato)
 	datos_interrupcion_CAUGHT_POKEMON* datos = dato;
 
 	char* textoDatos = DatosAString_CAUGHT_POKEMON(datos->recibidos);
-	log_info(logger, "Ejecuntando interrupcion %s", textoDatos);
+	log_info(logger, "Ejecutando interrupcion %s", textoDatos);
 	free(textoDatos);
 
 	Entrenador* entrenador = datos->entrenador;
@@ -79,7 +79,7 @@ void interrupcion_APPEARED_POKEMON(void* dato)
 	DATOS_APPEARED_POKEMON* datos = dato;
 
 	char* textoDatos = DatosAString_APPEARED_POKEMON(datos);
-	log_info(logger, "Ejecuntando interrupcion %s", textoDatos);
+	log_info(logger, "Ejecutando interrupcion %s", textoDatos);
 	free(textoDatos);
 
 	if(necesito_especie_pokemon(datos->pokemon))
@@ -91,7 +91,7 @@ void interrupcion_LOCALIZED_POKEMON(void* dato)
 	DATOS_LOCALIZED_POKEMON* datos = dato;
 
 	char* textoDatos = DatosAString_LOCALIZED_POKEMON(datos);
-	log_info(logger, "Ejecuntando interrupcion %s", textoDatos);
+	log_info(logger, "Ejecutando interrupcion %s", textoDatos);
 	free(textoDatos);
 
 	for(int i=0; i < datos->cantidad; i++)

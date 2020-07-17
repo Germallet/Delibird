@@ -24,6 +24,7 @@ Deadlock* crear_deadlock(Entrenador* entrenador1, Entrenador* entrenador2, char*
 	strcpy(deadlock->pokemon1, pokemon1);
 	deadlock->pokemon2 = malloc(strlen(pokemon2)+1);
 	strcpy(deadlock->pokemon2, pokemon2);
+	informeDLs.producidos ++;
 	return deadlock;
 }
 
@@ -175,6 +176,8 @@ void planificar_intercambiar_pokemon()
 void terminar_team()
 {
 	log_info(logger, "El Team atrapo todos los pokemons que necesitaban sus entrenadores en %d ciclos.", cantidad_ciclos);
+	log_info(logger, "Se realizaron %s cambios de contexto.", cantidad_ciclos);
+	log_info(logger, "Se produjeron %s deadlocks y se resolvieron %s de ellos.", informeDLs.producidos, informeDLs.resueltos);
 
 	if(logger != NULL) log_destroy(logger);
 	if(config != NULL) config_destroy(config);

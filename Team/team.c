@@ -52,6 +52,8 @@ static void inicializar_datos()
 
 	//DEADLOCK
 	deadlocks = list_create();
+	informeDLs.producidos = 0;
+	informeDLs.resueltos = 0;
 
 	//INTERRUPCIONES
 	inicializar_interrupciones();

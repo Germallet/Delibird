@@ -81,6 +81,9 @@ void terminar_hilo(Entrenador* entrenador)
 void destruir_entrenador(void* entrenador_void)
 {
 	Entrenador* entrenador = entrenador_void;
+
+	log_info(logger,"El entrenador %d termino en %d ciclos.",entrenador->ID,entrenador->ciclosTotales);
+
 	list_destroy_and_destroy_elements(entrenador->pokemons_atrapados, &destruir_pokemon);
 	list_destroy_and_destroy_elements(entrenador->pokemons_objetivo, &destruir_pokemon);
 	resetear_acciones(entrenador);
@@ -162,7 +165,10 @@ static void meter_en_cola_READY(Entrenador* entrenador)
 	}
 }
 
-void poner_entrenador_en_EXEC() { cambiar_estado_a(tomar_entrenador(cola_READY), EXEC, A_EXEC); }
+void poner_entrenador_en_EXEC() {
+	cambiar_estado_a(tomar_entrenador(cola_READY), EXEC, A_EXEC);
+	cantidad_cambios_de_contexto++;
+}
 void cambiar_estado_a(Entrenador* entrenador, Estado_Entrenador estado, Razon razon)
 {
 	t_list* cola_anterior = dictionaryInt_get(diccionario_colas, entrenador->estado);
@@ -536,6 +542,7 @@ static void ciclo(Entrenador* entrenador)
 	{
 		pthread_mutex_lock(&(entrenador->mutex));
 		((Accion) dictionaryInt_get(diccionario_acciones, datos_accion_actual(entrenador)->tipo_accion)) (entrenador);
+		entrenador->ciclosTotales++;
 		sleep((unsigned) config_get_int_value(config,"RETARDO_CICLO_CPU")*MULTIPLICADOR_TIEMPO);
 		pthread_mutex_unlock(&(mutex_team));
 	}
@@ -609,6 +616,7 @@ static void intercambiar_pokemon_finalizado(Entrenador* entrenador)
 
 	log_info(logger, "Los entrenadores %d y %d intercambiaron %s-%s pokemons en la posicion (%d,%d)", entrenador->ID, entrenador2->ID, pokemon1, pokemon2, entrenador->posicion.posX, entrenador->posicion.posY);
 
+	informeDLs.resueltos ++;
 	actualizar_estado(entrenador);
 	actualizar_estado(entrenador2);
 
