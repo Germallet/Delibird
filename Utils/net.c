@@ -8,6 +8,7 @@
 
 static void EscucharMensajes(Cliente* cliente)
 {
+	pthread_mutex_t* mutex = &(cliente->mx_destruir);
 	int socket = cliente->socket;
 	while(true)
 	{
@@ -27,11 +28,13 @@ static void EscucharMensajes(Cliente* cliente)
 			//cliente->socket = -1;
 			break;
 		}
+		pthread_mutex_lock(mutex);
 		if (!Eventos_TieneOperacion(cliente->eventos, paqueteRecibido->codigoOperacion))
 		{
 			if(cliente->eventos->error != NULL)
 				(cliente->eventos->error)(ERROR_OPERACION_INVALIDA, paqueteRecibido);
-			Paquete_Liberar(paqueteRecibido);
+			//Paquete_Liberar(paqueteRecibido);
+			pthread_mutex_unlock(mutex);
 			break;
 		}
 		if (Paquete_Procesar(cliente->socket, paqueteRecibido) == -1)
@@ -40,13 +43,16 @@ static void EscucharMensajes(Cliente* cliente)
 				(cliente->eventos->error)(ERROR_PROCESAR_PAQUETE, paqueteRecibido);
 			if(cliente->eventos->desconectado != NULL) (cliente->eventos->desconectado)(cliente);
 			//DestruirCliente(cliente);
-			Paquete_Liberar(paqueteRecibido);
+			//Paquete_Liberar(paqueteRecibido);
+			pthread_mutex_unlock(mutex);
 			break;
 		}
 		Eventos_ObtenerOperacion(cliente->eventos, paqueteRecibido->codigoOperacion)(cliente, paqueteRecibido);
+		pthread_mutex_unlock(mutex);
 
 		Paquete_Liberar(paqueteRecibido);
 	}
+	pthread_mutex_destroy(mutex);
 	//DestruirCliente(cliente);
 }
 static void EscucharMensajesSV(Cliente* cliente)
@@ -94,7 +100,7 @@ static void EscucharMensajesSV(Cliente* cliente)
 
 static void EscucharConexiones(Servidor* servidor)
 {
-	while(servidor->thread != NULL)
+	while(true)
 	{
 		Cliente* nuevoCliente = Socket_AceptarConexion(servidor);
 		if(nuevoCliente == NULL)
@@ -162,7 +168,7 @@ Servidor* CrearServidor(char* ip, uint16_t puerto, Eventos* eventos)
 	{
 		servidor->thread = malloc(sizeof(pthread_t));
 		pthread_create(servidor->thread, NULL, (void*)EscucharConexiones, servidor);
-		pthread_detach(*(servidor->thread));
+		//pthread_detach(*(servidor->thread));
 	}
 
 	return servidor;
@@ -170,14 +176,16 @@ Servidor* CrearServidor(char* ip, uint16_t puerto, Eventos* eventos)
 
 void DestruirCliente(Cliente* cliente)
 {
+	pthread_mutex_t mutex = cliente->mx_destruir;
+	pthread_mutex_lock(&mutex);
 	Socket_Cerrar(cliente->socket);
 	Socket_Destruir(cliente->socket);
 	pthread_join(*cliente->thread, NULL);
 	Eventos_Destruir(cliente->eventos);
 	freeaddrinfo((struct addrinfo*)cliente->direccion);
-	pthread_mutex_destroy(&cliente->mx_destruir);
 	free(cliente->thread);
 	free(cliente);
+	pthread_mutex_destroy(&mutex);
 
 	/*pthread_mutex_lock(&cliente->mx_destruir);
 	pthread_mutex_t copiaMutex = cliente->mx_destruir;

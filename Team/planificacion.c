@@ -4,6 +4,8 @@
 #include "entrenador.h"
 #include "planificacion.h"
 #include "interrupciones.h"
+#include "servidorTeam.h"
+#include "suscripcion.h"
 
 int quantum;
 bool deadlocks_estan_identificados = false;
@@ -175,6 +177,10 @@ void planificar_intercambiar_pokemon()
 
 void terminar_team()
 {
+	DestruirConexionBroker(conexionBroker);
+	DestruirServidorTeam();
+	dictionaryInt_destroy_and_destroy_elements(diccionario_interrupciones, &free);
+
 	list_destroy(deadlocks);
 
 	list_destroy(cola_NEW);

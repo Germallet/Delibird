@@ -111,7 +111,9 @@ void operacion_LOCALIZED_POKEMON(Cliente* cliente, Paquete* paquete)
 void operacion_ID(Cliente* cliente, Paquete* paqueteRecibido)
 {
 	Stream* stream = Stream_CrearLecturaPaquete(paqueteRecibido);
-	EsperaGet_Agregar(Deserializar_uint32(stream));
+	uint32_t id = Deserializar_uint32(stream);
+	EsperaGet_Agregar(id);
+	log_info(logger, "Esperando CAUGHT id %d", id);
 	free(stream);
 	DestruirCliente(cliente);
 }

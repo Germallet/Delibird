@@ -32,6 +32,11 @@ void operacionTEAM_APPEARED_POKEMON(Cliente* cliente, Paquete* paquete)
 	//Stream_Destruir(stream_lectura);
 }
 
+void DestruirServidorTeam()
+{
+	if (servidor != NULL) DestruirServidor(servidor);
+}
+
 void IniciarServidorTeam(char* ip, int puerto)
 {
 	Eventos* eventos = Eventos_Crear0();
