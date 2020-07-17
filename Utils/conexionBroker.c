@@ -12,6 +12,8 @@ static void reconexion(void* info)
 	if(conexion->clienteBroker != NULL && conexion->clienteBroker->socket != -1)
 		return;
 
+	if(conexion->clienteBroker != NULL)
+		freeaddrinfo((struct addrinfo*)conexion->clienteBroker->direccion);
 	conexion->clienteBroker = CrearCliente(conexion->ip, conexion->puerto, NULL);
 	if(conexion->clienteBroker == NULL)
 	{

@@ -29,6 +29,7 @@ int main()
 	EscucharSignal();
 	IniciarServidorBroker(Config_String("IP_BROKER"), Config_Int("PUERTO_BROKER"));
 
+	log_trace(logger, "BROKER iniciado! PID: %d", getpid());
 	EsperarHilos();
 	Finalizar();
 }
@@ -56,7 +57,6 @@ static void Finalizar()
 
 static void EscucharSignal()
 {
-	log_info(logger, "PID: %d", getpid());
 	if (signal(SIGUSR1, EscuchaSignal) == SIG_ERR)
 	{
 		log_error(logger, "Error al inciar escucha de signal");
