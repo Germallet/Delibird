@@ -7,6 +7,12 @@ t_config* config;
 
 pthread_mutex_t esperarACK;
 
+//void Recibir_ID(Cliente* cliente, Paquete* paqueteRecibido) {
+//	Stream* stream = Stream_CrearLecturaPaquete(paqueteRecibido);
+//	Deserializar_uint32(stream);
+//	free(stream);
+//}
+
 int main(int argc, char* argv[])
 {
 	logger = log_create("gameBoy.log", "GameBoy", true, LOG_LEVEL_INFO);
@@ -17,6 +23,7 @@ int main(int argc, char* argv[])
 	// CREACION EVENTOS
 	Eventos* eventos = Eventos_Crear0();
 	Eventos_AgregarOperacion(eventos, BROKER_ACK, (void*)&RecibirACK);
+	Eventos_AgregarOperacion(eventos, BROKER_ID_MENSAJE, (void*)&RecibirACK);
 
 	// GESTION DE MENSAJES
 	if (argc <= 3) TerminarProgramaConError("QUE QUERES QUE HAGA SI NO ME PONES LOS PARAMETROS?");
@@ -58,22 +65,32 @@ int main(int argc, char* argv[])
 			DATOS_NEW_POKEMON* dat = convertir_NEW_POKEMON(argc, argv);
 			EnviarMensaje(clienteBroker, NEW_POKEMON, dat, (void*) &SerializarM_NEW_POKEMON);
 			free(dat);
+			pthread_mutex_lock(&esperarACK);
+			pthread_mutex_lock(&esperarACK);
 		} else if (sonIguales(argv[2], "APPEARED_POKEMON")) {
 			DATOS_APPEARED_POKEMON_ID* dat = convertir_APPEARED_POKEMON_ID(argc, argv);
 			EnviarMensaje(clienteBroker, APPEARED_POKEMON, convertir_APPEARED_POKEMON_ID(argc, argv), (void*) &SerializarM_APPEARED_POKEMON_ID);
 			free(dat);
+			pthread_mutex_lock(&esperarACK);
+			pthread_mutex_lock(&esperarACK);
 		} else if (sonIguales(argv[2], "CATCH_POKEMON")) {
 			DATOS_CATCH_POKEMON* dat = convertir_CATCH_POKEMON(argc, argv);
 			EnviarMensaje(clienteBroker, CATCH_POKEMON, convertir_CATCH_POKEMON(argc, argv), (void*) &SerializarM_CATCH_POKEMON);
 			free(dat);
+			pthread_mutex_lock(&esperarACK);
+			pthread_mutex_lock(&esperarACK);
 		} else if (sonIguales(argv[2], "CAUGHT_POKEMON")) {
 			DATOS_CAUGHT_POKEMON_ID* dat = convertir_CAUGHT_POKEMON_ID(argc, argv);
 			EnviarMensaje(clienteBroker, CAUGHT_POKEMON, convertir_CAUGHT_POKEMON_ID(argc, argv), (void*) &SerializarM_CAUGHT_POKEMON_ID);
 			free(dat);
+			pthread_mutex_lock(&esperarACK);
+			pthread_mutex_lock(&esperarACK);
 		} else if (sonIguales(argv[2], "GET_POKEMON")) {
 			DATOS_GET_POKEMON* dat = convertir_GET_POKEMON(argc, argv);
 			EnviarMensaje(clienteBroker, GET_POKEMON, convertir_GET_POKEMON(argc, argv), (void*) &SerializarM_GET_POKEMON);
 			free(dat);
+			pthread_mutex_lock(&esperarACK);
+			pthread_mutex_lock(&esperarACK);
 		} else TerminarProgramaConError("BROKER NO ENTIENDE TU OPERACION");
 
 //		DestruirCliente(clienteBroker);
@@ -505,6 +522,6 @@ void EnviarID(Cliente* cliente, uint32_t identificador)
 void RecibirACK(Cliente* cliente, Paquete* paqueteRecibido) {
 	DATOS_ID_MENSAJE datosACK;
 	DeserializarM_ID_MENSAJE(paqueteRecibido, &datosACK);
-	log_info(logger, "ACK: ID_MENSAJE %d", datosACK.id);
+	log_info(logger, "RECIBIDO: ID_MENSAJE %d", datosACK.id);
 	pthread_mutex_unlock(&esperarACK);
 }
