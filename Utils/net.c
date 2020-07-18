@@ -223,7 +223,8 @@ void DestruirCliente2(Cliente* cliente)
 	}
 	else
 	{
-		Socket_Destruir(cliente->socket);
+		if (cliente->socket != -1)
+			Socket_Destruir(cliente->socket);
 		freeaddrinfo((struct addrinfo*)cliente->direccion);
 		Eventos_Destruir(cliente->eventos);
 		free(cliente);
