@@ -85,14 +85,16 @@ void DestruirClienteSV(Cliente* cliente)
 }
 static void EscucharMensajesSV(Cliente* cliente)
 {
+	int socket = cliente->socket;
+
 	while(true)
 	{
 		Paquete* paqueteRecibido = NULL;
-		if (Socket_RecibirPaquete(cliente->socket, &paqueteRecibido) <= 0)
+		if (Socket_RecibirPaquete(socket, &paqueteRecibido) <= 0)
 		{
 			if (paqueteRecibido == NULL)
 			{
-				if(cliente->eventos->desconectado != NULL) (cliente->eventos->desconectado)(cliente);
+				//if(cliente->eventos->desconectado != NULL) (cliente->eventos->desconectado)(cliente);
 				//DestruirCliente(cliente);
 			}
 			//else
@@ -121,7 +123,10 @@ static void EscucharMensajesSV(Cliente* cliente)
 
 		Paquete_Liberar(paqueteRecibido);
 	}
-	DestruirClienteSV(cliente);
+	DestruirCliente(cliente);
+	free(cliente->thread);
+	freeaddrinfo((struct addrinfo*)cliente->direccion);
+	free(cliente);
 }
 
 // ===== Escuchar nuevas conexiones =====
@@ -139,7 +144,7 @@ static void EscucharConexiones(Servidor* servidor)
 
 		nuevoCliente->thread = malloc(sizeof(pthread_t));
 		pthread_create(nuevoCliente->thread, NULL, (void*)EscucharMensajesSV, nuevoCliente);
-		//pthread_detach(*(nuevoCliente->thread));
+		pthread_detach(*(nuevoCliente->thread));
 	}
 
 	//DestruirServidor(servidor);
@@ -204,7 +209,7 @@ Servidor* CrearServidor(char* ip, uint16_t puerto, Eventos* eventos)
 
 void DestruirCliente(Cliente* cliente)
 {
-	pthread_mutex_t mutex = cliente->mx_destruir;
+	/*pthread_mutex_t mutex = cliente->mx_destruir;
 	pthread_mutex_lock(&mutex);
 	Socket_Cerrar(cliente->socket);
 	Socket_Destruir(cliente->socket);
@@ -213,7 +218,7 @@ void DestruirCliente(Cliente* cliente)
 	freeaddrinfo((struct addrinfo*)cliente->direccion);
 	free(cliente->thread);
 	free(cliente);
-	pthread_mutex_destroy(&mutex);
+	pthread_mutex_destroy(&mutex);*/
 
 	/*pthread_mutex_lock(&cliente->mx_destruir);
 	pthread_mutex_t copiaMutex = cliente->mx_destruir;
@@ -233,6 +238,13 @@ void DestruirCliente(Cliente* cliente)
 		cliente = NULL;
 	}
 	pthread_mutex_unlock(&copiaMutex);*/
+
+	if (cliente->socket != -1)
+	{
+		Socket_Cerrar(cliente->socket);
+		Socket_Destruir(cliente->socket);
+		cliente->socket = -1;
+	}
 }
 
 void DestruirCliente2(Cliente* cliente)

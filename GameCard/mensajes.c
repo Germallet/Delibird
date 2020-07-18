@@ -47,7 +47,7 @@ void Recibir_NEW_POKEMON_BROKER(Cliente* cliente, Paquete* paqueteRecibido) {
 
 void Recibir_NEW_POKEMON(Cliente* cliente, Paquete* paqueteRecibido) {
 	Recibir_NEW_POKEMON_BROKER(cliente, paqueteRecibido);
-	DestruirCliente2(cliente);
+	DestruirCliente(cliente);
 }
 
 void Operacion_NEW_POKEMON(DATOS_NEW_POKEMON_ID* datos) {
@@ -155,7 +155,7 @@ void Recibir_CATCH_POKEMON_BROKER(Cliente* cliente, Paquete* paqueteRecibido) {
 
 void Recibir_CATCH_POKEMON(Cliente* cliente, Paquete* paqueteRecibido) {
 	Recibir_CATCH_POKEMON_BROKER(cliente, paqueteRecibido);
-	DestruirCliente2(cliente);
+	DestruirCliente(cliente);
 }
 
 void Operacion_CATCH_POKEMON(DATOS_CATCH_POKEMON_ID* datos) {
@@ -262,7 +262,7 @@ void Recibir_GET_POKEMON_BROKER(Cliente* cliente, Paquete* paqueteRecibido) {
 
 void Recibir_GET_POKEMON(Cliente* cliente, Paquete* paqueteRecibido) {
 	Recibir_GET_POKEMON_BROKER(cliente, paqueteRecibido);
-	DestruirCliente2(cliente);
+	DestruirCliente(cliente);
 }
 
 void Operacion_GET_POKEMON(DATOS_GET_POKEMON_ID* datos) {
