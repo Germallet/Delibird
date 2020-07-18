@@ -47,6 +47,7 @@ Entrenador* crear_entrenador(char* posicion, char* pokemons_atrapados, char* pok
 	pthread_mutex_lock(&(entrenador->mutex));
 
 	pthread_create(&(entrenador->hilo), NULL, (void*) &ciclo, entrenador);
+	pthread_detach(entrenador->hilo);
 
 	return entrenador;
 }
@@ -537,6 +538,7 @@ static void operacion_ASIGNACION_ID(Cliente* cliente, Paquete* paquete)
 	pthread_mutex_unlock(&entrenadoresEsperandoCaught);
 
 	log_info(logger, "Enviado CATCH_POKEMON, esperando CAUGHT id: %d", datos.id);
+	DestruirCliente2(cliente);
 }
 
 //-----------ACCIONES-----------//
@@ -546,6 +548,7 @@ static void ciclo(Entrenador* entrenador)
 	{
 		pthread_mutex_lock(&(entrenador->mutex));
 		((Accion) dictionaryInt_get(diccionario_acciones, datos_accion_actual(entrenador)->tipo_accion)) (entrenador);
+		ciclosEntrenadores++;
 		entrenador->ciclosTotales++;
 		sleep((unsigned) config_get_int_value(config,"RETARDO_CICLO_CPU")*MULTIPLICADOR_TIEMPO);
 		pthread_mutex_unlock(&(mutex_team));

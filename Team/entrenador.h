@@ -66,6 +66,7 @@ typedef struct
 extern Entrenador* entrenador_EXEC;
 
 int cantidad_cambios_de_contexto;
+int ciclosEntrenadores;
 
 typedef void (*Accion)(Entrenador*);
 

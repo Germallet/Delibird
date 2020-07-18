@@ -8,7 +8,7 @@
 
 static void EscucharMensajes(Cliente* cliente)
 {
-	pthread_mutex_t* mutex = &(cliente->mx_destruir);
+	//pthread_mutex_t* mutex = &(cliente->mx_destruir);
 	int socket = cliente->socket;
 	while(true)
 	{
@@ -28,13 +28,13 @@ static void EscucharMensajes(Cliente* cliente)
 			//cliente->socket = -1;
 			break;
 		}
-		pthread_mutex_lock(mutex);
+		//pthread_mutex_lock(mutex);
 		if (!Eventos_TieneOperacion(cliente->eventos, paqueteRecibido->codigoOperacion))
 		{
 			if(cliente->eventos->error != NULL)
 				(cliente->eventos->error)(ERROR_OPERACION_INVALIDA, paqueteRecibido);
 			//Paquete_Liberar(paqueteRecibido);
-			pthread_mutex_unlock(mutex);
+			//pthread_mutex_unlock(mutex);
 			break;
 		}
 		if (Paquete_Procesar(cliente->socket, paqueteRecibido) == -1)
@@ -44,16 +44,44 @@ static void EscucharMensajes(Cliente* cliente)
 			if(cliente->eventos->desconectado != NULL) (cliente->eventos->desconectado)(cliente);
 			//DestruirCliente(cliente);
 			//Paquete_Liberar(paqueteRecibido);
-			pthread_mutex_unlock(mutex);
+			//pthread_mutex_unlock(mutex);
 			break;
 		}
 		Eventos_ObtenerOperacion(cliente->eventos, paqueteRecibido->codigoOperacion)(cliente, paqueteRecibido);
-		pthread_mutex_unlock(mutex);
+		//pthread_mutex_unlock(mutex);
 
 		Paquete_Liberar(paqueteRecibido);
 	}
-	pthread_mutex_destroy(mutex);
+	//pthread_mutex_destroy(mutex);
 	//DestruirCliente2(cliente);
+}
+
+void DestruirClienteSV(Cliente* cliente)
+{
+	pthread_mutex_lock(&cliente->mx_destruir);
+	//pthread_mutex_t copiaMutex = cliente->mx_destruir;
+	pthread_mutex_t copiaMutex;
+	pthread_mutex_init(&copiaMutex, NULL);
+	memcpy(&cliente->mx_destruir, &copiaMutex, sizeof(copiaMutex));
+
+	if (cliente->thread != NULL)
+	{
+		free(cliente->thread);
+		Socket_Cerrar(cliente->socket);
+		cliente->thread = NULL;
+		cliente->socket = -1;
+		pthread_mutex_unlock(&cliente->mx_destruir);
+	}
+	else
+	{
+		if (cliente->socket != -1)
+			Socket_Destruir(cliente->socket);
+		freeaddrinfo((struct addrinfo*)cliente->direccion);
+		Eventos_Destruir(cliente->eventos);
+		free(cliente);
+		cliente = NULL;
+	}
+	pthread_mutex_unlock(&copiaMutex);
 }
 static void EscucharMensajesSV(Cliente* cliente)
 {
@@ -71,7 +99,7 @@ static void EscucharMensajesSV(Cliente* cliente)
 			//if(cliente->eventos->error != NULL)
 			//	(cliente->eventos->error)(ERROR_RECIBIR, paqueteRecibido);
 			Paquete_Liberar(paqueteRecibido);
-			DestruirCliente2(cliente);
+			//DestruirCliente2(cliente);
 			//cliente->socket = -1;
 			break;
 		}
@@ -86,14 +114,14 @@ static void EscucharMensajesSV(Cliente* cliente)
 			if(cliente->eventos->error != NULL)
 				(cliente->eventos->error)(ERROR_PROCESAR_PAQUETE, paqueteRecibido);
 			if(cliente->eventos->desconectado != NULL) (cliente->eventos->desconectado)(cliente);
-			DestruirCliente2(cliente);
+			//DestruirCliente2(cliente);
 			break;
 		}
 		Eventos_ObtenerOperacion(cliente->eventos, paqueteRecibido->codigoOperacion)(cliente, paqueteRecibido);
 
 		Paquete_Liberar(paqueteRecibido);
 	}
-	DestruirCliente2(cliente);
+	DestruirClienteSV(cliente);
 }
 
 // ===== Escuchar nuevas conexiones =====
@@ -206,13 +234,14 @@ void DestruirCliente(Cliente* cliente)
 	}
 	pthread_mutex_unlock(&copiaMutex);*/
 }
+
 void DestruirCliente2(Cliente* cliente)
 {
-	pthread_mutex_lock(&cliente->mx_destruir);
-	pthread_mutex_t copiaMutex = cliente->mx_destruir;
-	/*pthread_mutex_t copiaMutex;
+	/*pthread_mutex_lock(&cliente->mx_destruir);
+	//pthread_mutex_t copiaMutex = cliente->mx_destruir;
+	pthread_mutex_t copiaMutex;
 	pthread_mutex_init(&copiaMutex, NULL);
-	memcpy(&cliente->mx_destruir, &copiaMutex, sizeof(copiaMutex));*/
+	memcpy(&cliente->mx_destruir, &copiaMutex, sizeof(copiaMutex));
 
 	if (cliente->thread != NULL)
 	{
@@ -220,6 +249,7 @@ void DestruirCliente2(Cliente* cliente)
 		Socket_Cerrar(cliente->socket);
 		cliente->thread = NULL;
 		cliente->socket = -1;
+		pthread_mutex_unlock(&cliente->mx_destruir);
 	}
 	else
 	{
@@ -230,7 +260,19 @@ void DestruirCliente2(Cliente* cliente)
 		free(cliente);
 		cliente = NULL;
 	}
-	pthread_mutex_unlock(&copiaMutex);
+	pthread_mutex_unlock(&copiaMutex);*/
+
+
+	if (cliente->socket != -1)
+	{
+		Socket_Cerrar(cliente->socket);
+		Socket_Destruir(cliente->socket);
+		cliente->socket = -1;
+	}
+	free(cliente->thread);
+	Eventos_Destruir(cliente->eventos);
+	freeaddrinfo((struct addrinfo*)cliente->direccion);
+	free(cliente);
 }
 
 void DestruirServidor(Servidor* servidor)

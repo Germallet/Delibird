@@ -113,9 +113,9 @@ void operacion_ID(Cliente* cliente, Paquete* paqueteRecibido)
 	Stream* stream = Stream_CrearLecturaPaquete(paqueteRecibido);
 	uint32_t id = Deserializar_uint32(stream);
 	EsperaGet_Agregar(id);
-	log_info(logger, "Esperando CAUGHT id %d", id);
+	log_info(logger, "Esperando LOCALIZED id %d", id);
 	free(stream);
-	DestruirCliente(cliente);
+	DestruirCliente2(cliente);
 }
 
 //-----------SUSCRIPCION-----------//

@@ -178,21 +178,33 @@ void planificar_intercambiar_pokemon()
 void terminar_team()
 {
 	DestruirConexionBroker(conexionBroker);
-	DestruirServidorTeam();
+	//DestruirServidorTeam();
 //	dictionaryInt_destroy_and_destroy_elements(diccionario_interrupciones, &free);
 
-	/*list_destroy(deadlocks);
+	list_destroy(deadlocks);
 
 	list_destroy(cola_NEW);
 	list_destroy(cola_READY);
-	list_destroy(cola_BLOCKED);
 	list_destroy_and_destroy_elements(cola_EXIT, (void*) &destruir_entrenador);
+	list_destroy_and_destroy_elements(cola_BLOCKED, (void*) &destruir_entrenador);
 
 	list_destroy_and_destroy_elements(cola_INTERRUPCIONES, &destruir_interrupcion);
 	list_destroy_and_destroy_elements(pokemons_necesarios, &destruir_pokemon);
-	list_destroy_and_destroy_elements(pokemons_mapa, &destruir_pokemon_mapa);*/
+	list_destroy_and_destroy_elements(pokemons_mapa, &destruir_pokemon_mapa);
 
-	log_info(logger, "El Team atrapo todos los pokemons que necesitaban sus entrenadores en %d ciclos.", cantidad_ciclos);
+	/*for (int i = 0; i < cola_EXIT->elements_count; i++)
+	{
+		Entrenador* entrenador = list_get(cola_EXIT, i);
+		log_info(logger,"El entrenador %d termino en %d ciclos.",entrenador->ID,entrenador->ciclosTotales);
+	}
+	for (int i = 0; i < cola_BLOCKED->elements_count; i++)
+	{
+		Entrenador* entrenador = list_get(cola_BLOCKED, i);
+		log_info(logger,"El entrenador %d termino en %d ciclos.",entrenador->ID,entrenador->ciclosTotales);
+	}*/
+
+	log_info(logger, "El Team atrapo todos los pokemons que necesitaban sus entrenadores en %d ciclos: %d por entrenadores, %d inactivo.",
+			cantidad_ciclos, ciclosEntrenadores, cantidad_ciclos-ciclosEntrenadores);
 	log_info(logger, "Se realizaron %d cambios de contexto.", cantidad_cambios_de_contexto);
 	log_info(logger, "Se produjeron %d deadlocks y se resolvieron %d de ellos.", informeDLs.producidos, informeDLs.resueltos);
 
