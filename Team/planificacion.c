@@ -181,7 +181,7 @@ void terminar_team()
 	DestruirServidorTeam();
 //	dictionaryInt_destroy_and_destroy_elements(diccionario_interrupciones, &free);
 
-	list_destroy(deadlocks);
+	/*list_destroy(deadlocks);
 
 	list_destroy(cola_NEW);
 	list_destroy(cola_READY);
@@ -190,7 +190,7 @@ void terminar_team()
 
 	list_destroy_and_destroy_elements(cola_INTERRUPCIONES, &destruir_interrupcion);
 	list_destroy_and_destroy_elements(pokemons_necesarios, &destruir_pokemon);
-	list_destroy_and_destroy_elements(pokemons_mapa, &destruir_pokemon_mapa);
+	list_destroy_and_destroy_elements(pokemons_mapa, &destruir_pokemon_mapa);*/
 
 	log_info(logger, "El Team atrapo todos los pokemons que necesitaban sus entrenadores en %d ciclos.", cantidad_ciclos);
 	log_info(logger, "Se realizaron %d cambios de contexto.", cantidad_cambios_de_contexto);
@@ -220,10 +220,10 @@ void planificar_entrenador_si_es_necesario()
 	}
 	if(!hay_entrenador_en_ejecucion() && !necesitamos_pokemons()) {
 
-		while(!list_is_empty(cola_BLOCKED)) {
+		/*while(!list_is_empty(cola_BLOCKED)) {
 			Entrenador* entrenador = list_remove(cola_BLOCKED,0);
 			cambiar_estado_a(entrenador, EXIT, A_EXIT);
-		}
+		}*/
 
 		terminar_team();
 	}

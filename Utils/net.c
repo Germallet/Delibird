@@ -53,7 +53,7 @@ static void EscucharMensajes(Cliente* cliente)
 		Paquete_Liberar(paqueteRecibido);
 	}
 	pthread_mutex_destroy(mutex);
-	//DestruirCliente(cliente);
+	//DestruirCliente2(cliente);
 }
 static void EscucharMensajesSV(Cliente* cliente)
 {
@@ -210,6 +210,10 @@ void DestruirCliente2(Cliente* cliente)
 {
 	pthread_mutex_lock(&cliente->mx_destruir);
 	pthread_mutex_t copiaMutex = cliente->mx_destruir;
+	/*pthread_mutex_t copiaMutex;
+	pthread_mutex_init(&copiaMutex, NULL);
+	memcpy(&cliente->mx_destruir, &copiaMutex, sizeof(copiaMutex));*/
+
 	if (cliente->thread != NULL)
 	{
 		free(cliente->thread);

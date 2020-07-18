@@ -9,7 +9,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <commons/string.h>
-#define MULTIPLICADOR_TIEMPO 0.3 //TODO
+#define MULTIPLICADOR_TIEMPO 1 //TODO
 
 Entrenador* entrenador_EXEC;
 t_list* cola_NEW;
