@@ -29,7 +29,7 @@ int main()
 	EscucharSignal();
 	IniciarServidorBroker(Config_String("IP_BROKER"), Config_Int("PUERTO_BROKER"));
 
-	log_info(logger, "BROKER iniciado! PID: %d", getpid());
+	log_info(logger, "BROKER iniciado!");
 	EsperarHilos();
 	Finalizar();
 }

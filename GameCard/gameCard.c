@@ -42,7 +42,7 @@ int main()
 
 	tallGrass_init(puntoMontaje);
 
-	log_info(logger,"Mandame mensaje pa, dale");
+	log_info(logger,"Escuchando mensajes atentamente!");
 
 	signal(SIGINT,EscuchaSignal);
 
